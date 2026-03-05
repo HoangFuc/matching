@@ -3,7 +3,7 @@ import { Image, StyleSheet, View } from "react-native";
 
 import { AppText } from "@/src/component/AppText";
 import { AppColors } from "@/src/constants/colors";
-import { scale as s, moderateScale as ms } from "react-native-size-matters/extend";
+import { moderateScale as ms } from "react-native-size-matters/extend";
 import { MemoTemplateMeetingCard } from "../meetingSchedule/TemplateMeetingCard";
 
 const MeetingSchedule: React.FC = () => {
@@ -42,19 +42,14 @@ export const MemoMeetingSchedule = React.memo(MeetingSchedule);
 
 const styles = StyleSheet.create({
   container: {
-    width: s(343),
-    height: s(154),
-    borderRadius: ms(14),
     gap: ms(12),
   },
   row: {
     flexDirection: "row",
     gap: 8,
-    width: s(343),
-    height: s(120),
   },
   cardImage: {
-    width: s(60),
-    height: s(60),
+    width: ms(60),
+    height: ms(60),
   },
 });

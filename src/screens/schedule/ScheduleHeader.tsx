@@ -2,16 +2,17 @@ import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ArrowLeft2, Sort } from "iconsax-react-nativejs";
-import {
-  moderateScale as ms,
-  scale as s,
-} from "react-native-size-matters/extend";
+import { moderateScale as ms } from "react-native-size-matters/extend";
 
 import { AppText } from "@/src/component/AppText";
 import { AppColors } from "@/src/constants/colors";
 import { useNavigation } from "@react-navigation/native";
 
-const ScheduleHeader: React.FC = () => {
+interface IProps {
+  onPressFilter: () => void;
+}
+
+const ScheduleHeader: React.FC<IProps> = ({ onPressFilter }) => {
   const navigation = useNavigation();
 
   //---------------------------------------
@@ -33,7 +34,7 @@ const ScheduleHeader: React.FC = () => {
         일정
       </AppText>
 
-      <Pressable hitSlop={8}>
+      <Pressable hitSlop={8} onPress={onPressFilter}>
         <Sort size={`${ms(24)}`} color={AppColors.white} variant="Linear" />
       </Pressable>
     </View>
@@ -50,8 +51,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: ms(16),
     paddingBottom: ms(24),
     backgroundColor: AppColors.purple,
-    borderRadius: ms(100),
-    width: s(375),
-    height: s(49),
+    height: ms(49),
   },
 });

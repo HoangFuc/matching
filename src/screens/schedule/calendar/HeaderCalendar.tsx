@@ -4,8 +4,11 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Add, ArrowLeft2, ArrowRight2 } from 'iconsax-react-nativejs';
 import { ms, s } from 'react-native-size-matters/extend';
 
+import { _storeData } from '@/src/api/async.storage';
+import { getSeed } from '@/src/api/seed.api';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { useMutation } from '@tanstack/react-query';
 import { MemoScheduleRegisterModal } from './ScheduleRegisterModal';
 
 interface IProps {
@@ -18,6 +21,14 @@ interface IProps {
 const HeaderCalendar: React.FC<IProps> = props => {
   const { year, setYear, month, setMonth } = props;
   const [showRegisterModal, setShowRegisterModal] = React.useState(false);
+
+  //---------------------------------------
+  const mutation = useMutation({
+    mutationFn: getSeed,
+    onSuccess: async (res: { accessToken: string }) => {
+      await _storeData('auth', res.accessToken);
+    },
+  });
 
   //---------------------------------------
   const goToPrevMonth = React.useCallback(() => {
@@ -67,7 +78,10 @@ const HeaderCalendar: React.FC<IProps> = props => {
       {/* Register schedule button */}
       <Pressable
         style={styles.registerButton}
-        onPress={() => setShowRegisterModal(true)}
+        onPress={() => {
+          mutation.mutate();
+          setShowRegisterModal(true);
+        }}
       >
         <Add size={`${ms(14)}`} color={AppColors.purple} variant="Linear" />
 

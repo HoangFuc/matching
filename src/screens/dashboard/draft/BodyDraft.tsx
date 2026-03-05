@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { ms, s } from 'react-native-size-matters/extend';
+import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
@@ -25,8 +25,6 @@ export const MemoBodyDraft = React.memo(BodyDraft);
 
 const styles = StyleSheet.create({
   container: {
-    width: s(343),
-    height: s(52),
     borderRadius: ms(14),
     padding: ms(16),
     gap: ms(16),

@@ -6,15 +6,37 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppColors } from '@/src/constants/colors';
 import { MemoScheduleCalendar } from './ScheduleCalendar';
 import { MemoScheduleHeader } from './ScheduleHeader';
+import { MemoScheduleFilterModal } from './calendar/ScheduleFilterModal';
+import { TScheduleType } from './calendar/ScheduleTypePicker';
 
 const Schedule: React.FC = () => {
+  const [filterVisible, setFilterVisible] = React.useState(false);
+  const [selectedFilterTypes, setSelectedFilterTypes] = React.useState<
+    TScheduleType[]
+  >([]);
+
+  const handleOpenFilter = React.useCallback(() => {
+    setFilterVisible(true);
+  }, []);
+
+  const handleCloseFilter = React.useCallback(() => {
+    setFilterVisible(false);
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <MemoScheduleHeader />
+      <MemoScheduleHeader onPressFilter={handleOpenFilter} />
 
       <View style={styles.content}>
         <MemoScheduleCalendar />
       </View>
+
+      <MemoScheduleFilterModal
+        visible={filterVisible}
+        selectedTypes={selectedFilterTypes}
+        onApply={setSelectedFilterTypes}
+        onClose={handleCloseFilter}
+      />
     </SafeAreaView>
   );
 };

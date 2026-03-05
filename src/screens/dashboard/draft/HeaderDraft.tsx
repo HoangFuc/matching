@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { Add } from "iconsax-react-nativejs";
-import { ms, s } from "react-native-size-matters/extend";
+import { ms } from "react-native-size-matters/extend";
 
 import { AppText } from "@/src/component/AppText";
 import { AppColors } from "@/src/constants/colors";
@@ -18,7 +18,7 @@ const HeaderDraft: React.FC = () => {
         onPress={() => console.log("======================asdasdsa")}
         style={styles.button}
       >
-        <Add size={`${s(16)}`} color={AppColors.purple} />
+        <Add size={`${ms(16)}`} color={AppColors.purple} />
 
         <AppText variant="body6" color={AppColors.purple}>
           기안 올리기
@@ -43,7 +43,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: ms(12),
     paddingVertical: ms(4),
     borderRadius: ms(100),
-    width: s(107),
-    height: s(28),
   },
 });

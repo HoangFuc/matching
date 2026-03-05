@@ -8,12 +8,15 @@ import {
   View,
 } from 'react-native';
 
+import dayjs from 'dayjs';
 import { ms, s } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 
+import { createSchedule } from '@/src/api/schedule.api';
 import { FontWeight } from '@/src/constants/typography';
+import { useMutation } from '@tanstack/react-query';
 import { MemoFormCreateSchedule } from './FormCreateSchedule';
 import { MemoScheduleTypePicker, TScheduleType } from './ScheduleTypePicker';
 
@@ -29,8 +32,8 @@ const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
   const [showTypePicker, setShowTypePicker] = React.useState(false);
 
   //---------------------------------------
-  const [date, setDate] = React.useState('');
-  const [time, setTime] = React.useState('');
+  const [date, setDate] = React.useState(dayjs().format('YYYY.MM.DD'));
+  const [time, setTime] = React.useState(dayjs().format('HH:mm'));
 
   //---------------------------------------
   const [scheduleName, setScheduleName] = React.useState('');
@@ -42,28 +45,43 @@ const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
   const [memo, setMemo] = React.useState('');
 
   //---------------------------------------
-  const resetForm = () => {
+  const createScheduleMutation = useMutation({
+    mutationFn: createSchedule,
+    onSuccess: res => {
+      console.log('======================res', res);
+    },
+  });
+
+  //---------------------------------------
+  const resetForm = React.useCallback(() => {
     setScheduleType('일반일정');
-    setDate('');
-    setTime('');
+    setDate(dayjs().format('YYYY.MM.DD'));
+    setTime(dayjs().format('HH:mm'));
     setScheduleName('');
     setScheduleContent('');
     setCustomerName('');
     setContact('');
     setMemo('');
-  };
+  }, []);
 
   //---------------------------------------
-  const handleClose = () => {
+  const handleClose = React.useCallback(() => {
     resetForm();
     onClose();
-  };
+  }, [resetForm, onClose]);
 
   //---------------------------------------
-  const handleRegister = () => {
-    // TODO: handle registration logic
+  const handleRegister = React.useCallback(() => {
+    // const payload = {
+    //   scheduleType,
+    //   title: scheduleName,
+    //   description: scheduleContent,
+    //   startTime: time,
+    //   scheduleDate: date,
+    // };
+    createScheduleMutation.mutate();
     handleClose();
-  };
+  }, [createScheduleMutation, handleClose]);
 
   //---------------------------------------
   const renderGeneralFields = React.useMemo(

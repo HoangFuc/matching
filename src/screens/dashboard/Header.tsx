@@ -2,10 +2,7 @@ import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { HamburgerMenu, Notification } from 'iconsax-react-nativejs';
-import {
-  scale as s,
-  moderateScale as ms,
-} from 'react-native-size-matters/extend';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 
@@ -15,7 +12,7 @@ const HeaderDashboard: React.FC = () => {
       <View style={styles.logo}>
         <Image
           style={{
-            width: s(47),
+            width: ms(47),
             aspectRatio: 47 / 24,
           }}
           resizeMode="contain"
@@ -39,9 +36,9 @@ const HeaderDashboard: React.FC = () => {
         <Image
           source={require('../../assets/images/avatar.jpg')}
           style={{
-            width: s(40),
-            height: s(40),
-            borderRadius: s(20),
+            width: ms(40),
+            height: ms(40),
+            borderRadius: ms(20),
           }}
         />
 
@@ -74,10 +71,10 @@ const styles = StyleSheet.create({
   },
   background: {
     position: 'absolute',
-    top: s(10),
+    top: ms(10),
     right: 0,
-    width: s(179),
-    height: s(177),
+    width: ms(179),
+    height: ms(177),
     opacity: 0.5,
     paddingVertical: ms(16),
   },

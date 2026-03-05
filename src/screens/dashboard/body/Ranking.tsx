@@ -1,13 +1,13 @@
-import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import React from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { ArrowRight2 } from "iconsax-react-nativejs";
+import { ArrowRight2 } from 'iconsax-react-nativejs';
 
-import { AppText } from "@/src/component/AppText";
-import { AppColors } from "@/src/constants/colors";
-import { scale as s, moderateScale as ms } from "react-native-size-matters/extend";
-import { MemoFirstPlaceCard } from "../ranking/FirstPlaceCard";
-import { MemoRunnerUpCard } from "../ranking/RunnerUpCard";
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
+import { MemoFirstPlaceCard } from '../ranking/FirstPlaceCard';
+import { MemoRunnerUpCard } from '../ranking/RunnerUpCard';
 
 const Ranking: React.FC = () => {
   return (
@@ -43,18 +43,17 @@ const styles = StyleSheet.create({
     paddingBottom: ms(24),
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: ms(12),
   },
   cardsRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: ms(8),
-    height: s(148),
   },
   runnerUpColumn: {
     flex: 1,
-    gap: ms(16),
+    gap: ms(8),
   },
 });

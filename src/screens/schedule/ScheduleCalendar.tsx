@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { moderateScale as ms, s } from 'react-native-size-matters/extend';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppColors } from '@/src/constants/colors';
+import { CardShadow } from '@/src/constants/shadows';
 import { MemoCalendarGrid } from './calendar/CalendarGrid';
 import { MemoDayOfWeekHeader } from './calendar/DayOfWeekHeader';
 import { MemoHeaderCalendar } from './calendar/HeaderCalendar';
-import { CardShadow } from '@/src/constants/shadows';
 
 const ScheduleCalendar: React.FC = () => {
   const [year, setYear] = useState(2025);
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     gap: ms(16),
   },
   calendarCard: {
-    width: s(343),
+    width: ms(343),
     flex: 1,
     borderRadius: ms(16),
     borderWidth: 1,

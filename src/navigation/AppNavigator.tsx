@@ -1,54 +1,73 @@
-import React, { useCallback } from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useCallback } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
 import {
   Calendar,
   ClipboardText,
   Document,
   DocumentText,
   Home2,
-} from "iconsax-react-nativejs";
-import { moderateScale as ms, s } from "react-native-size-matters/extend";
+} from 'iconsax-react-nativejs';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 
-import { AppText } from "@/src/component/AppText";
-import { AppColor, AppColors } from "@/src/constants/colors";
-import { Dashboard } from "../screens/dashboard/Dashboard";
-import ScheduleStack from "./ScheduleStack";
+import { AppText } from '@/src/component/AppText';
+import { AppColor, AppColors } from '@/src/constants/colors';
+import { Dashboard } from '../screens/dashboard/Dashboard';
+import ScheduleStack from './ScheduleStack';
 
 const Tab = createBottomTabNavigator();
-const MeetingScreen = () => (
-  <View style={styles.placeholder} />
-);
-const ContractScreen = () => (
-  <View style={styles.placeholder} />
-);
-const DraftScreen = () => (
-  <View style={styles.placeholder} />
+const MeetingScreen = () => <View style={styles.placeholder} />;
+const ContractScreen = () => <View style={styles.placeholder} />;
+const DraftScreen = () => <View style={styles.placeholder} />;
+
+const TabBarLabel: React.FC<{
+  routeName: string;
+  color: string;
+  focused: boolean;
+}> = ({ routeName, color, focused }) => (
+  <AppText variant={focused ? 'body6' : 'detail'} color={color}>
+    {routeName === 'Home'
+      ? '홈'
+      : routeName === 'Schedule'
+      ? '일정'
+      : routeName === 'Meeting'
+      ? '회의록'
+      : routeName === 'Contract'
+      ? '계약현황'
+      : '기안'}
+  </AppText>
 );
 
 const AppNavigator: React.FC = () => {
   const getTabBarIcon = useCallback(
     (routeName: string, color: AppColor | string, focused: boolean) => {
-      const size = `${ms(24)}`;
-      const variant = focused ? "Bold" : "Linear";
+      const size = ms(24);
+      const variant = focused ? 'Bold' : 'Linear';
 
       switch (routeName) {
-        case "Home":
+        case 'Home':
           return <Home2 size={size} color={color} variant={variant} />;
-        case "Schedule":
+        case 'Schedule':
           return <Calendar size={size} color={color} variant={variant} />;
-        case "Meeting":
+        case 'Meeting':
           return <ClipboardText size={size} color={color} variant={variant} />;
-        case "Contract":
+        case 'Contract':
           return <DocumentText size={size} color={color} variant={variant} />;
-        case "Draft":
+        case 'Draft':
           return <Document size={size} color={color} variant={variant} />;
         default:
           return null;
       }
     },
+    [],
+  );
+
+  const getTabBarLabel = useCallback(
+    (routeName: string, color: string, focused: boolean) => (
+      <TabBarLabel routeName={routeName} color={color} focused={focused} />
+    ),
     [],
   );
 
@@ -59,19 +78,8 @@ const AppNavigator: React.FC = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) =>
             getTabBarIcon(route.name, color, focused),
-          tabBarLabel: ({ color, focused }) => (
-            <AppText variant={focused ? "body6" : "detail"} color={color}>
-              {route.name === "Home"
-                ? "홈"
-                : route.name === "Schedule"
-                  ? "일정"
-                  : route.name === "Meeting"
-                    ? "회의록"
-                    : route.name === "Contract"
-                      ? "계약현황"
-                      : "기안"}
-            </AppText>
-          ),
+          tabBarLabel: ({ color, focused }) =>
+            getTabBarLabel(route.name, color, focused),
           tabBarActiveTintColor: AppColors.purple,
           tabBarInactiveTintColor: AppColors.gray50,
           tabBarStyle: styles.tabBar,
@@ -100,19 +108,15 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
   },
   tabBar: {
-    width: s(375),
-    height: s(92),
+    height: ms(92),
     borderTopLeftRadius: ms(20),
     borderTopRightRadius: ms(20),
   },
   tabBarItem: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: ms(4),
     paddingTop: ms(8),
-    paddingHorizontal: ms(13),
     paddingBottom: ms(24),
-    width: s(65.4),
-    height: s(64),
   },
 });

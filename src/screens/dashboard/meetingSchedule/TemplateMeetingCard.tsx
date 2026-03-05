@@ -2,10 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ArrowRight2 } from 'iconsax-react-nativejs';
-import {
-  moderateScale as ms,
-  scale as s,
-} from 'react-native-size-matters/extend';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
@@ -38,8 +35,7 @@ export const MemoTemplateMeetingCard = React.memo(TemplateMeetingCard);
 
 const styles = StyleSheet.create({
   card: {
-    width: s(167.5),
-    height: s(120),
+    flex: 1,
     borderRadius: ms(16),
     padding: ms(16),
     gap: 8,

@@ -1,11 +1,11 @@
-import React from "react";
-import { StyleSheet, View } from "react-native";
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { Cup } from "iconsax-react-nativejs";
+import { Cup } from 'iconsax-react-nativejs';
 
-import { AppText } from "@/src/component/AppText";
-import { AppColors } from "@/src/constants/colors";
-import { scale as s, moderateScale as ms } from "react-native-size-matters/extend";
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 const RunnerUpCard: React.FC<{ rank: number; name: string; score: string }> = ({
   rank,
@@ -28,11 +28,7 @@ const RunnerUpCard: React.FC<{ rank: number; name: string; score: string }> = ({
         </View>
       </View>
 
-      <AppText
-        variant="body6"
-        color={AppColors.purple}
-        style={styles.score}
-      >
+      <AppText variant="body6" color={AppColors.purple}>
         {score}
       </AppText>
     </View>
@@ -43,26 +39,22 @@ export const MemoRunnerUpCard = React.memo(RunnerUpCard);
 
 const styles = StyleSheet.create({
   card: {
+    flex: 1,
     borderRadius: ms(14),
     paddingHorizontal: ms(16),
     paddingVertical: ms(8),
     backgroundColor: AppColors.lavendar,
-    width: s(167.5),
-    height: s(66),
     gap: 8,
   },
   nameRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   rankInfo: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: ms(7),
     paddingVertical: ms(2),
-  },
-  score: {
-    marginTop: ms(4),
   },
 });

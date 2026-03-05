@@ -2,10 +2,7 @@ import React from 'react';
 import { Image, Pressable, StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
-import {
-  moderateScale as ms,
-  scale as s,
-} from 'react-native-size-matters/extend';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
@@ -38,8 +35,8 @@ const styles = StyleSheet.create({
   card: {
     padding: ms(16),
     paddingBottom: ms(64),
-    width: s(167.5),
-    height: s(120),
+    flex: 1,
+    aspectRatio: 167.5 / 120,
     borderWidth: 1,
     borderColor: AppColors.gray30,
     backgroundColor: AppColors.white,
@@ -48,9 +45,9 @@ const styles = StyleSheet.create({
   },
   image: {
     position: 'absolute',
-    bottom: s(3),
-    right: s(6.5),
-    width: s(70),
-    height: s(70),
+    bottom: ms(3),
+    right: ms(6.5),
+    width: ms(70),
+    height: ms(70),
   },
 });

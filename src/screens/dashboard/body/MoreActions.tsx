@@ -3,10 +3,7 @@ import React from "react";
 import { AppText } from "@/src/component/AppText";
 import { AppColors } from "@/src/constants/colors";
 import { Image, StyleSheet, View } from "react-native";
-import {
-  moderateScale as ms,
-  scale as s,
-} from "react-native-size-matters/extend";
+import { moderateScale as ms } from "react-native-size-matters/extend";
 import { MemoCommonAction } from "../moreActions/CommonAction";
 
 const MoreActions: React.FC = () => {
@@ -29,7 +26,6 @@ const MoreActions: React.FC = () => {
 
         <MemoCommonAction
           label="회의록"
-          width={s(79)}
           image={
             <Image
               source={require("@/src/assets/images/clipboard-with-pen.png")}
@@ -40,7 +36,6 @@ const MoreActions: React.FC = () => {
 
         <MemoCommonAction
           label="자료실"
-          width={s(79)}
           image={
             <Image
               source={require("@/src/assets/images/folder-with-document.png")}
@@ -106,11 +101,11 @@ const styles = StyleSheet.create({
     gap: ms(8),
   },
   icon: {
-    width: s(48),
-    height: s(48),
+    width: ms(48),
+    height: ms(48),
   },
   iconSmall: {
-    width: s(36),
-    height: s(48),
+    width: ms(36),
+    height: ms(48),
   },
 });

@@ -4,11 +4,12 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  TextInput,
   View,
 } from 'react-native';
 
 import { ArrowDown2, Calendar, Clock } from 'iconsax-react-nativejs';
+import dayjs from 'dayjs';
+import DatePicker from 'react-native-date-picker';
 import { ms } from 'react-native-size-matters';
 
 import { AppText } from '@/src/component/AppText';
@@ -26,6 +27,9 @@ interface IProps {
   renderMeetingFields: () => React.ReactNode;
 }
 
+const formatDate = (d: Date) => dayjs(d).format('YYYY.MM.DD');
+const formatTime = (d: Date) => dayjs(d).format('HH:mm');
+
 const FormCreateSchedule: React.FC<IProps> = props => {
   const {
     setShowTypePicker,
@@ -37,6 +41,9 @@ const FormCreateSchedule: React.FC<IProps> = props => {
     renderGeneralFields,
     renderMeetingFields,
   } = props;
+
+  const [showDatePicker, setShowDatePicker] = React.useState(false);
+  const [showTimePicker, setShowTimePicker] = React.useState(false);
 
   return (
     <ScrollView
@@ -81,14 +88,18 @@ const FormCreateSchedule: React.FC<IProps> = props => {
               날짜
             </AppText>
 
-            <View style={styles.dateInputWrapper}>
-              <TextInput
-                style={[styles.input]}
-                placeholder="yyyy.mm.dd"
-                placeholderTextColor={AppColors.gray40}
-                value={date}
-                onChangeText={setDate}
-              />
+            <Pressable
+              style={styles.dateInputWrapper}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <View style={[styles.input, styles.dateDisplay]}>
+                <AppText
+                  variant="body8"
+                  color={date ? AppColors.gray100 : AppColors.gray40}
+                >
+                  {date || 'yyyy.mm.dd'}
+                </AppText>
+              </View>
 
               <Calendar
                 size={`${ms(18)}`}
@@ -96,7 +107,19 @@ const FormCreateSchedule: React.FC<IProps> = props => {
                 variant="Linear"
                 style={styles.inputIcon}
               />
-            </View>
+            </Pressable>
+
+            <DatePicker
+              modal
+              open={showDatePicker}
+              date={date ? new Date(date.replace(/\./g, '-')) : new Date()}
+              mode="date"
+              onConfirm={d => {
+                setShowDatePicker(false);
+                setDate(formatDate(d));
+              }}
+              onCancel={() => setShowDatePicker(false)}
+            />
           </View>
 
           <View style={styles.dateTimeField}>
@@ -104,14 +127,18 @@ const FormCreateSchedule: React.FC<IProps> = props => {
               시간
             </AppText>
 
-            <View style={styles.dateInputWrapper}>
-              <TextInput
-                style={[styles.input]}
-                placeholder="00:00"
-                placeholderTextColor={AppColors.gray40}
-                value={time}
-                onChangeText={setTime}
-              />
+            <Pressable
+              style={styles.dateInputWrapper}
+              onPress={() => setShowTimePicker(true)}
+            >
+              <View style={[styles.input, styles.dateDisplay]}>
+                <AppText
+                  variant="body8"
+                  color={time ? AppColors.gray100 : AppColors.gray40}
+                >
+                  {time || '00:00'}
+                </AppText>
+              </View>
 
               <Clock
                 size={`${ms(18)}`}
@@ -119,7 +146,23 @@ const FormCreateSchedule: React.FC<IProps> = props => {
                 variant="Linear"
                 style={styles.inputIcon}
               />
-            </View>
+            </Pressable>
+
+            <DatePicker
+              modal
+              open={showTimePicker}
+              date={
+                time
+                  ? new Date(`2000-01-01T${time}:00`)
+                  : new Date()
+              }
+              mode="time"
+              onConfirm={d => {
+                setShowTimePicker(false);
+                setTime(formatTime(d));
+              }}
+              onCancel={() => setShowTimePicker(false)}
+            />
           </View>
         </View>
 
@@ -173,6 +216,9 @@ const styles = StyleSheet.create({
   },
   dateInputWrapper: {
     position: 'relative',
+  },
+  dateDisplay: {
+    justifyContent: 'center',
   },
   dateTimeRow: {
     flexDirection: 'row',

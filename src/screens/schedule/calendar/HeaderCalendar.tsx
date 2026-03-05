@@ -1,0 +1,102 @@
+import React from "react";
+import { Pressable, StyleSheet, View } from "react-native";
+
+import { Add, ArrowLeft2, ArrowRight2 } from "iconsax-react-nativejs";
+import { ms, s } from "react-native-size-matters/extend";
+
+import { AppText } from "@/src/component/AppText";
+import { AppColors } from "@/src/constants/colors";
+
+interface IProps {
+  year: number;
+  setYear: React.Dispatch<React.SetStateAction<number>>;
+  month: number;
+  setMonth: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const HeaderCalendar: React.FC<IProps> = (props) => {
+  const { year, setYear, month, setMonth } = props;
+
+  //---------------------------------------
+  const goToPrevMonth = React.useCallback(() => {
+    if (month === 0) {
+      setYear((y) => y - 1);
+      setMonth(11);
+    } else {
+      setMonth((m) => m - 1);
+    }
+  }, [month, setMonth, setYear]);
+
+  //---------------------------------------
+  const goToNextMonth = React.useCallback(() => {
+    if (month === 11) {
+      setYear((y) => y + 1);
+      setMonth(0);
+    } else {
+      setMonth((m) => m + 1);
+    }
+  }, [month, setMonth, setYear]);
+
+  return (
+    <View style={styles.container}>
+      {/* Month selector */}
+      <View style={styles.monthSelector}>
+        <Pressable onPress={goToPrevMonth} hitSlop={8}>
+          <ArrowLeft2
+            size={`${ms(20)}`}
+            color={AppColors.gray90}
+            variant="Linear"
+          />
+        </Pressable>
+
+        <AppText variant="heading3" color={AppColors.gray100}>
+          {year}년 {month + 1}월
+        </AppText>
+
+        <Pressable onPress={goToNextMonth} hitSlop={8}>
+          <ArrowRight2
+            size={`${ms(20)}`}
+            color={AppColors.gray90}
+            variant="Linear"
+          />
+        </Pressable>
+      </View>
+
+      {/* Register schedule button */}
+      <Pressable style={styles.registerButton}>
+        <Add size={`${ms(14)}`} color={AppColors.purple} variant="Linear" />
+
+        <AppText variant="detail" color={AppColors.purple}>
+          일정 등록
+        </AppText>
+      </Pressable>
+    </View>
+  );
+};
+
+export const MemoHeaderCalendar = React.memo(HeaderCalendar);
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: ms(16),
+  },
+  monthSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: ms(10),
+  },
+  registerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: ms(4),
+    paddingHorizontal: ms(12),
+    paddingVertical: ms(4),
+    borderRadius: ms(100),
+    width: s(86),
+    height: s(25),
+    backgroundColor: AppColors.lavendar,
+  },
+});

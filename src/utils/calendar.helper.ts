@@ -1,6 +1,7 @@
-import { AppColors } from "../constants/colors";
-import { TDayCell } from "../interface/schedule.interface";
+import { AppColors } from '../constants/colors';
+import { TDayCell } from '../interface/schedule.interface';
 
+//---------------------------------------
 export const getCalendarDays = (year: number, month: number): TDayCell[] => {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -37,9 +38,14 @@ export const getCalendarDays = (year: number, month: number): TDayCell[] => {
   return cells;
 };
 
+//---------------------------------------
 export const toKey = (year: number, month: number, date: number) =>
-  `${year}-${String(month + 1).padStart(2, "0")}-${String(date).padStart(2, "0")}`;
+  `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(
+    2,
+    '0',
+  )}`;
 
+//---------------------------------------
 export const isToday = (cell: TDayCell) => {
   const now = new Date();
   return (
@@ -49,10 +55,25 @@ export const isToday = (cell: TDayCell) => {
   );
 };
 
-export const padZero = (n: number) => String(n).padStart(2, "0");
+//---------------------------------------
+export const padZero = (n: number) => String(n).padStart(2, '0');
 
+//---------------------------------------
 export const getDayColor = (cell: TDayCell): string => {
   if (!cell.isCurrentMonth) return AppColors.gray50;
   if (isToday(cell)) return AppColors.purple;
   return AppColors.gray90;
+};
+
+//---------------------------------------
+export const formatDateHeader = (dateKey: string): string => {
+  const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'] as const;
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const yy = String(y).slice(2);
+  const dayName = DAY_NAMES[date.getDay()];
+  return `${yy}.${String(m).padStart(2, '0')}.${String(d).padStart(
+    2,
+    '0',
+  )} (${dayName})`;
 };

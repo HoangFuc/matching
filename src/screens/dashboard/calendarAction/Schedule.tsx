@@ -9,6 +9,7 @@ import {
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { CardShadow } from '@/src/constants/shadows';
 import { RootTabNavigationProp } from '@/src/interface/tab.interface';
 
 const Schedule: React.FC = () => {
@@ -35,13 +36,15 @@ export const MemoSchedule = React.memo(Schedule);
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: ms(14),
     padding: ms(16),
     paddingBottom: ms(64),
     width: s(167.5),
     height: s(120),
     borderWidth: 1,
     borderColor: AppColors.gray30,
+    backgroundColor: AppColors.white,
+    borderRadius: ms(16),
+    ...CardShadow,
   },
   image: {
     position: 'absolute',

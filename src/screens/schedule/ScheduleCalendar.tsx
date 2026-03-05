@@ -7,6 +7,7 @@ import { AppColors } from '@/src/constants/colors';
 import { MemoCalendarGrid } from './calendar/CalendarGrid';
 import { MemoDayOfWeekHeader } from './calendar/DayOfWeekHeader';
 import { MemoHeaderCalendar } from './calendar/HeaderCalendar';
+import { CardShadow } from '@/src/constants/shadows';
 
 const ScheduleCalendar: React.FC = () => {
   const [year, setYear] = useState(2025);
@@ -45,9 +46,11 @@ const styles = StyleSheet.create({
   calendarCard: {
     width: s(343),
     flex: 1,
-    borderRadius: ms(14),
+    borderRadius: ms(16),
     borderWidth: 1,
     borderColor: AppColors.gray30,
     alignSelf: 'center',
+    backgroundColor: AppColors.white,
+    ...CardShadow,
   },
 });

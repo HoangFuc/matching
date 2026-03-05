@@ -8,6 +8,7 @@ import {
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { CardShadow } from '@/src/constants/shadows';
 
 const Checkin: React.FC = () => {
   return (
@@ -28,13 +29,15 @@ export const MemoCheckin = React.memo(Checkin);
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: ms(14),
+    borderRadius: ms(16),
     padding: ms(16),
     width: s(167.5),
     paddingBottom: ms(64),
     height: s(120),
     borderWidth: 1,
     borderColor: AppColors.gray30,
+    backgroundColor: AppColors.white,
+    ...CardShadow,
   },
   image: {
     position: 'absolute',

@@ -1,8 +1,11 @@
-import { AppText } from '@/src/component/AppText';
-import { AppColors } from '@/src/constants/colors';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+
 import { ms, s } from 'react-native-size-matters/extend';
+
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { CardShadow } from '@/src/constants/shadows';
 
 const BodyDraft: React.FC = () => {
   return (
@@ -31,5 +34,7 @@ const styles = StyleSheet.create({
     borderColor: AppColors.gray30,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    backgroundColor: AppColors.white,
+    ...CardShadow,
   },
 });

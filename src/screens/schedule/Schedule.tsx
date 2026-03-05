@@ -1,15 +1,15 @@
-import React from "react";
-import { StyleSheet, View } from "react-native";
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppColors } from "@/src/constants/colors";
-import { MemoScheduleCalendar } from "./ScheduleCalendar";
-import { MemoScheduleHeader } from "./ScheduleHeader";
+import { AppColors } from '@/src/constants/colors';
+import { MemoScheduleCalendar } from './ScheduleCalendar';
+import { MemoScheduleHeader } from './ScheduleHeader';
 
 const Schedule: React.FC = () => {
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <MemoScheduleHeader />
 
       <View style={styles.content}>
@@ -20,9 +20,6 @@ const Schedule: React.FC = () => {
 };
 
 export const MemoScheduleMain = React.memo(Schedule);
-
-/** @deprecated Use ScheduleStack instead for navigation with detail screen */
-export const MemoSchedule = MemoScheduleMain;
 
 const styles = StyleSheet.create({
   safeArea: {

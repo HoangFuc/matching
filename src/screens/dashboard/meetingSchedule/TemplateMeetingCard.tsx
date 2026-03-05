@@ -1,12 +1,15 @@
-import { AppText } from '@/src/component/AppText';
-import { AppColors } from '@/src/constants/colors';
-import { ArrowRight2 } from 'iconsax-react-nativejs';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+
+import { ArrowRight2 } from 'iconsax-react-nativejs';
 import {
-  scale as s,
   moderateScale as ms,
+  scale as s,
 } from 'react-native-size-matters/extend';
+
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { CardShadow } from '@/src/constants/shadows';
 
 interface IProps {
   image: React.ReactNode;
@@ -37,11 +40,13 @@ const styles = StyleSheet.create({
   card: {
     width: s(167.5),
     height: s(120),
-    borderRadius: ms(14),
+    borderRadius: ms(16),
     padding: ms(16),
     gap: 8,
     borderWidth: 1,
     borderColor: AppColors.gray30,
+    backgroundColor: AppColors.white,
+    ...CardShadow,
   },
   footer: {
     flexDirection: 'row',

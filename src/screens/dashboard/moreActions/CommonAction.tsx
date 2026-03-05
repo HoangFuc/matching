@@ -1,12 +1,14 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 
-import { AppText } from '@/src/component/AppText';
-import { AppColors } from '@/src/constants/colors';
 import {
   moderateScale as ms,
   scale as s,
 } from 'react-native-size-matters/extend';
+
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { CardShadow } from '@/src/constants/shadows';
 
 interface IProps {
   label: string;
@@ -43,5 +45,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: AppColors.gray30,
+    backgroundColor: AppColors.white,
+    ...CardShadow,
   },
 });

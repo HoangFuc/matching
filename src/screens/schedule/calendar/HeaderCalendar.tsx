@@ -1,11 +1,12 @@
-import React from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Add, ArrowLeft2, ArrowRight2 } from "iconsax-react-nativejs";
-import { ms, s } from "react-native-size-matters/extend";
+import { Add, ArrowLeft2, ArrowRight2 } from 'iconsax-react-nativejs';
+import { ms, s } from 'react-native-size-matters/extend';
 
-import { AppText } from "@/src/component/AppText";
-import { AppColors } from "@/src/constants/colors";
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { MemoScheduleRegisterModal } from './ScheduleRegisterModal';
 
 interface IProps {
   year: number;
@@ -14,26 +15,27 @@ interface IProps {
   setMonth: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const HeaderCalendar: React.FC<IProps> = (props) => {
+const HeaderCalendar: React.FC<IProps> = props => {
   const { year, setYear, month, setMonth } = props;
+  const [showRegisterModal, setShowRegisterModal] = React.useState(false);
 
   //---------------------------------------
   const goToPrevMonth = React.useCallback(() => {
     if (month === 0) {
-      setYear((y) => y - 1);
+      setYear(y => y - 1);
       setMonth(11);
     } else {
-      setMonth((m) => m - 1);
+      setMonth(m => m - 1);
     }
   }, [month, setMonth, setYear]);
 
   //---------------------------------------
   const goToNextMonth = React.useCallback(() => {
     if (month === 11) {
-      setYear((y) => y + 1);
+      setYear(y => y + 1);
       setMonth(0);
     } else {
-      setMonth((m) => m + 1);
+      setMonth(m => m + 1);
     }
   }, [month, setMonth, setYear]);
 
@@ -63,13 +65,21 @@ const HeaderCalendar: React.FC<IProps> = (props) => {
       </View>
 
       {/* Register schedule button */}
-      <Pressable style={styles.registerButton}>
+      <Pressable
+        style={styles.registerButton}
+        onPress={() => setShowRegisterModal(true)}
+      >
         <Add size={`${ms(14)}`} color={AppColors.purple} variant="Linear" />
 
         <AppText variant="detail" color={AppColors.purple}>
           일정 등록
         </AppText>
       </Pressable>
+
+      <MemoScheduleRegisterModal
+        visible={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+      />
     </View>
   );
 };
@@ -78,19 +88,19 @@ export const MemoHeaderCalendar = React.memo(HeaderCalendar);
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: ms(16),
   },
   monthSelector: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: ms(10),
   },
   registerButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: ms(4),
     paddingHorizontal: ms(12),
     paddingVertical: ms(4),

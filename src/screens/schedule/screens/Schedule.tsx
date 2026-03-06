@@ -1,15 +1,23 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppColors } from '@/src/constants/colors';
-import { ScheduleNavigationProp, ScheduleStackParamList } from '@/src/interface/tab.interface';
-import { MemoScheduleCalendar } from './ScheduleCalendar';
-import { MemoScheduleHeader } from './ScheduleHeader';
-import { MemoScheduleFilterModal } from './calendar/ScheduleFilterModal';
-import { TScheduleType } from './calendar/ScheduleTypePicker';
+import {
+  ScheduleNavigationProp,
+  ScheduleStackParamList,
+} from '@/src/interface/tab.interface';
+import { MemoScheduleCalendar } from '../component/ScheduleCalendar';
+import { MemoScheduleFilterModal } from '../component/ScheduleFilterModal';
+import { MemoScheduleHeader } from '../component/ScheduleHeader';
+import { TScheduleType } from '../component/ScheduleTypePicker';
 
 type TScheduleRoute = RouteProp<ScheduleStackParamList, 'ScheduleMain'>;
 

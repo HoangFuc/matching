@@ -1,4 +1,5 @@
-import {combineReducers, configureStore} from '@reduxjs/toolkit';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import {
   FLUSH,
   PAUSE,
@@ -9,11 +10,12 @@ import {
   persistReducer,
   persistStore,
 } from 'redux-persist';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // import {dataRoomApi} from './api/dataRoom.api';
+import { scheduleApi } from './api/schedule.api';
+import { toastMiddleware } from './middleware/toastMiddleware';
 import dataRoomReducer from './slices/dataRoomSlice';
-import {toastMiddleware} from './middleware/toastMiddleware';
+import scheduleReducer from './slices/scheduleSlice';
 
 const persistConfig = {
   key: 'root',
@@ -23,8 +25,8 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   dataRoom: dataRoomReducer,
-  // TODO: 실제 API 연결 시 uncomment
-  // [dataRoomApi.reducerPath]: dataRoomApi.reducer,
+  schedule: scheduleReducer,
+  [scheduleApi.reducerPath]: scheduleApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -36,8 +38,10 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(toastMiddleware),
-    // TODO: 실제 API 연결 시 .concat(dataRoomApi.middleware) 추가
+    })
+      .concat(toastMiddleware)
+      .concat(scheduleApi.middleware),
+  // TODO: 실제 API 연결 시 .concat(dataRoomApi.middleware) 추가
 });
 
 export const persistor = persistStore(store);

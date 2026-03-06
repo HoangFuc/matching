@@ -2,10 +2,10 @@ import { Alert } from 'react-native';
 
 import _ from 'lodash';
 
-import config from '../../config.json';
+import { API_BASE_URL } from '@env';
 import { _retrieveData } from './async.storage';
 
-const API_URL = config.API_BASE_URL;
+const API_URL = API_BASE_URL;
 
 const TIME_OUT_API = 100000;
 

@@ -1,9 +1,13 @@
-import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { CompositeNavigationProp, NavigatorScreenParams } from "@react-navigation/native";
-import type { TScheduleEvent } from "./schedule.interface";
-import type { TBulletinPost } from "./bulletin.interface";
-import type { TMeetingMinutes } from "./meetingMinutes.interface";
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type {
+  CompositeNavigationProp,
+  NavigatorScreenParams,
+} from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { TScheduleMode } from '../screens/schedule/type';
+import type { TBulletinPost } from './bulletin.interface';
+import type { TMeetingMinutes } from './meetingMinutes.interface';
+import type { TScheduleEvent } from './schedule.interface';
 
 export type RootStackParamList = {
   MainTabs: undefined;
@@ -31,8 +35,6 @@ export type RootTabParamList = {
 export type HomeStackParamList = {
   Dashboard: undefined;
 };
-
-export type TScheduleMode = 'schedule' | 'attendance';
 
 export type ScheduleStackParamList = {
   ScheduleMain: { mode?: TScheduleMode } | undefined;

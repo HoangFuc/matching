@@ -8,67 +8,15 @@ import { MemoCommonCalendar } from '@/src/component/calendar/CommonCalendar';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { AppColors } from '@/src/constants/colors';
 import { CloseCircle } from '@/src/constants/icons';
-import { TDayCell, TScheduleEvent } from '@/src/interface/schedule.interface';
-import type {
-  ScheduleNavigationProp,
-  TScheduleMode,
-} from '@/src/interface/tab.interface';
-import { MemoAttendanceSummary } from './calendar/AttendanceSummary';
-import { MemoDateNumber } from './calendar/DateNumber';
-import { MemoEvents } from './calendar/Events';
-import { MemoScheduleRightAction } from './calendar/ScheduleRightAction';
-
-// ── Mock data ──────────────────────────────────────────
-const MOCK_EVENTS: Record<string, TScheduleEvent[]> = {
-  '2025-12-17': [
-    {
-      id: '1',
-      title: '지방출장',
-      type: '지방출장',
-      description: '부산 지사 방문 및 현장 점검',
-      color: AppColors.purple,
-      backgroundColor: AppColors.lavendar,
-    },
-  ],
-  '2025-12-19': [
-    {
-      id: '2',
-      title: '고객 미팅',
-      type: '고객 미팅',
-      description: '고객 요구사항 확인 및 서비스 설명',
-      color: AppColors.strongBlue,
-      backgroundColor: AppColors.lightBlue,
-    },
-    {
-      id: '3',
-      title: '계약 일정',
-      type: '계약 일정',
-      description: '계약 조건 최종 확인 및 체결',
-      color: AppColors.negative,
-      backgroundColor: AppColors.pastelPink,
-    },
-  ],
-  '2025-12-20': [
-    {
-      id: '4',
-      title: '계약 일정',
-      type: '계약 일정',
-      description: '계약서 검토 및 서명',
-      color: AppColors.negative,
-      backgroundColor: AppColors.pastelPink,
-    },
-  ],
-  '2025-12-21': [
-    {
-      id: '5',
-      title: '계약 일정',
-      type: '계약 일정',
-      description: '최종 계약 확인',
-      color: AppColors.negative,
-      backgroundColor: AppColors.pastelPink,
-    },
-  ],
-};
+import { TDayCell } from '@/src/interface/schedule.interface';
+import type { ScheduleNavigationProp } from '@/src/interface/tab.interface';
+import { useGetSchedulesQuery } from '@/src/store/api';
+import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
+import { TScheduleMode } from '../type';
+import { MemoAttendanceSummary } from './AttendanceSummary';
+import { MemoDateNumber } from './DateNumber';
+import { MemoEvents } from './Events';
+import { MemoScheduleRightAction } from './ScheduleRightAction';
 
 // ── Mock checkin times ─────────────────────────────────
 const CHECKIN_ON_TIME = '08:00';
@@ -94,9 +42,24 @@ interface IProps {
 }
 
 const ScheduleCalendar: React.FC<IProps> = ({ mode }) => {
-  const [year, setYear] = useState(2025);
-  const [month, setMonth] = useState(11);
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth());
   const navigation = useNavigation<ScheduleNavigationProp>();
+
+  //---------------------------------------
+  const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(
+    lastDay,
+  ).padStart(2, '0')}`;
+
+  //---------------------------------------
+  const { data: schedules = [] } = useGetSchedulesQuery({ startDate, endDate });
+  const events = React.useMemo(
+    () => convertSchedulesToEvents(schedules),
+    [schedules],
+  );
 
   //---------------------------------------
   const goToPrev = React.useCallback(() => {
@@ -121,10 +84,10 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode }) => {
   //---------------------------------------
   const handleDayPress = React.useCallback(
     (dateKey: string) => {
-      const dayEvents = MOCK_EVENTS[dateKey] || [];
+      const dayEvents = events[dateKey] || [];
       navigation.navigate('ScheduleDetail', { dateKey, events: dayEvents });
     },
-    [navigation],
+    [events, navigation],
   );
 
   //---------------------------------------
@@ -158,7 +121,7 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode }) => {
   //---------------------------------------
   const renderDayContent = React.useCallback(
     (cell: TDayCell, dateKey: string, today: boolean) => {
-      const dayEvents = MOCK_EVENTS[dateKey] || [];
+      const dayEvents = events[dateKey] || [];
       const checkinTime = MOCK_CHECKIN_TIMES[dateKey];
 
       let cellContent: React.ReactNode;
@@ -206,7 +169,7 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode }) => {
         </>
       );
     },
-    [mode, firstCheckinDate, lastCheckinDate],
+    [events, mode, firstCheckinDate, lastCheckinDate],
   );
 
   return (

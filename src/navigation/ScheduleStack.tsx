@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react';
 
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { MemoScheduleMain } from "../screens/schedule/Schedule";
-import { MemoScheduleDetail } from "../screens/schedule/ScheduleDetail";
-import type { ScheduleStackParamList } from "../interface/tab.interface";
+import type { ScheduleStackParamList } from '../interface/tab.interface';
+import { MemoScheduleDetail } from '../screens/schedule/component/ScheduleDetail';
+import { MemoScheduleMain } from '../screens/schedule/screens/Schedule';
 
 const Stack = createNativeStackNavigator<ScheduleStackParamList>();
 

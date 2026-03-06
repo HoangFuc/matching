@@ -5,8 +5,8 @@ import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppColors } from '@/src/constants/colors';
+import { MemoEventCardContent } from './EventCardContent';
 import { MemoScheduleHeader } from './ScheduleHeader';
-import { MemoEventCardContent } from './calendar/EventCardContent';
 
 const ScheduleDetail: React.FC = () => {
   //---------------------------------------
@@ -19,7 +19,7 @@ const ScheduleDetail: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <MemoScheduleHeader />
+      <MemoScheduleHeader onPressFilter={() => {}} />
 
       <MemoEventCardContent handlePressBack={handlePressBack} />
     </SafeAreaView>

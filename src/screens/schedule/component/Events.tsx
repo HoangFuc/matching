@@ -17,9 +17,9 @@ const Events: React.FC<IProps> = props => {
   return (
     events.length > 0 && (
       <View style={[styles.container, containerStyle]}>
-        {events.slice(0, 2).map(event => (
+        {events.slice(0, 2).map((event, index) => (
           <View
-            key={event.id}
+            key={`${event.id}_${index}`}
             style={[
               styles.eventItem,
               styleEventItem,

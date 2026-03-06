@@ -3,6 +3,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { CompositeNavigationProp, NavigatorScreenParams } from "@react-navigation/native";
 import type { TScheduleEvent } from "./schedule.interface";
 import type { TBulletinPost } from "./bulletin.interface";
+import type { TMeetingMinutes } from "./meetingMinutes.interface";
 
 export type RootStackParamList = {
   MainTabs: undefined;
@@ -12,10 +13,17 @@ export type RootStackParamList = {
   CreateBulletin: undefined;
 };
 
+export type MeetingMinutesStackParamList = {
+  MeetingMinutesMain: undefined;
+  CreateMeetingMinutes: undefined;
+  MeetingMinutesDetail: { item: TMeetingMinutes };
+  EditMeetingMinutes: { item: TMeetingMinutes };
+};
+
 export type RootTabParamList = {
   Home: undefined;
   Schedule: NavigatorScreenParams<ScheduleStackParamList> | undefined;
-  Meeting: undefined;
+  MeetingMinutes: undefined;
   Contract: undefined;
   Draft: undefined;
 };

@@ -19,6 +19,7 @@ import { MemoBulletinDetail } from '../screens/bulletin/component/BulletinDetail
 import { MemoBulletinBoard } from '../screens/bulletin/screens/BulletinBoard';
 import { MemoCreateBulletinScreen } from '../screens/bulletin/screens/CreateBulletinScreen';
 import HomeStack from './HomeStack';
+import MeetingMinutesStack from './MeetingMinutesStack';
 import ScheduleStack from './ScheduleStack';
 import DataRoomStack from './DataRoomStack';
 import {
@@ -32,7 +33,6 @@ import {
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
-const MeetingScreen = () => <View style={styles.placeholder} />;
 const ContractScreen = () => <View style={styles.placeholder} />;
 const DraftScreen = () => <View style={styles.placeholder} />;
 
@@ -46,7 +46,7 @@ const TabBarLabel: React.FC<{
       ? '홈'
       : routeName === 'Schedule'
       ? '일정'
-      : routeName === 'Meeting'
+      : routeName === 'MeetingMinutes'
       ? '회의록'
       : routeName === 'Contract'
       ? '계약현황'
@@ -65,7 +65,7 @@ const MainTabs: React.FC = () => {
           return <Home2 size={size} color={color} variant={variant} />;
         case 'Schedule':
           return <Calendar size={size} color={color} variant={variant} />;
-        case 'Meeting':
+        case 'MeetingMinutes':
           return <ClipboardText size={size} color={color} variant={variant} />;
         case 'Contract':
           return <DocumentText size={size} color={color} variant={variant} />;
@@ -103,7 +103,7 @@ const MainTabs: React.FC = () => {
 
       <Tab.Screen name="Schedule" component={ScheduleStack} />
 
-      <Tab.Screen name="Meeting" component={MeetingScreen} />
+      <Tab.Screen name="MeetingMinutes" component={MeetingMinutesStack} />
 
       <Tab.Screen name="Contract" component={ContractScreen} />
 

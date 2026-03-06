@@ -34,6 +34,8 @@ const AppButton: React.FC<IAppButtonProps> = ({
 }) => {
   const isPrimary = variant === 'primary';
 
+  console.log('======================label', label);
+
   return (
     <TouchableOpacity
       style={[
@@ -46,6 +48,7 @@ const AppButton: React.FC<IAppButtonProps> = ({
       {...rest}
     >
       {icon}
+
       <AppText
         variant={textVariant}
         color={isPrimary ? AppColors.purple : AppColors.gray90}
@@ -60,7 +63,6 @@ export const MemoAppButton = React.memo(AppButton);
 
 const styles = StyleSheet.create({
   base: {
-    flex: 1,
     borderRadius: ms(99),
     paddingVertical: ms(8),
     alignItems: 'center',

@@ -23,6 +23,9 @@ export const Primary = {
   strongBlue: '#0C77DB',
   pastelPink: '#FFEFEF',
   lightPink: '#FFEEEE',
+  lightGreen: '#DEFFCF',
+  lightCream: '#FFF5E5',
+  amber: '#F6A101',
 } as const;
 
 export const AppColors = {

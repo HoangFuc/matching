@@ -8,10 +8,15 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { AppImages } from '@/src/constants/images';
-import type { RootStackParamList } from '@/src/interface/tab.interface';
+import type { RootStackParamList, RootTabParamList } from '@/src/interface/tab.interface';
 import { MemoCommonAction } from '../moreActions/CommonAction';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { CompositeNavigationProp } from '@react-navigation/native';
 
-type TNav = NativeStackNavigationProp<RootStackParamList>;
+type TNav = CompositeNavigationProp<
+  NativeStackNavigationProp<RootStackParamList>,
+  BottomTabNavigationProp<RootTabParamList>
+>;
 
 const MoreActions: React.FC = () => {
   const navigation = useNavigation<TNav>();
@@ -34,6 +39,7 @@ const MoreActions: React.FC = () => {
           image={
             <Image source={AppImages.clipboardWithPen} style={styles.icon} />
           }
+          onPress={() => navigation.navigate('MeetingMinutes')}
         />
 
         <MemoCommonAction

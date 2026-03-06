@@ -1,28 +1,33 @@
 import React from 'react';
 import {
+  StyleProp,
+  StyleSheet,
   TouchableOpacity,
   TouchableOpacityProps,
-  StyleSheet,
   ViewStyle,
-  StyleProp,
 } from 'react-native';
-import { ms, s } from 'react-native-size-matters/extend';
+import { ms } from 'react-native-size-matters/extend';
 
-import { AppText } from './AppText';
 import { AppColors } from '../constants/colors';
+import { TypographyVariant } from '../constants/typography';
+import { AppText } from './AppText';
 
 type ButtonVariant = 'primary' | 'secondary';
 
 interface IAppButtonProps
   extends Omit<TouchableOpacityProps, 'children' | 'style'> {
   label: string;
+  icon?: React.ReactNode;
   variant?: ButtonVariant;
+  textVariant?: TypographyVariant;
   style?: StyleProp<ViewStyle>;
 }
 
 const AppButton: React.FC<IAppButtonProps> = ({
   label,
+  icon,
   variant = 'primary',
+  textVariant = 'body6',
   disabled,
   style,
   ...rest
@@ -40,8 +45,9 @@ const AppButton: React.FC<IAppButtonProps> = ({
       disabled={disabled}
       {...rest}
     >
+      {icon}
       <AppText
-        variant="body6"
+        variant={textVariant}
         color={isPrimary ? AppColors.purple : AppColors.gray90}
       >
         {label}
@@ -51,12 +57,10 @@ const AppButton: React.FC<IAppButtonProps> = ({
 };
 
 export const MemoAppButton = React.memo(AppButton);
-export const AppButton_ = MemoAppButton;
 
 const styles = StyleSheet.create({
   base: {
     flex: 1,
-
     borderRadius: ms(99),
     paddingVertical: ms(8),
     alignItems: 'center',

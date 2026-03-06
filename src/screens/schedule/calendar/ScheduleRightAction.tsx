@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { Add } from 'iconsax-react-nativejs';
-import { ms } from 'react-native-size-matters/extend';
 import { useMutation } from '@tanstack/react-query';
+import { ms } from 'react-native-size-matters/extend';
 
 import { _storeData } from '@/src/api/async.storage';
 import { getSeed } from '@/src/api/seed.api';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppColors } from '@/src/constants/colors';
+import { Add } from '@/src/constants/icons';
 import { MemoScheduleRegisterModal } from './ScheduleRegisterModal';
 
 const ScheduleRightAction: React.FC = () => {

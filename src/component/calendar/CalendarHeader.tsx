@@ -1,11 +1,11 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ArrowLeft2, ArrowRight2 } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { ArrowLeft2, ArrowRight2 } from '@/src/constants/icons';
 
 interface IProps {
   year: number;

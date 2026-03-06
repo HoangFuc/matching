@@ -7,12 +7,12 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { MemoCommonCalendar } from '@/src/component/calendar/CommonCalendar';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { AppColors } from '@/src/constants/colors';
+import { CloseCircle } from '@/src/constants/icons';
 import { TDayCell, TScheduleEvent } from '@/src/interface/schedule.interface';
 import type {
   ScheduleNavigationProp,
   TScheduleMode,
 } from '@/src/interface/tab.interface';
-import { CloseCircle } from 'iconsax-react-nativejs';
 import { MemoAttendanceSummary } from './calendar/AttendanceSummary';
 import { MemoDateNumber } from './calendar/DateNumber';
 import { MemoEvents } from './calendar/Events';

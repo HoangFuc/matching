@@ -1,11 +1,11 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Like1, Message } from 'iconsax-react-nativejs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { Like1, Message } from '@/src/constants/icons';
 
 interface IProps {
   likes: number;

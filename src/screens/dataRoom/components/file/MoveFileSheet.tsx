@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
-import { AppButton_ } from '@/src/component/AppButton';
+import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { RadioCheck } from '@/src/constants/icons';
@@ -48,8 +48,8 @@ const MoveFileSheet: React.FC<IProps> = ({
   const footer = React.useMemo(
     () => (
       <>
-        <AppButton_ label="취소" variant="secondary" onPress={onClose} />
-        <AppButton_
+        <MemoAppButton label="취소" variant="secondary" onPress={onClose} />
+        <MemoAppButton
           label="확인"
           variant="primary"
           onPress={handleConfirm}

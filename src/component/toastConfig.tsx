@@ -1,12 +1,12 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { CloseCircle, TickCircle } from 'iconsax-react-nativejs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { BaseToastProps } from 'react-native-toast-message';
 
 import { AppText } from './AppText';
 import { AppColors } from '../constants/colors';
+import { CloseCircle, TickCircle } from '../constants/icons';
 
 const SuccessToast: React.FC<BaseToastProps> = ({ text1 }) => (
   <View style={[styles.container, styles.successBorder]}>

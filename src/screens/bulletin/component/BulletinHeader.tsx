@@ -1,11 +1,11 @@
 import React from 'react';
 import { Pressable } from 'react-native';
 
-import { Add } from 'iconsax-react-nativejs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
+import { Add } from '@/src/constants/icons';
 
 interface IProps {
   onPressAdd?: () => void;

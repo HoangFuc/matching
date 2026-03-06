@@ -19,7 +19,12 @@ export {
   Notification,
   SearchNormal1,
   TickCircle,
+  Send,
+  Like1,
+  Message,
+  Fatrows,
+  Sort,
 } from 'iconsax-react-nativejs';
 
-export {default as DotsVertical} from '@/src/assets/icons/dots_vertical.svg';
-export {default as RadioCheck} from '@/src/assets/icons/radio_check.svg';
+export { default as DotsVertical } from '@/src/assets/icons/dots_vertical.svg';
+export { default as RadioCheck } from '@/src/assets/icons/radio_check.svg';

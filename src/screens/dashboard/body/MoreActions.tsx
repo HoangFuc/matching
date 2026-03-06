@@ -24,6 +24,7 @@ const MoreActions: React.FC = () => {
       <View style={styles.grid}>
         <MemoCommonAction
           label="일정"
+          style={styles.gridItem}
           image={
             <Image
               source={AppImages.calendar}
@@ -34,6 +35,7 @@ const MoreActions: React.FC = () => {
 
         <MemoCommonAction
           label="회의록"
+          style={styles.gridItem}
           image={
             <Image
               source={AppImages.clipboardWithPen}
@@ -44,6 +46,7 @@ const MoreActions: React.FC = () => {
 
         <MemoCommonAction
           label="자료실"
+          style={styles.gridItem}
           image={
             <Image
               source={AppImages.folderWithDocument}
@@ -55,16 +58,19 @@ const MoreActions: React.FC = () => {
 
         <MemoCommonAction
           label="팀 게시판"
+          style={styles.gridItem}
           image={
             <Image
               source={AppImages.bell}
               style={styles.icon}
             />
           }
+          onPress={() => navigation.navigate("BulletinBoard")}
         />
 
         <MemoCommonAction
           label="계약현황"
+          style={styles.gridItem}
           image={
             <Image
               source={AppImages.clipboard}
@@ -75,6 +81,7 @@ const MoreActions: React.FC = () => {
 
         <MemoCommonAction
           label="뉴스"
+          style={styles.gridItem}
           image={
             <Image
               source={AppImages.speaker}
@@ -85,6 +92,7 @@ const MoreActions: React.FC = () => {
 
         <MemoCommonAction
           label="기안"
+          style={styles.gridItem}
           image={
             <Image
               source={AppImages.phoneBook}
@@ -108,6 +116,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: ms(8),
+  },
+  gridItem: {
+    width: "23%",
   },
   icon: {
     width: ms(48),

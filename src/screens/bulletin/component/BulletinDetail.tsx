@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { Send } from 'iconsax-react-nativejs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
@@ -22,6 +21,7 @@ import { TBulletinComment } from '@/src/interface/bulletin.interface';
 import { RootStackParamList } from '@/src/interface/tab.interface';
 import { MemoCommentItem } from './CommentItem';
 import { MemoPostStats } from './PostStats';
+import { Send } from '@/src/constants/icons';
 
 const MOCK_COMMENTS: TBulletinComment[] = [
   {

@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
-import { Add, CloseCircle } from 'iconsax-react-nativejs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
@@ -19,6 +18,7 @@ import { MemoFormInput } from '@/src/component/FormInput';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
+import { Add, CloseCircle } from '@/src/constants/icons';
 
 const MAX_IMAGES = 3;
 

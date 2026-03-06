@@ -3,7 +3,7 @@ import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
-import { AppButton_ } from '@/src/component/AppButton';
+import { MemoAppButton } from '@/src/component/AppButton';
 import { MemoAppSheetInput } from '@/src/component/AppSheetInput';
 import { useRenameItemMutation } from '@/src/store/api/dataRoom.api';
 import { View } from 'react-native';
@@ -66,8 +66,8 @@ const RenameSheet: React.FC<IProps> = ({
   const footer = React.useMemo(
     () => (
       <>
-        <AppButton_ label="취소" variant="secondary" onPress={handleClose} />
-        <AppButton_
+        <MemoAppButton label="취소" variant="secondary" onPress={handleClose} />
+        <MemoAppButton
           label="확인"
           variant="primary"
           onPress={handleSubmit(onSubmit)}

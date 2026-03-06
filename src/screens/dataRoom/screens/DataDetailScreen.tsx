@@ -1,29 +1,39 @@
+import {
+  errorCodes,
+  isErrorWithCode,
+  pick,
+  types,
+} from '@react-native-documents/picker';
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { pick, types, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 
 import {
   ArrowLeft2,
   Element3,
+  Fatrows,
   SearchNormal1,
 } from '@/src/constants/icons';
-import { ms } from 'react-native-size-matters/extend';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RouteProp } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import type { DataRoomStackParamList } from '@/src/interface/tab.interface';
-import { useGetFilesByFolderQuery, IFile } from '@/src/store/api/dataRoom.api';
+import { IFile, useGetFilesByFolderQuery } from '@/src/store/api/dataRoom.api';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
 import { toggleViewMode } from '@/src/store/slices/dataRoomSlice';
-import { MemoFileActionSheet, MemoMoveFileSheet, MemoFileListItem, MemoFileGridItem } from '../components/file';
-import { MemoRenameSheet } from '../components/RenameSheet';
 import { MemoFABWithMenu } from '../components/FABWithMenu';
+import {
+  MemoFileActionSheet,
+  MemoFileGridItem,
+  MemoFileListItem,
+  MemoMoveFileSheet,
+} from '../components/file';
 import { MemoNoData } from '../components/NoData';
-import { Fatrows } from 'iconsax-react-nativejs';
+import { MemoRenameSheet } from '../components/RenameSheet';
 
 type TNav = NativeStackNavigationProp<DataRoomStackParamList, 'DataRoomDetail'>;
 type TRoute = RouteProp<DataRoomStackParamList, 'DataRoomDetail'>;
@@ -196,7 +206,11 @@ const DataDetailScreen: React.FC = () => {
         )}
 
         {/* FAB + Menu */}
-        <MemoFABWithMenu variant="white" onUploadFile={handleUploadFile} showCreateFolder={false} />
+        <MemoFABWithMenu
+          variant="white"
+          onUploadFile={handleUploadFile}
+          showCreateFolder={false}
+        />
       </View>
 
       {/* File Action Sheet */}
@@ -227,7 +241,6 @@ const DataDetailScreen: React.FC = () => {
           kind="file"
         />
       )}
-
     </SafeAreaView>
   );
 };

@@ -1,11 +1,11 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { ArrowRight2 } from 'iconsax-react-nativejs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from './AppText';
 import { AppColors } from '../constants/colors';
+import { ArrowRight2 } from '../constants/icons';
 
 interface IProps {
   title: string;

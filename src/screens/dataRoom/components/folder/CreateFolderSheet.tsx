@@ -5,7 +5,7 @@ import { ArrowDown2 } from '@/src/constants/icons';
 import { useForm, Controller } from 'react-hook-form';
 import { ms } from 'react-native-size-matters/extend';
 
-import { AppButton_ } from '@/src/component/AppButton';
+import { MemoAppButton } from '@/src/component/AppButton';
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
 import { MemoAppSheetInput } from '@/src/component/AppSheetInput';
 import { AppText } from '@/src/component/AppText';
@@ -65,8 +65,8 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
   const footer = React.useMemo(
     () => (
       <>
-        <AppButton_ label="취소" variant="secondary" onPress={handleClose} />
-        <AppButton_
+        <MemoAppButton label="취소" variant="secondary" onPress={handleClose} />
+        <MemoAppButton
           label="확인"
           onPress={handleSubmit(onSubmit)}
           disabled={isLoading}

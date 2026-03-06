@@ -1,12 +1,12 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Add } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
-import { AppText } from '@/src/component/AppText';
 import { MemoAppButton } from '@/src/component/AppButton';
+import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { Add } from '@/src/constants/icons';
 
 const HeaderDraft: React.FC = () => {
   return (
@@ -19,6 +19,7 @@ const HeaderDraft: React.FC = () => {
         label="기안 올리기"
         icon={<Add size={`${ms(16)}`} color={AppColors.purple} />}
         onPress={() => console.log('======================asdasdsa')}
+        style={styles.button}
       />
     </View>
   );
@@ -30,5 +31,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  button: {
+    flex: 0,
+    paddingHorizontal: ms(12),
+    flexDirection: 'row',
+    gap: ms(4),
   },
 });

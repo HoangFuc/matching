@@ -7,6 +7,9 @@ import type { TBulletinPost } from "./bulletin.interface";
 export type RootStackParamList = {
   MainTabs: undefined;
   DataRoom: undefined;
+  BulletinBoard: undefined;
+  BulletinDetail: { post: TBulletinPost };
+  CreateBulletin: undefined;
 };
 
 export type RootTabParamList = {
@@ -15,13 +18,6 @@ export type RootTabParamList = {
   Meeting: undefined;
   Contract: undefined;
   Draft: undefined;
-};
-
-export type RootStackParamList = {
-  MainTabs: undefined;
-  BulletinBoard: undefined;
-  BulletinDetail: { post: TBulletinPost };
-  CreateBulletin: undefined;
 };
 
 export type HomeStackParamList = {

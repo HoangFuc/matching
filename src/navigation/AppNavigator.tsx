@@ -1,24 +1,33 @@
-import React, {useCallback} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, { useCallback } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
+import Toast from 'react-native-toast-message';
+
+import { toastConfig } from '@/src/component/toastConfig';
+
+import { AppText } from '@/src/component/AppText';
+import { AppColor, AppColors } from '@/src/constants/colors';
+import type {
+  RootStackParamList,
+  RootTabParamList,
+} from '@/src/interface/tab.interface';
+import { MemoBulletinDetail } from '../screens/bulletin/component/BulletinDetail';
+import { MemoBulletinBoard } from '../screens/bulletin/screen/BulletinBoard';
+import { MemoCreateBulletinScreen } from '../screens/bulletin/screen/CreateBulletinScreen';
+import HomeStack from './HomeStack';
+import ScheduleStack from './ScheduleStack';
+import DataRoomStack from './DataRoomStack';
 import {
   Calendar,
   ClipboardText,
   Document,
   DocumentText,
   Home2,
-} from '@/src/constants/icons';
-import {moderateScale as ms} from 'react-native-size-matters/extend';
-
-import {AppText} from '@/src/component/AppText';
-import {AppColor, AppColors} from '@/src/constants/colors';
-import type {RootStackParamList, RootTabParamList} from '@/src/interface/tab.interface';
-import {Dashboard} from '../screens/dashboard/Dashboard';
-import ScheduleStack from './ScheduleStack';
-import DataRoomStack from './DataRoomStack';
+} from '../constants/icons';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -31,7 +40,7 @@ const TabBarLabel: React.FC<{
   routeName: string;
   color: string;
   focused: boolean;
-}> = ({routeName, color, focused}) => (
+}> = ({ routeName, color, focused }) => (
   <AppText variant={focused ? 'body6' : 'detail'} color={color}>
     {routeName === 'Home'
       ? '홈'
@@ -78,21 +87,26 @@ const MainTabs: React.FC = () => {
 
   return (
     <Tab.Navigator
-      screenOptions={({route}) => ({
+      screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({color, focused}) =>
+        tabBarIcon: ({ color, focused }) =>
           getTabBarIcon(route.name, color, focused),
-        tabBarLabel: ({color, focused}) =>
+        tabBarLabel: ({ color, focused }) =>
           getTabBarLabel(route.name, color, focused),
         tabBarActiveTintColor: AppColors.purple,
         tabBarInactiveTintColor: AppColors.gray50,
         tabBarStyle: styles.tabBar,
         tabBarItemStyle: styles.tabBarItem,
-      })}>
-      <Tab.Screen name="Home" component={Dashboard} />
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeStack} />
+
       <Tab.Screen name="Schedule" component={ScheduleStack} />
+
       <Tab.Screen name="Meeting" component={MeetingScreen} />
+
       <Tab.Screen name="Contract" component={ContractScreen} />
+
       <Tab.Screen name="Draft" component={DraftScreen} />
     </Tab.Navigator>
   );
@@ -100,12 +114,28 @@ const MainTabs: React.FC = () => {
 
 const AppNavigator: React.FC = () => {
   return (
-    <NavigationContainer>
-      <RootStack.Navigator screenOptions={{headerShown: false}}>
-        <RootStack.Screen name="MainTabs" component={MainTabs} />
-        <RootStack.Screen name="DataRoom" component={DataRoomStack} />
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <>
+      <NavigationContainer>
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          <RootStack.Screen name="MainTabs" component={MainTabs} />
+          <RootStack.Screen name="DataRoom" component={DataRoomStack} />
+          <RootStack.Screen
+            name="BulletinBoard"
+            component={MemoBulletinBoard}
+          />
+          <RootStack.Screen
+            name="BulletinDetail"
+            component={MemoBulletinDetail}
+          />
+          <RootStack.Screen
+            name="CreateBulletin"
+            component={MemoCreateBulletinScreen}
+          />
+        </RootStack.Navigator>
+      </NavigationContainer>
+
+      <Toast config={toastConfig} />
+    </>
   );
 };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import DocumentPicker from 'react-native-document-picker';
+import { pick, types, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 
 import {
   ArrowLeft2,
@@ -57,14 +57,14 @@ const DataDetailScreen: React.FC = () => {
 
   const handleUploadFile = React.useCallback(async () => {
     try {
-      const result = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
+      const result = await pick({
+        type: [types.allFiles],
         allowMultiSelection: true,
       });
       // TODO: upload files to server
       console.log('Selected files:', result);
     } catch (err) {
-      if (!DocumentPicker.isCancel(err)) {
+      if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
         console.error('DocumentPicker error:', err);
       }
     }

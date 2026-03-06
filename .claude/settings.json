@@ -16,7 +16,11 @@
       "Bash(lsof -ti:8081)",
       "Bash(xargs kill -9)",
       "Bash(yarn add react-native-document-picker)",
-      "Bash(npm install react-native-document-picker)"
+      "Bash(npm install react-native-document-picker)",
+      "Bash(npm view react-native-document-picker versions --json)",
+      "Bash(npm i @react-native-documents/picker)",
+      "Bash(node -e \"const m = require\\(''iconsax-react-nativejs''\\); console.log\\(typeof m.Add\\)\")",
+      "Bash(grep -l \"Add\" /Users/david/Desktop/matching/node_modules/iconsax-react-nativejs/dist/*.js)"
     ],
     "additionalDirectories": [
       "/Users/david/Desktop/matching/src/screens/dataRoom/components"

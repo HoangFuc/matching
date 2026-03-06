@@ -50,7 +50,8 @@ const AppButton: React.FC<IAppButtonProps> = ({
   );
 };
 
-export const AppButton_ = React.memo(AppButton);
+export const MemoAppButton = React.memo(AppButton);
+export const AppButton_ = MemoAppButton;
 
 const styles = StyleSheet.create({
   base: {

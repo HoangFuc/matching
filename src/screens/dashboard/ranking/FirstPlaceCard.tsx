@@ -1,10 +1,11 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
-import { Cup } from 'iconsax-react-nativejs';
+import { Cup } from '@/src/constants/icons';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { AppImages } from '@/src/constants/images';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 const FirstPlaceCard: React.FC = () => {
@@ -12,7 +13,7 @@ const FirstPlaceCard: React.FC = () => {
     <View style={styles.card}>
       <View style={styles.header}>
         <Image
-          source={require('@/src/assets/images/first-place.png')}
+          source={AppImages.firstPlace}
           resizeMode="contain"
           style={styles.badge}
         />

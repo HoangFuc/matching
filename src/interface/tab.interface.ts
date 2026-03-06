@@ -4,6 +4,11 @@ import type { CompositeNavigationProp, NavigatorScreenParams } from "@react-navi
 import type { TScheduleEvent } from "./schedule.interface";
 import type { TBulletinPost } from "./bulletin.interface";
 
+export type RootStackParamList = {
+  MainTabs: undefined;
+  DataRoom: undefined;
+};
+
 export type RootTabParamList = {
   Home: undefined;
   Schedule: NavigatorScreenParams<ScheduleStackParamList> | undefined;
@@ -35,7 +40,21 @@ export type ScheduleStackParamList = {
 
 export type RootTabNavigationProp = BottomTabNavigationProp<RootTabParamList>;
 
+export type DataRoomStackParamList = {
+  DataRoomMain: undefined;
+  DataRoomSearch: undefined;
+  DataRoomDetail: {
+    folderId: string;
+    folderName: string;
+  };
+};
+
 export type ScheduleNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<ScheduleStackParamList>,
+  BottomTabNavigationProp<RootTabParamList>
+>;
+
+export type DataRoomNavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<DataRoomStackParamList>,
   BottomTabNavigationProp<RootTabParamList>
 >;

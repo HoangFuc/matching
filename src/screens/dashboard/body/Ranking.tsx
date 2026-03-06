@@ -1,15 +1,27 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
+import { ArrowRight2 } from '@/src/constants/icons';
+
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
-import { MemoSectionHeader } from '@/src/component/SectionHeader';
 import { MemoFirstPlaceCard } from '../ranking/FirstPlaceCard';
 import { MemoRunnerUpCard } from '../ranking/RunnerUpCard';
 
 const Ranking: React.FC = () => {
   return (
     <View style={styles.container}>
-      <MemoSectionHeader title="랭킹" onAction={() => {}} />
+      {/* Header */}
+      <View style={styles.header}>
+        <AppText variant="body1" color={AppColors.gray90}>
+          랭킹
+        </AppText>
+
+        <TouchableOpacity hitSlop={8}>
+          <ArrowRight2 size={`${ms(16)}`} />
+        </TouchableOpacity>
+      </View>
 
       {/* Cards Row */}
       <View style={styles.cardsRow}>
@@ -29,6 +41,12 @@ export const MemoRanking = React.memo(Ranking);
 const styles = StyleSheet.create({
   container: {
     paddingBottom: ms(24),
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: ms(12),
   },
   cardsRow: {
     flexDirection: 'row',

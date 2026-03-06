@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
-import { HamburgerMenu, Notification } from 'iconsax-react-nativejs';
+import { HamburgerMenu, Notification } from '@/src/constants/icons';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';

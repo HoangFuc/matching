@@ -1,0 +1,16 @@
+export const AppImages = {
+  folder: require('@/src/assets/images/folder.png'),
+  file: require('@/src/assets/images/file.png'),
+  calendar: require('@/src/assets/images/calendar.png'),
+  clipboardWithPen: require('@/src/assets/images/clipboard-with-pen.png'),
+  folderWithDocument: require('@/src/assets/images/folder-with-document.png'),
+  bell: require('@/src/assets/images/bell.png'),
+  clipboard: require('@/src/assets/images/clipboard.png'),
+  speaker: require('@/src/assets/images/speaker.png'),
+  phoneBook: require('@/src/assets/images/phone-book.png'),
+  chatBubble: require('@/src/assets/images/chat-bubble.png'),
+  list: require('@/src/assets/images/list.png'),
+  firstPlace: require('@/src/assets/images/first-place.png'),
+  schedule: require('@/src/assets/images/schedule.png'),
+  task: require('@/src/assets/images/task.png'),
+};

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { ArrowRight2 } from 'iconsax-react-nativejs';
+import { ArrowRight2 } from '@/src/constants/icons';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';

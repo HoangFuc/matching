@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 
-import { ArrowDown2, Calendar, Clock } from 'iconsax-react-nativejs';
+import { ArrowDown2, Calendar, Clock } from '@/src/constants/icons';
 import dayjs from 'dayjs';
 import DatePicker from 'react-native-date-picker';
 import { ms } from 'react-native-size-matters';

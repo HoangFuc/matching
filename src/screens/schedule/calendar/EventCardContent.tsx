@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { ArrowLeft2 } from 'iconsax-react-nativejs';
+import { ArrowLeft2 } from '@/src/constants/icons';
 import { ms } from 'react-native-size-matters';
 import { MemoEventCard } from './EventCard';
 

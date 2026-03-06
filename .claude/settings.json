@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(cat /Users/david/Desktop/matching/src/api/*.ts)",
+      "Bash(git -C /Users/david/Desktop/matching log --oneline -10)",
+      "Bash(yarn add @reduxjs/toolkit react-redux redux-persist)",
+      "Bash(npx yarn add @reduxjs/toolkit react-redux redux-persist)",
+      "Bash(npm install @reduxjs/toolkit react-redux redux-persist)",
+      "Bash(npx tsc --noEmit)",
+      "Read(//Users/david/Desktop/**)",
+      "Bash(ls -la /Users/david/Desktop/doblogis/DobLogis/index.*)",
+      "Bash(grep -h \"from ''iconsax-react-nativejs''\" /Users/david/Desktop/matching/src/**/*.tsx)",
+      "Bash(yarn add -D react-native-svg-transformer)",
+      "Bash(npx yarn add -D react-native-svg-transformer)",
+      "Bash(lsof -ti:8081)",
+      "Bash(xargs kill -9)",
+      "Bash(yarn add react-native-document-picker)",
+      "Bash(npm install react-native-document-picker)"
+    ],
+    "additionalDirectories": [
+      "/Users/david/Desktop/matching/src/screens/dataRoom/components"
+    ]
+  }
+}

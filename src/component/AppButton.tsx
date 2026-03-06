@@ -1,61 +1,73 @@
 import React from 'react';
-import { Pressable, StyleSheet, StyleProp, ViewStyle } from 'react-native';
-
-import { ms } from 'react-native-size-matters/extend';
+import {
+  TouchableOpacity,
+  TouchableOpacityProps,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+} from 'react-native';
+import { ms, s } from 'react-native-size-matters/extend';
 
 import { AppText } from './AppText';
 import { AppColors } from '../constants/colors';
-import { TypographyVariant } from '../constants/typography';
 
 type ButtonVariant = 'primary' | 'secondary';
 
-interface IProps {
+interface IAppButtonProps
+  extends Omit<TouchableOpacityProps, 'children' | 'style'> {
   label: string;
-  onPress: () => void;
   variant?: ButtonVariant;
-  textVariant?: TypographyVariant;
-  icon?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
-const variantStyles: Record<ButtonVariant, { bg: string; color: string }> = {
-  primary: { bg: AppColors.lavendar, color: AppColors.purple },
-  secondary: { bg: AppColors.gray20, color: AppColors.gray90 },
-};
-
-const AppButton: React.FC<IProps> = ({
+const AppButton: React.FC<IAppButtonProps> = ({
   label,
-  onPress,
   variant = 'primary',
-  textVariant = 'body6',
-  icon,
+  disabled,
   style,
+  ...rest
 }) => {
-  const { bg, color } = variantStyles[variant];
+  const isPrimary = variant === 'primary';
 
   return (
-    <Pressable
-      style={[styles.button, { backgroundColor: bg }, style]}
-      onPress={onPress}
+    <TouchableOpacity
+      style={[
+        styles.base,
+        isPrimary ? styles.primary : styles.secondary,
+        disabled && styles.disabled,
+        style,
+      ]}
+      disabled={disabled}
+      {...rest}
     >
-      {icon}
-      <AppText variant={textVariant} color={color}>
+      <AppText
+        variant="body6"
+        color={isPrimary ? AppColors.purple : AppColors.gray90}
+      >
         {label}
       </AppText>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 
-export const MemoAppButton = React.memo(AppButton);
+export const AppButton_ = React.memo(AppButton);
 
 const styles = StyleSheet.create({
-  button: {
-    flexDirection: 'row',
+  base: {
+    flex: 1,
+
+    borderRadius: ms(99),
+    paddingVertical: ms(8),
     alignItems: 'center',
     justifyContent: 'center',
-    gap: ms(4),
-    borderRadius: ms(100),
-    paddingHorizontal: ms(12),
-    paddingVertical: ms(4),
+  },
+  primary: {
+    backgroundColor: AppColors.lavendar,
+  },
+  secondary: {
+    backgroundColor: AppColors.gray20,
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });

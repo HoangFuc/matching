@@ -2,8 +2,8 @@ import React, { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
   Calendar,
   ClipboardText,
@@ -16,8 +16,9 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColor, AppColors } from '@/src/constants/colors';
 import { RootStackParamList } from '@/src/interface/tab.interface';
-import { MemoBulletinBoard } from '../screens/bulletin/BulletinBoard';
-import { MemoBulletinDetail } from '../screens/bulletin/BulletinDetail';
+import { MemoBulletinDetail } from '../screens/bulletin/component/BulletinDetail';
+import { MemoBulletinBoard } from '../screens/bulletin/screen/BulletinBoard';
+import { MemoCreateBulletinScreen } from '../screens/bulletin/screen/CreateBulletinScreen';
 import HomeStack from './HomeStack';
 import ScheduleStack from './ScheduleStack';
 
@@ -112,6 +113,10 @@ const AppNavigator: React.FC = () => {
         <RootStack.Screen
           name="BulletinDetail"
           component={MemoBulletinDetail}
+        />
+        <RootStack.Screen
+          name="CreateBulletin"
+          component={MemoCreateBulletinScreen}
         />
       </RootStack.Navigator>
     </NavigationContainer>

@@ -16,6 +16,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   BulletinBoard: undefined;
   BulletinDetail: { post: TBulletinPost };
+  CreateBulletin: undefined;
 };
 
 export type HomeStackParamList = {

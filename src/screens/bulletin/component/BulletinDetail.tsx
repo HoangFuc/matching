@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { Send2 } from 'iconsax-react-nativejs';
+import { Send } from 'iconsax-react-nativejs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
@@ -155,10 +155,13 @@ const BulletinDetail: React.FC = () => {
             />
 
             <Pressable style={styles.sendButton} onPress={handleSend}>
-              <Send2
+              <Send
                 size={`${ms(20)}`}
-                color={AppColors.purple}
+                color={AppColors.gray90}
                 variant="Linear"
+                style={{
+                  borderRadius: ms(1.5),
+                }}
               />
             </Pressable>
           </View>

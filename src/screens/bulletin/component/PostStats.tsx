@@ -11,9 +11,10 @@ interface IProps {
   likes: number;
   comments: number;
   extra?: React.ReactNode;
+  isAuthor?: boolean;
 }
 
-const PostStats: React.FC<IProps> = ({ likes, comments, extra }) => {
+const PostStats: React.FC<IProps> = ({ likes, comments, extra, isAuthor }) => {
   return (
     <View style={styles.container}>
       <View style={styles.stats}>
@@ -28,19 +29,21 @@ const PostStats: React.FC<IProps> = ({ likes, comments, extra }) => {
           </AppText>
         </View>
 
-        <View style={styles.stat}>
-          <Message
-            size={`${ms(16)}`}
-            color={AppColors.gray100}
-            variant="Linear"
-          />
-          <AppText variant="detail" color={AppColors.gray100}>
-            {comments}
-          </AppText>
-        </View>
+        {!isAuthor && (
+          <View style={styles.stat}>
+            <Message
+              size={`${ms(16)}`}
+              color={AppColors.gray100}
+              variant="Linear"
+            />
+            <AppText variant="detail" color={AppColors.gray100}>
+              {comments}
+            </AppText>
+          </View>
+        )}
       </View>
 
-      {extra}
+      {!isAuthor && extra}
     </View>
   );
 };
@@ -51,7 +54,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: ms(16),
   },
   stats: {

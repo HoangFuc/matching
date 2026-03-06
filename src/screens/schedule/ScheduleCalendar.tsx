@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
+import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { AppColors } from '@/src/constants/colors';
 import { CardShadow } from '@/src/constants/shadows';
 import { MemoCalendarGrid } from './calendar/CalendarGrid';
@@ -14,7 +15,7 @@ const ScheduleCalendar: React.FC = () => {
   const [month, setMonth] = useState(11); // December (0-indexed)
 
   return (
-    <View style={styles.container}>
+    <MemoScreenBody style={styles.body}>
       {/* Month navigation + Register button */}
       <MemoHeaderCalendar
         year={year}
@@ -28,18 +29,14 @@ const ScheduleCalendar: React.FC = () => {
 
         <MemoCalendarGrid year={year} month={month} />
       </View>
-    </View>
+    </MemoScreenBody>
   );
 };
 
 export const MemoScheduleCalendar = React.memo(ScheduleCalendar);
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: AppColors.white,
-    borderTopLeftRadius: ms(20),
-    borderTopRightRadius: ms(20),
+  body: {
     paddingVertical: ms(16),
     gap: ms(16),
   },

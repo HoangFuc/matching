@@ -6,11 +6,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
+import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { AppColors } from '@/src/constants/colors';
 import { TBulletinPost } from '@/src/interface/bulletin.interface';
 import { RootStackParamList } from '@/src/interface/tab.interface';
-import { MemoBulletinHeader } from './BulletinHeader';
-import { MemoBulletinPostCard } from './BulletinPostCard';
+import { MemoBulletinPostCard } from '../component/BulletinPostCard';
+import { MemoBulletinHeader } from '../component/BulletinHeader';
 
 const MOCK_POSTS: TBulletinPost[] = [
   {
@@ -80,15 +81,17 @@ const BulletinBoard: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <MemoBulletinHeader onPressAdd={() => {}} />
+      <MemoBulletinHeader onPressAdd={() => navigation.navigate('CreateBulletin')} />
 
-      <FlatList
-        data={MOCK_POSTS}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-      />
+      <MemoScreenBody>
+        <FlatList
+          data={MOCK_POSTS}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+        />
+      </MemoScreenBody>
     </SafeAreaView>
   );
 };
@@ -103,6 +106,5 @@ const styles = StyleSheet.create({
   list: {
     padding: ms(16),
     gap: ms(12),
-    backgroundColor: AppColors.white,
   },
 });

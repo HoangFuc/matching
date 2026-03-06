@@ -5,7 +5,7 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
-import { CloseCircle, CloudPlus, More } from '@/src/constants/icons';
+import { CloudPlus, More, Trash } from '@/src/constants/icons';
 import { TUploadFile } from '@/src/interface/meetingMinutes.interface';
 
 interface IUploadFileItemProps {
@@ -35,6 +35,7 @@ const UploadFileItem: React.FC<IUploadFileItemProps> = ({
               >
                 파일 업로드 중 {file.progress}%
               </AppText>
+
               <View style={styles.fileActions}>
                 <Pressable hitSlop={8} onPress={() => onRetry(file.id)}>
                   <More
@@ -43,15 +44,21 @@ const UploadFileItem: React.FC<IUploadFileItemProps> = ({
                     variant="Linear"
                   />
                 </Pressable>
-                <Pressable hitSlop={8} onPress={() => onRemove(file.id)}>
-                  <CloseCircle
-                    size={`${ms(18)}`}
+
+                <Pressable
+                  hitSlop={8}
+                  onPress={() => onRemove(file.id)}
+                  style={styles.trashContainer}
+                >
+                  <Trash
+                    size={`${ms(20)}`}
                     color={AppColors.negative}
                     variant="Bold"
                   />
                 </Pressable>
               </View>
             </View>
+
             <View style={styles.progressBar}>
               <View
                 style={[styles.progressFill, { width: `${file.progress}%` }]}
@@ -71,15 +78,21 @@ const UploadFileItem: React.FC<IUploadFileItemProps> = ({
               >
                 {file.name}
               </AppText>
+
               <AppText variant="detail" color={AppColors.gray50}>
                 {file.size}
               </AppText>
             </View>
-            <Pressable hitSlop={8} onPress={() => onRemove(file.id)}>
-              <CloseCircle
-                size={`${ms(18)}`}
+
+            <Pressable
+              hitSlop={8}
+              onPress={() => onRemove(file.id)}
+              style={styles.trashContainer}
+            >
+              <Trash
+                size={`${ms(20)}`}
                 color={AppColors.negative}
-                variant="Bold"
+                variant="Linear"
               />
             </Pressable>
           </View>
@@ -210,5 +223,11 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: ms(2),
     backgroundColor: AppColors.purple,
+  },
+  trashContainer: {
+    borderRadius: ms(8),
+    padding: ms(4),
+    gap: ms(10),
+    backgroundColor: AppColors.pastelPink,
   },
 });

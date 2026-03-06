@@ -1,6 +1,12 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import {
+  errorCodes,
+  isErrorWithCode,
+  pick,
+  types,
+} from '@react-native-documents/picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,9 +18,13 @@ import { MemoFormInput } from '@/src/component/FormInput';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
-import { ArrowDown2, Calendar, Trash } from '@/src/constants/icons';
-import { TMeetingType } from '@/src/interface/meetingMinutes.interface';
+import { ArrowDown2, Calendar } from '@/src/constants/icons';
+import {
+  TMeetingType,
+  TUploadFile,
+} from '@/src/interface/meetingMinutes.interface';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
+import { MemoFileUploadSection } from '../components/FileUploadSection';
 import { MemoMeetingTypePicker } from '../components/MeetingTypePicker';
 
 type TRoute = NativeStackScreenProps<
@@ -32,12 +42,72 @@ const EditMeetingMinutesScreen: React.FC = () => {
   const [date, setDate] = useState(item.date);
   const [customerName, setCustomerName] = useState(item.customerName);
   const [content, setContent] = useState(item.content);
-  const [recordingFile, setRecordingFile] = useState(
-    item.recordingFile ?? null,
-  );
+  const [uploadFiles, setUploadFiles] = useState<TUploadFile[]>(() => {
+    if (item.recordingFile) {
+      return [
+        {
+          id: 'existing-1',
+          name: item.recordingFile.name,
+          size: item.recordingFile.size,
+          progress: 100,
+          status: 'done',
+        },
+      ];
+    }
+    return [];
+  });
+  const isPickingRef = useRef(false);
 
-  const handleRemoveFile = useCallback(() => {
-    setRecordingFile(null);
+  const formatFileSize = useCallback((bytes: number) => {
+    if (bytes < 1024) return `${bytes}B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+  }, []);
+
+  const handlePickFile = useCallback(async () => {
+    if (isPickingRef.current) return;
+    isPickingRef.current = true;
+    try {
+      const result = await pick({
+        type: [types.audio],
+        allowMultiSelection: false,
+      });
+
+      const file = result[0];
+      if (!file) return;
+
+      const fileSizeBytes = file.size ?? 0;
+      const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+      if (fileSizeBytes > MAX_SIZE) {
+        Alert.alert('', '파일 최대 용량은 100MB입니다.');
+        return;
+      }
+
+      const newFile: TUploadFile = {
+        id: `${Date.now()}`,
+        name: file.name ?? 'unknown',
+        size: formatFileSize(fileSizeBytes),
+        progress: 100,
+        status: 'done',
+      };
+
+      setUploadFiles(prev => [...prev, newFile]);
+      // TODO: call API to upload file
+    } catch (err) {
+      if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
+        console.error('DocumentPicker error:', err);
+      }
+    } finally {
+      isPickingRef.current = false;
+    }
+  }, [formatFileSize]);
+
+  const handleRemoveFile = useCallback((id: string) => {
+    setUploadFiles(prev => prev.filter(f => f.id !== id));
+  }, []);
+
+  const handleRetryFile = useCallback((_id: string) => {
+    // TODO: retry upload
   }, []);
 
   const handleSubmit = useCallback(() => {
@@ -128,31 +198,12 @@ const EditMeetingMinutesScreen: React.FC = () => {
               녹음파일
             </AppText>
 
-            {recordingFile && (
-              <View style={styles.fileItem}>
-                <View style={styles.fileInfo}>
-                  <AppText
-                    variant="body7"
-                    color={AppColors.gray80}
-                    numberOfLines={1}
-                  >
-                    {recordingFile.name}
-                  </AppText>
-
-                  <AppText variant="detail" color={AppColors.gray50}>
-                    {recordingFile.size}
-                  </AppText>
-                </View>
-
-                <Pressable hitSlop={8} onPress={handleRemoveFile}>
-                  <Trash
-                    size={`${ms(20)}`}
-                    color={AppColors.negative}
-                    variant="Linear"
-                  />
-                </Pressable>
-              </View>
-            )}
+            <MemoFileUploadSection
+              files={uploadFiles}
+              onPickFile={handlePickFile}
+              onRemoveFile={handleRemoveFile}
+              onRetryFile={handleRetryFile}
+            />
           </View>
         </ScrollView>
 
@@ -194,24 +245,6 @@ const styles = StyleSheet.create({
   },
   uploadSection: {
     gap: ms(8),
-  },
-  fileItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: ms(14),
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: AppColors.gray30,
-    backgroundColor: AppColors.white,
-    padding: ms(16),
-    gap: ms(8),
-    height: ms(109),
-  },
-  fileInfo: {
-    flex: 1,
-    gap: ms(2),
-    marginRight: ms(8),
   },
   bottomContainer: {
     backgroundColor: AppColors.white,

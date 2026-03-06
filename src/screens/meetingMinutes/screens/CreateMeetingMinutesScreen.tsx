@@ -1,6 +1,12 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import {
+  errorCodes,
+  isErrorWithCode,
+  pick,
+  types,
+} from '@react-native-documents/picker';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -29,11 +35,52 @@ const CreateMeetingMinutesScreen: React.FC = () => {
   const [customerName, setCustomerName] = useState('');
   const [content, setContent] = useState('');
   const [uploadFiles, setUploadFiles] = useState<TUploadFile[]>([]);
+  const isPickingRef = useRef(false);
 
   //---------------------------------------
-  const handlePickFile = useCallback(() => {
-    Alert.alert('파일 선택', '파일 선택 기능은 추후 연동 예정입니다.');
+  const formatFileSize = useCallback((bytes: number) => {
+    if (bytes < 1024) return `${bytes}B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
   }, []);
+
+  const handlePickFile = useCallback(async () => {
+    if (isPickingRef.current) return;
+    isPickingRef.current = true;
+    try {
+      const result = await pick({
+        type: [types.audio],
+        allowMultiSelection: false,
+      });
+
+      const file = result[0];
+      if (!file) return;
+
+      const fileSizeBytes = file.size ?? 0;
+      const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+      if (fileSizeBytes > MAX_SIZE) {
+        Alert.alert('', '파일 최대 용량은 100MB입니다.');
+        return;
+      }
+
+      const newFile: TUploadFile = {
+        id: `${Date.now()}`,
+        name: file.name ?? 'unknown',
+        size: formatFileSize(fileSizeBytes),
+        progress: 100,
+        status: 'done',
+      };
+
+      setUploadFiles(prev => [...prev, newFile]);
+      // TODO: call API to upload file
+    } catch (err) {
+      if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
+        console.error('DocumentPicker error:', err);
+      }
+    } finally {
+      isPickingRef.current = false;
+    }
+  }, [formatFileSize]);
 
   //---------------------------------------
   const handleRemoveFile = useCallback((id: string) => {

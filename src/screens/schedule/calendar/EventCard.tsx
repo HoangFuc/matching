@@ -4,8 +4,8 @@ import { StyleSheet, View } from 'react-native';
 import { ms } from 'react-native-size-matters';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
-import { CardShadow } from '@/src/constants/shadows';
 import { TScheduleEvent } from '@/src/interface/schedule.interface';
 
 interface IEventCardProps {
@@ -14,8 +14,8 @@ interface IEventCardProps {
 
 const EventCard: React.FC<IEventCardProps> = ({ event }) => {
   return (
-    <View style={cardStyles.container}>
-      <View style={cardStyles.row}>
+    <MemoBaseCard style={styles.card}>
+      <View style={styles.row}>
         <AppText
           variant="body5"
           color={AppColors.gray90}
@@ -25,7 +25,7 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
         </AppText>
 
         <View
-          style={[cardStyles.badge, { backgroundColor: event.backgroundColor }]}
+          style={[styles.badge, { backgroundColor: event.backgroundColor }]}
         >
           <AppText variant="detail" color={event.color}>
             {event.type || event.title}
@@ -33,7 +33,7 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
         </View>
       </View>
 
-      <View style={cardStyles.row}>
+      <View style={styles.row}>
         <AppText
           variant="body5"
           color={AppColors.gray90}
@@ -46,7 +46,7 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
         </AppText>
       </View>
 
-      <View style={cardStyles.row}>
+      <View style={styles.row}>
         <AppText
           variant="body5"
           color={AppColors.gray90}
@@ -57,27 +57,20 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
         <AppText
           variant="body8"
           color={AppColors.gray90}
-          style={cardStyles.descriptionText}
+          style={styles.descriptionText}
         >
           {event.description || '-'}
         </AppText>
       </View>
-    </View>
+    </MemoBaseCard>
   );
 };
 
 export const MemoEventCard = React.memo(EventCard);
 
-const cardStyles = StyleSheet.create({
-  container: {
-    backgroundColor: AppColors.white,
-    borderWidth: 1,
-    borderColor: AppColors.gray30,
-    paddingHorizontal: ms(16),
-    paddingVertical: ms(16),
+const styles = StyleSheet.create({
+  card: {
     gap: ms(12),
-    borderRadius: ms(16),
-    ...CardShadow,
   },
   row: {
     flexDirection: 'row',

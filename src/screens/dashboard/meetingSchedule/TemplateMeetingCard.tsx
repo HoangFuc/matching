@@ -5,8 +5,8 @@ import { ArrowRight2 } from 'iconsax-react-nativejs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
-import { CardShadow } from '@/src/constants/shadows';
 
 interface IProps {
   image: React.ReactNode;
@@ -17,7 +17,7 @@ const TemplateMeetingCard: React.FC<IProps> = props => {
   const { image, text } = props;
 
   return (
-    <View style={styles.card}>
+    <MemoBaseCard style={styles.card}>
       {image}
 
       <View style={styles.footer}>
@@ -27,7 +27,7 @@ const TemplateMeetingCard: React.FC<IProps> = props => {
 
         <ArrowRight2 size={`${ms(16)}`} />
       </View>
-    </View>
+    </MemoBaseCard>
   );
 };
 
@@ -36,13 +36,7 @@ export const MemoTemplateMeetingCard = React.memo(TemplateMeetingCard);
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: ms(16),
-    padding: ms(16),
     gap: 8,
-    borderWidth: 1,
-    borderColor: AppColors.gray30,
-    backgroundColor: AppColors.white,
-    ...CardShadow,
   },
   footer: {
     flexDirection: 'row',

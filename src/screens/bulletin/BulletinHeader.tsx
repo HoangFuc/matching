@@ -1,27 +1,27 @@
 import React from 'react';
 import { Pressable } from 'react-native';
 
-import { Sort } from 'iconsax-react-nativejs';
+import { Add } from 'iconsax-react-nativejs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
 
 interface IProps {
-  onPressFilter: () => void;
+  onPressAdd?: () => void;
 }
 
-const ScheduleHeader: React.FC<IProps> = ({ onPressFilter }) => {
+const BulletinHeader: React.FC<IProps> = ({ onPressAdd }) => {
   return (
     <MemoScreenHeader
-      title="일정"
+      title="팀 와글와글"
       rightElement={
-        <Pressable hitSlop={8} onPress={onPressFilter}>
-          <Sort size={`${ms(24)}`} color={AppColors.white} variant="Linear" />
+        <Pressable hitSlop={8} onPress={onPressAdd}>
+          <Add size={`${ms(24)}`} color={AppColors.white} variant="Linear" />
         </Pressable>
       }
     />
   );
 };
 
-export const MemoScheduleHeader = React.memo(ScheduleHeader);
+export const MemoBulletinHeader = React.memo(BulletinHeader);

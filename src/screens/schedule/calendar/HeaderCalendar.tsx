@@ -2,11 +2,12 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Add, ArrowLeft2, ArrowRight2 } from 'iconsax-react-nativejs';
-import { ms, s } from 'react-native-size-matters/extend';
+import { ms } from 'react-native-size-matters/extend';
 
 import { _storeData } from '@/src/api/async.storage';
 import { getSeed } from '@/src/api/seed.api';
 import { AppText } from '@/src/component/AppText';
+import { MemoAppButton } from '@/src/component/AppButton';
 import { AppColors } from '@/src/constants/colors';
 import { useMutation } from '@tanstack/react-query';
 import { MemoScheduleRegisterModal } from './ScheduleRegisterModal';
@@ -76,19 +77,17 @@ const HeaderCalendar: React.FC<IProps> = props => {
       </View>
 
       {/* Register schedule button */}
-      <Pressable
-        style={styles.registerButton}
+      <MemoAppButton
+        label="일정 등록"
+        textVariant="detail"
+        icon={
+          <Add size={`${ms(14)}`} color={AppColors.purple} variant="Linear" />
+        }
         onPress={() => {
           mutation.mutate();
           setShowRegisterModal(true);
         }}
-      >
-        <Add size={`${ms(14)}`} color={AppColors.purple} variant="Linear" />
-
-        <AppText variant="detail" color={AppColors.purple}>
-          일정 등록
-        </AppText>
-      </Pressable>
+      />
 
       <MemoScheduleRegisterModal
         visible={showRegisterModal}
@@ -111,16 +110,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: ms(10),
-  },
-  registerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: ms(4),
-    paddingHorizontal: ms(12),
-    paddingVertical: ms(4),
-    borderRadius: ms(100),
-    width: s(86),
-    height: s(25),
-    backgroundColor: AppColors.lavendar,
   },
 });

@@ -87,6 +87,12 @@ export const Typography = {
     lineHeight: lh(12),
     letterSpacing: ls(12),
   },
+  pretendard: {
+    fontSize: 12,
+    fontWeight: FontWeight.semibold,
+    lineHeight: lh(14),
+    letterSpacing: ls(14),
+  },
 } as const satisfies Record<string, TextStyle>;
 
 export type TypographyVariant = keyof typeof Typography;

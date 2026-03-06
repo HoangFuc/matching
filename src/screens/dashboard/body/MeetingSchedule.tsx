@@ -1,24 +1,21 @@
-import React from "react";
-import { Image, StyleSheet, View } from "react-native";
+import React from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 
-import { AppText } from "@/src/component/AppText";
-import { AppColors } from "@/src/constants/colors";
-import { moderateScale as ms } from "react-native-size-matters/extend";
-import { MemoTemplateMeetingCard } from "../meetingSchedule/TemplateMeetingCard";
+import { moderateScale as ms } from 'react-native-size-matters/extend';
+import { MemoSectionHeader } from '@/src/component/SectionHeader';
+import { MemoTemplateMeetingCard } from '../meetingSchedule/TemplateMeetingCard';
 
 const MeetingSchedule: React.FC = () => {
   return (
     <View style={styles.container}>
-      <AppText variant="body1" color={AppColors.gray90}>
-        오늘의 일정은?
-      </AppText>
+      <MemoSectionHeader title="오늘의 일정은?" />
 
       <View style={styles.row}>
         <MemoTemplateMeetingCard
           text="OO고객과의 미팅"
           image={
             <Image
-              source={require("@/src/assets/images/chat-bubble.png")}
+              source={require('@/src/assets/images/chat-bubble.png')}
               style={styles.cardImage}
             />
           }
@@ -28,7 +25,7 @@ const MeetingSchedule: React.FC = () => {
           text="OO 분양 1차 회의"
           image={
             <Image
-              source={require("@/src/assets/images/list.png")}
+              source={require('@/src/assets/images/list.png')}
               style={styles.cardImage}
             />
           }
@@ -45,7 +42,7 @@ const styles = StyleSheet.create({
     gap: ms(12),
   },
   row: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 8,
   },
   cardImage: {

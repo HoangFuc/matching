@@ -2,6 +2,7 @@ import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { CompositeNavigationProp } from "@react-navigation/native";
 import type { TScheduleEvent } from "./schedule.interface";
+import type { TBulletinPost } from "./bulletin.interface";
 
 export type RootTabParamList = {
   Home: undefined;
@@ -9,6 +10,16 @@ export type RootTabParamList = {
   Meeting: undefined;
   Contract: undefined;
   Draft: undefined;
+};
+
+export type RootStackParamList = {
+  MainTabs: undefined;
+  BulletinBoard: undefined;
+  BulletinDetail: { post: TBulletinPost };
+};
+
+export type HomeStackParamList = {
+  Dashboard: undefined;
 };
 
 export type ScheduleStackParamList = {

@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import {
   Calendar,
@@ -14,9 +15,13 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColor, AppColors } from '@/src/constants/colors';
-import { Dashboard } from '../screens/dashboard/Dashboard';
+import { RootStackParamList } from '@/src/interface/tab.interface';
+import { MemoBulletinBoard } from '../screens/bulletin/BulletinBoard';
+import { MemoBulletinDetail } from '../screens/bulletin/BulletinDetail';
+import HomeStack from './HomeStack';
 import ScheduleStack from './ScheduleStack';
 
+const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 const MeetingScreen = () => <View style={styles.placeholder} />;
 const ContractScreen = () => <View style={styles.placeholder} />;
@@ -40,7 +45,7 @@ const TabBarLabel: React.FC<{
   </AppText>
 );
 
-const AppNavigator: React.FC = () => {
+const MainTabs: React.FC = () => {
   const getTabBarIcon = useCallback(
     (routeName: string, color: AppColor | string, focused: boolean) => {
       const size = ms(24);
@@ -72,30 +77,43 @@ const AppNavigator: React.FC = () => {
   );
 
   return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ color, focused }) =>
+          getTabBarIcon(route.name, color, focused),
+        tabBarLabel: ({ color, focused }) =>
+          getTabBarLabel(route.name, color, focused),
+        tabBarActiveTintColor: AppColors.purple,
+        tabBarInactiveTintColor: AppColors.gray50,
+        tabBarStyle: styles.tabBar,
+        tabBarItemStyle: styles.tabBarItem,
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeStack} />
+
+      <Tab.Screen name="Schedule" component={ScheduleStack} />
+
+      <Tab.Screen name="Meeting" component={MeetingScreen} />
+
+      <Tab.Screen name="Contract" component={ContractScreen} />
+
+      <Tab.Screen name="Draft" component={DraftScreen} />
+    </Tab.Navigator>
+  );
+};
+
+const AppNavigator: React.FC = () => {
+  return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) =>
-            getTabBarIcon(route.name, color, focused),
-          tabBarLabel: ({ color, focused }) =>
-            getTabBarLabel(route.name, color, focused),
-          tabBarActiveTintColor: AppColors.purple,
-          tabBarInactiveTintColor: AppColors.gray50,
-          tabBarStyle: styles.tabBar,
-          tabBarItemStyle: styles.tabBarItem,
-        })}
-      >
-        <Tab.Screen name="Home" component={Dashboard} />
-
-        <Tab.Screen name="Schedule" component={ScheduleStack} />
-
-        <Tab.Screen name="Meeting" component={MeetingScreen} />
-
-        <Tab.Screen name="Contract" component={ContractScreen} />
-
-        <Tab.Screen name="Draft" component={DraftScreen} />
-      </Tab.Navigator>
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        <RootStack.Screen name="MainTabs" component={MainTabs} />
+        <RootStack.Screen name="BulletinBoard" component={MemoBulletinBoard} />
+        <RootStack.Screen
+          name="BulletinDetail"
+          component={MemoBulletinDetail}
+        />
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 };

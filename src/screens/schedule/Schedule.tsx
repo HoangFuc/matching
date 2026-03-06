@@ -13,7 +13,7 @@ const Schedule: React.FC = () => {
   const [filterVisible, setFilterVisible] = React.useState(false);
   const [selectedFilterTypes, setSelectedFilterTypes] = React.useState<
     TScheduleType[]
-  >([]);
+  >(['계약 일정']);
 
   const handleOpenFilter = React.useCallback(() => {
     setFilterVisible(true);

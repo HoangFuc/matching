@@ -1,15 +1,15 @@
 import React from 'react';
-import { Image, Pressable, StyleSheet } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
 
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
-import { CardShadow } from '@/src/constants/shadows';
 
 const Checkin: React.FC = () => {
   return (
-    <Pressable style={styles.card}>
+    <MemoBaseCard style={styles.card}>
       <AppText variant="body5" color={AppColors.gray90}>
         {'출석체크 (체크 완료시 출석체크 시간 표시)'}
       </AppText>
@@ -18,7 +18,7 @@ const Checkin: React.FC = () => {
         style={styles.image}
         source={require('@/src/assets/images/task.png')}
       />
-    </Pressable>
+    </MemoBaseCard>
   );
 };
 
@@ -26,14 +26,8 @@ export const MemoCheckin = React.memo(Checkin);
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: ms(16),
-    padding: ms(16),
     flex: 1,
     aspectRatio: 167.5 / 120,
-    borderWidth: 1,
-    borderColor: AppColors.gray30,
-    backgroundColor: AppColors.white,
-    ...CardShadow,
   },
   image: {
     position: 'absolute',

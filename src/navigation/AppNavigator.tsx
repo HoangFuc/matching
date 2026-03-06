@@ -12,6 +12,9 @@ import {
   Home2,
 } from 'iconsax-react-nativejs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
+import Toast from 'react-native-toast-message';
+
+import { toastConfig } from '@/src/component/toastConfig';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColor, AppColors } from '@/src/constants/colors';
@@ -106,20 +109,24 @@ const MainTabs: React.FC = () => {
 
 const AppNavigator: React.FC = () => {
   return (
-    <NavigationContainer>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        <RootStack.Screen name="MainTabs" component={MainTabs} />
-        <RootStack.Screen name="BulletinBoard" component={MemoBulletinBoard} />
-        <RootStack.Screen
-          name="BulletinDetail"
-          component={MemoBulletinDetail}
-        />
-        <RootStack.Screen
-          name="CreateBulletin"
-          component={MemoCreateBulletinScreen}
-        />
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <>
+      <NavigationContainer>
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          <RootStack.Screen name="MainTabs" component={MainTabs} />
+          <RootStack.Screen name="BulletinBoard" component={MemoBulletinBoard} />
+          <RootStack.Screen
+            name="BulletinDetail"
+            component={MemoBulletinDetail}
+          />
+          <RootStack.Screen
+            name="CreateBulletin"
+            component={MemoCreateBulletinScreen}
+          />
+        </RootStack.Navigator>
+      </NavigationContainer>
+
+      <Toast config={toastConfig} />
+    </>
   );
 };
 

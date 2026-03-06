@@ -9,16 +9,19 @@ import { AppColors } from '@/src/constants/colors';
 
 interface IProps {
   onPressFilter: () => void;
+  mode?: string;
 }
 
-const ScheduleHeader: React.FC<IProps> = ({ onPressFilter }) => {
+const ScheduleHeader: React.FC<IProps> = ({ onPressFilter, mode }) => {
   return (
     <MemoScreenHeader
       title="일정"
       rightElement={
-        <Pressable hitSlop={8} onPress={onPressFilter}>
-          <Sort size={`${ms(24)}`} color={AppColors.white} variant="Linear" />
-        </Pressable>
+        mode !== 'attendance' ? (
+          <Pressable hitSlop={8} onPress={onPressFilter}>
+            <Sort size={`${ms(24)}`} color={AppColors.white} variant="Linear" />
+          </Pressable>
+        ) : undefined
       }
     />
   );

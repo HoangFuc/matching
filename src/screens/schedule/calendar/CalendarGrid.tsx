@@ -14,62 +14,12 @@ import { MemoEvents } from './Events';
 interface IProps {
   year: number;
   month: number;
+  events: Record<string, TScheduleEvent[]>;
+  checkinTimes?: Record<string, string>;
 }
 
-// ── Mock data ──────────────────────────────────────────
-const MOCK_EVENTS: Record<string, TScheduleEvent[]> = {
-  '2025-12-17': [
-    {
-      id: '1',
-      title: '지방출장',
-      type: '지방출장',
-      description: '부산 지사 방문 및 현장 점검',
-      color: AppColors.purple,
-      backgroundColor: AppColors.lavendar,
-    },
-  ],
-  '2025-12-19': [
-    {
-      id: '2',
-      title: '고객 미팅',
-      type: '고객 미팅',
-      description: '고객 요구사항 확인 및 서비스 설명',
-      color: AppColors.strongBlue,
-      backgroundColor: AppColors.lightBlue,
-    },
-    {
-      id: '3',
-      title: '계약 일정',
-      type: '계약 일정',
-      description: '계약 조건 최종 확인 및 체결',
-      color: AppColors.negative,
-      backgroundColor: AppColors.pastelPink,
-    },
-  ],
-  '2025-12-20': [
-    {
-      id: '4',
-      title: '계약 일정',
-      type: '계약 일정',
-      description: '계약서 검토 및 서명',
-      color: AppColors.negative,
-      backgroundColor: AppColors.pastelPink,
-    },
-  ],
-  '2025-12-21': [
-    {
-      id: '5',
-      title: '계약 일정',
-      type: '계약 일정',
-      description: '최종 계약 확인',
-      color: AppColors.negative,
-      backgroundColor: AppColors.pastelPink,
-    },
-  ],
-};
-
 const CalendarGrid: React.FC<IProps> = props => {
-  const { year, month } = props;
+  const { year, month, events, checkinTimes } = props;
   const navigation = useNavigation<ScheduleNavigationProp>();
 
   //---------------------------------------
@@ -86,8 +36,8 @@ const CalendarGrid: React.FC<IProps> = props => {
 
   //---------------------------------------
   const handleDayPress = React.useCallback(
-    (dateKey: string, events: TScheduleEvent[]) => {
-      navigation.navigate('ScheduleDetail', { dateKey, events });
+    (dateKey: string, dayEvents: TScheduleEvent[]) => {
+      navigation.navigate('ScheduleDetail', { dateKey, events: dayEvents });
     },
     [navigation],
   );
@@ -99,17 +49,31 @@ const CalendarGrid: React.FC<IProps> = props => {
           {week.map((cell, di) => {
             const today = isToday(cell);
             const key = toKey(cell.year, cell.month, cell.date);
-            const events = MOCK_EVENTS[key] || [];
+            const dayEvents = events[key] || [];
+            const checkinTime = checkinTimes?.[key];
 
             return (
               <Pressable
                 key={`${wi}-${di}`}
                 style={styles.dayCell}
-                onPress={() => handleDayPress(key, events)}
+                onPress={() => handleDayPress(key, dayEvents)}
               >
                 <MemoDateNumber cell={cell} today={today} />
 
-                <MemoEvents events={events} />
+                {checkinTime && cell.isCurrentMonth ? (
+                  <MemoEvents
+                    events={[
+                      {
+                        id: `checkin-${key}`,
+                        title: checkinTime,
+                        color: AppColors.gray90,
+                        backgroundColor: 'transparent',
+                      },
+                    ]}
+                  />
+                ) : (
+                  <MemoEvents events={dayEvents} />
+                )}
               </Pressable>
             );
           })}

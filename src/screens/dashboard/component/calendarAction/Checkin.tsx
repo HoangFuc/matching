@@ -8,6 +8,7 @@ import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
 import { ArrowRight2 } from '@/src/constants/icons';
+import { AppImages } from '@/src/constants/images';
 import type { RootTabNavigationProp } from '@/src/interface/tab.interface';
 
 interface IProps {
@@ -66,7 +67,7 @@ const Checkin: React.FC<IProps> = ({ checkinTime, onCheckin }) => {
     <MemoBaseCard style={styles.card}>
       <Image
         style={styles.image}
-        source={require('@/src/assets/images/task.png')}
+        source={AppImages.task}
       />
 
       <AppText variant="body5" color={AppColors.gray90}>

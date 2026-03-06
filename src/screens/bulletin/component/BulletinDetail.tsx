@@ -17,6 +17,7 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
+import { AppImages } from '@/src/constants/images';
 import { TBulletinComment } from '@/src/interface/bulletin.interface';
 import { RootStackParamList } from '@/src/interface/tab.interface';
 import { MemoCommentItem } from './CommentItem';
@@ -27,7 +28,7 @@ const MOCK_COMMENTS: TBulletinComment[] = [
   {
     id: '1',
     author: '나태원',
-    avatar: require('@/src/assets/images/avatar.jpg'),
+    avatar: AppImages.avatar,
     timeAgo: '1분전',
     content: '선생님이 잘 가르침',
     likes: 15,
@@ -35,7 +36,7 @@ const MOCK_COMMENTS: TBulletinComment[] = [
       {
         id: '1-1',
         author: '제갈공명',
-        avatar: require('@/src/assets/images/avatar.jpg'),
+        avatar: AppImages.avatar,
         timeAgo: '1분전',
         content: '@나태원 선생님이 잘 가르침',
         likes: 15,
@@ -46,7 +47,7 @@ const MOCK_COMMENTS: TBulletinComment[] = [
   {
     id: '2',
     author: '김유신',
-    avatar: require('@/src/assets/images/avatar.jpg'),
+    avatar: AppImages.avatar,
     timeAgo: '2분 전',
     content: '선생님이 잘 가르침',
     likes: 0,
@@ -54,7 +55,7 @@ const MOCK_COMMENTS: TBulletinComment[] = [
   {
     id: '3',
     author: '나태원',
-    avatar: require('@/src/assets/images/avatar.jpg'),
+    avatar: AppImages.avatar,
     timeAgo: '2분 전',
     content:
       '설악산 설악산의 가을빛은 눈을 뗄 수 없는 만큼 아름답습니다. 노랗게 물든 잎들은 시간이 이곳에서 속삭이고, 바람은 부드럽게 말들을 싣어 나릅...',

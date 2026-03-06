@@ -8,6 +8,7 @@ import { getSeed } from '@/src/api/seed.api';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppColors } from '@/src/constants/colors';
 import { Add } from '@/src/constants/icons';
+import { StyleSheet } from 'react-native';
 import { MemoScheduleRegisterModal } from './ScheduleRegisterModal';
 
 const ScheduleRightAction: React.FC = () => {
@@ -32,6 +33,7 @@ const ScheduleRightAction: React.FC = () => {
           mutation.mutate();
           setShowRegisterModal(true);
         }}
+        style={styles.button}
       />
 
       <MemoScheduleRegisterModal
@@ -43,3 +45,10 @@ const ScheduleRightAction: React.FC = () => {
 };
 
 export const MemoScheduleRightAction = React.memo(ScheduleRightAction);
+
+const styles = StyleSheet.create({
+  button: {
+    flexDirection: 'row',
+    width: ms(86),
+  },
+});

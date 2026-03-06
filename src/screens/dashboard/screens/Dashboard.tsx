@@ -7,7 +7,7 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { MemoBodyDashboard } from './Body';
-import { MemoQuickActionModal } from './calendarAction/QuickActionModal';
+import { MemoQuickActionModal } from '../component/calendarAction/QuickActionModal';
 import { MemoHeaderDashboard } from './Header';
 
 export const Dashboard: React.FC = () => {

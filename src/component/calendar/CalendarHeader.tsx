@@ -64,5 +64,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: ms(10),
+    flex: 1,
   },
 });

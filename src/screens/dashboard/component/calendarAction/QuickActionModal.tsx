@@ -5,6 +5,7 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { AppImages } from '@/src/constants/images';
 
 interface IProps {
   visible: boolean;
@@ -14,15 +15,15 @@ interface IProps {
 const ACTIONS = [
   {
     label: '일정 등록',
-    image: require('@/src/assets/images/calendar.png'),
+    image: AppImages.calendar,
   },
   {
     label: '미팅록 작성',
-    image: require('@/src/assets/images/clipboard-with-pen.png'),
+    image: AppImages.clipboardWithPen,
   },
   {
     label: '기안 등록',
-    image: require('@/src/assets/images/phone-book.png'),
+    image: AppImages.phoneBook,
   },
 ];
 

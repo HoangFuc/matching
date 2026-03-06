@@ -8,6 +8,7 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { AppColors } from '@/src/constants/colors';
+import { AppImages } from '@/src/constants/images';
 import { TBulletinPost } from '@/src/interface/bulletin.interface';
 import { RootStackParamList } from '@/src/interface/tab.interface';
 import { MemoBulletinPostCard } from '../component/BulletinPostCard';
@@ -17,43 +18,43 @@ const MOCK_POSTS: TBulletinPost[] = [
   {
     id: '1',
     author: '제갈공명',
-    avatar: require('@/src/assets/images/avatar.jpg'),
+    avatar: AppImages.avatar,
     timeAgo: '2분 전',
     title: '이번 주말, 설악산으로 단풍 구경 떠나요!',
     content:
       '이번 주말, 설악산으로 단풍 구경 떠나요! 사진 명소도 공유해 드릴게요. 함께 아름다운 추억 만들어요!',
-    images: [require('@/src/assets/images/news.jpg')],
+    images: [AppImages.news],
     likes: 15,
     comments: 4,
   },
   {
     id: '2',
     author: '강감찬',
-    avatar: require('@/src/assets/images/avatar.jpg'),
+    avatar: AppImages.avatar,
     timeAgo: '2분 전',
     title: '',
     content:
       "오늘 점심시간, 회사 앞 '보름달' 식당에서 김치찌개 먹을 사람! 선착순 5명!",
-    images: [require('@/src/assets/images/news.jpg')],
+    images: [AppImages.news],
     likes: 15,
     comments: 4,
   },
   {
     id: '3',
     author: '을지문덕',
-    avatar: require('@/src/assets/images/avatar.jpg'),
+    avatar: AppImages.avatar,
     timeAgo: '2분 전',
     title: '',
     content:
       '주말에 가볍게 앞산 등산 어때요? 등산 후에 맛있는 막걸리도 한잔하면 최고! 등산 메이트 구합니다!',
-    images: [require('@/src/assets/images/news.jpg')],
+    images: [AppImages.news],
     likes: 15,
     comments: 4,
   },
   {
     id: '4',
     author: '김유신',
-    avatar: require('@/src/assets/images/avatar.jpg'),
+    avatar: AppImages.avatar,
     timeAgo: '2분 전',
     title: '',
     content:

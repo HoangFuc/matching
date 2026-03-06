@@ -5,6 +5,7 @@ import { HamburgerMenu, Notification } from '@/src/constants/icons';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { AppImages } from '@/src/constants/images';
 
 const HeaderDashboard: React.FC = () => {
   return (
@@ -16,7 +17,7 @@ const HeaderDashboard: React.FC = () => {
             aspectRatio: 47 / 24,
           }}
           resizeMode="contain"
-          source={require('../../assets/images/matchingLogo.png')}
+          source={AppImages.matchingLogo}
         />
 
         <View style={styles.action}>
@@ -26,7 +27,7 @@ const HeaderDashboard: React.FC = () => {
         </View>
 
         <Image
-          source={require('../../assets/images/converted.png')}
+          source={AppImages.converted}
           style={styles.background}
           resizeMode="contain"
         />
@@ -34,7 +35,7 @@ const HeaderDashboard: React.FC = () => {
 
       <View style={styles.info}>
         <Image
-          source={require('../../assets/images/avatar.jpg')}
+          source={AppImages.avatar}
           style={{
             width: ms(40),
             height: ms(40),

@@ -13,4 +13,8 @@ export const AppImages = {
   firstPlace: require('@/src/assets/images/first-place.png'),
   schedule: require('@/src/assets/images/schedule.png'),
   task: require('@/src/assets/images/task.png'),
+  matchingLogo: require('@/src/assets/images/matchingLogo.png'),
+  converted: require('@/src/assets/images/converted.png'),
+  avatar: require('@/src/assets/images/avatar.jpg'),
+  news: require('@/src/assets/images/news.jpg'),
 };

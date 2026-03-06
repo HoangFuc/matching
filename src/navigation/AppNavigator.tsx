@@ -16,8 +16,8 @@ import type {
   RootTabParamList,
 } from '@/src/interface/tab.interface';
 import { MemoBulletinDetail } from '../screens/bulletin/component/BulletinDetail';
-import { MemoBulletinBoard } from '../screens/bulletin/screen/BulletinBoard';
-import { MemoCreateBulletinScreen } from '../screens/bulletin/screen/CreateBulletinScreen';
+import { MemoBulletinBoard } from '../screens/bulletin/screens/BulletinBoard';
+import { MemoCreateBulletinScreen } from '../screens/bulletin/screens/CreateBulletinScreen';
 import HomeStack from './HomeStack';
 import ScheduleStack from './ScheduleStack';
 import DataRoomStack from './DataRoomStack';

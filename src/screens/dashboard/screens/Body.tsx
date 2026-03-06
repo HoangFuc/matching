@@ -4,11 +4,11 @@ import { ScrollView, StyleSheet } from "react-native";
 import { moderateScale as ms } from "react-native-size-matters/extend";
 
 import { MemoScreenBody } from "@/src/component/ScreenBody";
-import { MemoCalendarAction } from "./body/CalendarAction";
-import { MemoDraft } from "./body/Draft";
-import { MemoMeetingSchedule } from "./body/MeetingSchedule";
-import { MemoMoreActions } from "./body/MoreActions";
-import { MemoRanking } from "./body/Ranking";
+import { MemoCalendarAction } from "../component/body/CalendarAction";
+import { MemoDraft } from "../component/body/Draft";
+import { MemoMeetingSchedule } from "../component/body/MeetingSchedule";
+import { MemoMoreActions } from "../component/body/MoreActions";
+import { MemoRanking } from "../component/body/Ranking";
 
 const BodyDashboard: React.FC = () => {
   return (

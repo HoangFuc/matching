@@ -8,8 +8,6 @@ import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { RadioCheck } from '@/src/constants/icons';
-import { useMoveFolderMutation } from '@/src/store/api/dataRoom.api';
-
 interface IProps {
   visible: boolean;
   onClose: () => void;
@@ -25,41 +23,47 @@ const MoveFolderSheet: React.FC<IProps> = ({
   folderId,
   currentType,
 }) => {
-  const [moveFolder, { isLoading }] = useMoveFolderMutation();
   const [selectedType, setSelectedType] = React.useState<string | null>(null);
 
+  //---------------------------------------
+  const handleConfirm = React.useCallback(() => {
+    if (!selectedType) {
+      return;
+    }
+    // TODO: API move folder chưa hỗ trợ
+    console.log('Move folder:', { folderId, targetType: selectedType });
+    onClose();
+  }, [selectedType, folderId, onClose]);
+
+  //---------------------------------------
+  const footer = React.useMemo(
+    () => (
+      <>
+        <MemoAppButton
+          label="취소"
+          variant="secondary"
+          onPress={onClose}
+          style={styles.button}
+        />
+
+        <MemoAppButton
+          label="확인"
+          variant="primary"
+          onPress={handleConfirm}
+          disabled={!selectedType}
+          style={styles.button}
+        />
+      </>
+    ),
+    [onClose, handleConfirm, selectedType],
+  );
+
+  //---------------------------------------
   React.useEffect(() => {
     if (visible) {
       setSelectedType(null);
     }
   }, [visible]);
-
-  const handleConfirm = React.useCallback(async () => {
-    if (!selectedType) {
-      return;
-    }
-    try {
-      await moveFolder({ folderId, targetType: selectedType }).unwrap();
-      onClose();
-    } catch (error) {
-      console.log('Move folder error:', error);
-    }
-  }, [selectedType, moveFolder, folderId, onClose]);
-
-  const footer = React.useMemo(
-    () => (
-      <>
-        <MemoAppButton label="취소" variant="secondary" onPress={onClose} />
-        <MemoAppButton
-          label="확인"
-          variant="primary"
-          onPress={handleConfirm}
-          disabled={!selectedType || isLoading}
-        />
-      </>
-    ),
-    [onClose, handleConfirm, selectedType, isLoading],
-  );
 
   return (
     <MemoAppBottomSheet
@@ -68,7 +72,7 @@ const MoveFolderSheet: React.FC<IProps> = ({
       title="이동"
       footer={footer}
     >
-      <View style={{ paddingVertical: ms(16), gap: 16 }}>
+      <View style={styles.container}>
         <AppText variant="body2" color={AppColors.gray100}>
           자료 유형
         </AppText>
@@ -100,9 +104,7 @@ const MoveFolderSheet: React.FC<IProps> = ({
               >
                 {type}
               </AppText>
-              {isSelected && (
-                <RadioCheck width={ms(20)} height={ms(20)} />
-              )}
+              {isSelected && <RadioCheck width={ms(20)} height={ms(20)} />}
             </Pressable>
           );
         })}
@@ -118,5 +120,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  button: {
+    flex: 1,
+  },
+  container: {
+    paddingVertical: ms(16),
+    gap: 16,
   },
 });

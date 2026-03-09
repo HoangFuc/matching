@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { ms } from 'react-native-size-matters/extend';
 

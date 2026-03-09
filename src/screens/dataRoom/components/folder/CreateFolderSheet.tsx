@@ -2,15 +2,16 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ArrowDown2 } from '@/src/constants/icons';
-import { useForm, Controller } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { ms } from 'react-native-size-matters/extend';
 
-import { MemoAppButton } from '@/src/component/AppButton';
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
+import { MemoAppButton } from '@/src/component/AppButton';
 import { MemoAppSheetInput } from '@/src/component/AppSheetInput';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { useCreateFolderMutation } from '@/src/store/api/dataRoom.api';
+import { DATA_ROOM_LABEL_TO_TYPE } from '../../constants';
 
 interface IProps {
   visible: boolean;
@@ -33,6 +34,7 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<IFormValues>({
     defaultValues: {
@@ -41,18 +43,28 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
     },
   });
 
+  //---------------------------------------
+  const formValue = watch();
+
+  //---------------------------------------
+  const isDisabled = React.useMemo(() => {
+    return !!formValue.folderName && !!formValue.folderType;
+  }, [formValue.folderName, formValue.folderType]);
+
+  //---------------------------------------
   const handleClose = React.useCallback(() => {
     reset();
     setShowTypeDropdown(false);
     onClose();
   }, [reset, onClose]);
 
+  //---------------------------------------
   const onSubmit = React.useCallback(
     async (data: IFormValues) => {
       try {
         await createFolder({
           name: data.folderName,
-          type: data.folderType,
+          type: DATA_ROOM_LABEL_TO_TYPE[data.folderType],
         }).unwrap();
         handleClose();
       } catch (error) {
@@ -62,18 +74,25 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
     [createFolder, handleClose],
   );
 
+  //---------------------------------------
   const footer = React.useMemo(
     () => (
       <>
-        <MemoAppButton label="취소" variant="secondary" onPress={handleClose} />
+        <MemoAppButton
+          label="취소"
+          variant="secondary"
+          onPress={handleClose}
+          style={styles.button}
+        />
         <MemoAppButton
           label="확인"
           onPress={handleSubmit(onSubmit)}
-          disabled={isLoading}
+          disabled={!isDisabled || isLoading}
+          style={styles.button}
         />
       </>
     ),
-    [handleClose, handleSubmit, onSubmit, isLoading],
+    [handleClose, handleSubmit, onSubmit, isDisabled, isLoading],
   );
 
   return (
@@ -89,7 +108,7 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
         name="folderType"
         rules={{ required: '폴더 유형을 선택하세요' }}
         render={({ field: { value } }) => (
-          <View style={{ paddingTop: 16 }}>
+          <View style={styles.headerInput}>
             <AppText
               variant="body7"
               color={AppColors.gray90}
@@ -97,6 +116,7 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
             >
               폴더 유형
             </AppText>
+
             <Pressable
               style={styles.dropdownButton}
               onPress={() => setShowTypeDropdown(prev => !prev)}
@@ -104,12 +124,14 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
               <AppText variant="body8" color={AppColors.gray80}>
                 {value}
               </AppText>
+
               <ArrowDown2
                 size={`${ms(16)}`}
                 color={AppColors.gray50}
                 variant="Linear"
               />
             </Pressable>
+
             {showTypeDropdown && (
               <View style={styles.dropdownList}>
                 {FOLDER_TYPES.map(type => (
@@ -191,5 +213,11 @@ const styles = StyleSheet.create({
   },
   errorText: {
     marginTop: ms(4),
+  },
+  button: {
+    flex: 1,
+  },
+  headerInput: {
+    paddingTop: ms(16),
   },
 });

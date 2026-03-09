@@ -1,5 +1,5 @@
-import {isRejected, isFulfilled, Middleware} from '@reduxjs/toolkit';
-import {showGlobalToast} from '@/src/utils/toastDispatcher';
+import { showGlobalToast } from '@/src/utils/toastDispatcher';
+import { isFulfilled, isRejected, Middleware } from '@reduxjs/toolkit';
 
 // Redux action type → 한국어 성공 메시지
 const ToastSuccessMap: Record<string, string> = {
@@ -21,7 +21,7 @@ export const toastMiddleware: Middleware = () => next => action => {
     }
     const key = ToastSuccessMap[action.type];
     if (key) {
-      showGlobalToast({type: 'success', message: key});
+      showGlobalToast({ type: 'success', message: key });
     }
   }
 
@@ -41,7 +41,7 @@ export const toastMiddleware: Middleware = () => next => action => {
           (action.error as any)?.message ||
           '오류가 발생했습니다.';
 
-    showGlobalToast({type: 'error', message});
+    showGlobalToast({ type: 'error', message });
   }
 
   return result;

@@ -1,12 +1,12 @@
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { useForm, Controller } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { MemoAppSheetInput } from '@/src/component/AppSheetInput';
 import { useRenameItemMutation } from '@/src/store/api/dataRoom.api';
-import { View } from 'react-native';
 
 interface IProps {
   visible: boolean;
@@ -29,6 +29,7 @@ const RenameSheet: React.FC<IProps> = ({
 }) => {
   const [renameItem, { isLoading }] = useRenameItemMutation();
 
+  //---------------------------------------
   const {
     control,
     handleSubmit,
@@ -40,21 +41,18 @@ const RenameSheet: React.FC<IProps> = ({
     },
   });
 
-  React.useEffect(() => {
-    if (visible) {
-      reset({ name: currentName });
-    }
-  }, [visible, currentName, reset]);
-
+  //---------------------------------------
   const handleClose = React.useCallback(() => {
     reset();
     onClose();
   }, [reset, onClose]);
 
+  //---------------------------------------
   const onSubmit = React.useCallback(
     async (data: IFormValues) => {
       try {
         await renameItem({ id: itemId, name: data.name, kind }).unwrap();
+
         handleClose();
       } catch (error) {
         console.log('Rename error:', error);
@@ -63,20 +61,35 @@ const RenameSheet: React.FC<IProps> = ({
     [renameItem, itemId, kind, handleClose],
   );
 
+  //---------------------------------------
   const footer = React.useMemo(
     () => (
       <>
-        <MemoAppButton label="취소" variant="secondary" onPress={handleClose} />
+        <MemoAppButton
+          label="취소"
+          variant="secondary"
+          onPress={handleClose}
+          style={styles.button}
+        />
+
         <MemoAppButton
           label="확인"
           variant="primary"
           onPress={handleSubmit(onSubmit)}
           disabled={isLoading}
+          style={styles.button}
         />
       </>
     ),
     [handleClose, handleSubmit, onSubmit, isLoading],
   );
+
+  //---------------------------------------
+  React.useEffect(() => {
+    if (visible) {
+      reset({ name: currentName });
+    }
+  }, [visible, currentName, reset]);
 
   return (
     <MemoAppBottomSheet
@@ -86,7 +99,7 @@ const RenameSheet: React.FC<IProps> = ({
       showHandle={true}
       footer={footer}
     >
-      <View style={{ paddingTop: 16 }}>
+      <View style={styles.container}>
         <Controller
           control={control}
           name="name"
@@ -107,3 +120,12 @@ const RenameSheet: React.FC<IProps> = ({
 };
 
 export const MemoRenameSheet = React.memo(RenameSheet);
+
+const styles = StyleSheet.create({
+  button: {
+    flex: 1,
+  },
+  container: {
+    paddingTop: 16,
+  },
+});

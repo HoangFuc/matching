@@ -38,7 +38,7 @@ const MoveFileSheet: React.FC<IProps> = ({
       return;
     }
     try {
-      await moveFile({ fileId, targetFolderId: selectedFolderId }).unwrap();
+      await moveFile({ fileId, newFolderId: selectedFolderId }).unwrap();
       onClose();
     } catch (error) {
       console.log('Move file error:', error);
@@ -48,12 +48,19 @@ const MoveFileSheet: React.FC<IProps> = ({
   const footer = React.useMemo(
     () => (
       <>
-        <MemoAppButton label="취소" variant="secondary" onPress={onClose} />
+        <MemoAppButton
+          label="취소"
+          variant="secondary"
+          onPress={onClose}
+          style={styles.button}
+        />
+
         <MemoAppButton
           label="확인"
           variant="primary"
           onPress={handleConfirm}
           disabled={!selectedFolderId || isLoading}
+          style={styles.button}
         />
       </>
     ),
@@ -67,7 +74,7 @@ const MoveFileSheet: React.FC<IProps> = ({
       title="이동"
       footer={footer}
     >
-      <View style={{ paddingVertical: ms(16), gap: 16 }}>
+      <View style={styles.content}>
         <AppText variant="body2" color={AppColors.gray100}>
           폴더
         </AppText>
@@ -90,6 +97,7 @@ const MoveFileSheet: React.FC<IProps> = ({
             >
               {folder.name}
             </AppText>
+
             {selectedFolderId === folder.id && (
               <RadioCheck width={ms(20)} height={ms(20)} />
             )}
@@ -107,5 +115,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  button: {
+    flex: 1,
+  },
+  content: {
+    paddingVertical: ms(16),
+    gap: 16,
   },
 });

@@ -5,9 +5,9 @@ import { ms } from 'react-native-size-matters/extend';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = (SCREEN_WIDTH - ms(16) * 2 - ms(12)) / 2;
 
-import { Document, DotsVertical } from '@/src/constants/icons';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { Document, DotsVertical } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
 import type { IFile } from '@/src/store/api/dataRoom.api';
 
@@ -26,14 +26,17 @@ const FileGridItem: React.FC<FileGridItemProps> = ({ item, onPressMore }) => {
           color={AppColors.gray90}
           variant="Linear"
         />
+
         <View style={styles.headerText}>
           <AppText variant="body3" color={AppColors.gray90} numberOfLines={1}>
-            {item.name}
+            {item.originalName}
           </AppText>
+
           <AppText variant="detail" color={AppColors.gray80}>
             {item.createdAt}
           </AppText>
         </View>
+
         <Pressable hitSlop={8} onPress={() => onPressMore(item)}>
           <DotsVertical
             width={ms(16)}

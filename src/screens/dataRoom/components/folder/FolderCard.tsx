@@ -2,15 +2,16 @@ import React from 'react';
 import { Dimensions, Image, Pressable, StyleSheet } from 'react-native';
 
 import { DotsVertical } from '@/src/constants/icons';
+import dayjs from 'dayjs';
 import { ms } from 'react-native-size-matters/extend';
+
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { AppImages } from '@/src/constants/images';
+import type { IFolder } from '@/src/store/api/dataRoom.api';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = (SCREEN_WIDTH - ms(16) * 2 - ms(12)) / 2;
-
-import { AppText } from '@/src/component/AppText';
-import { AppColors, Primary } from '@/src/constants/colors';
-import { AppImages } from '@/src/constants/images';
-import type { IFolder } from '@/src/store/api/dataRoom.api';
 
 interface IProps {
   folder: IFolder;
@@ -41,7 +42,7 @@ const FolderCard: React.FC<IProps> = ({
         </Pressable>
       )}
       <AppText variant="detail" color={AppColors.gray90}>
-        {folder.createdAt}
+        {dayjs(folder.createdAt).format('YYYY.MM.DD')}
       </AppText>
       <AppText variant="body6" color={AppColors.gray90} numberOfLines={1}>
         {folder.name}

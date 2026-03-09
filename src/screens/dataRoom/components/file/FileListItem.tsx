@@ -16,14 +16,17 @@ const FileListItem: React.FC<FileListItemProps> = ({ item, onPressMore }) => {
   return (
     <View style={styles.container}>
       <Document width={ms(20)} height={ms(20)} fill={AppColors.gray50} />
+
       <View style={styles.textContainer}>
         <AppText variant="body4" color={AppColors.gray90} numberOfLines={1}>
-          {item.name}
+          {item.originalName}
         </AppText>
+
         <AppText variant="detail" color={AppColors.gray80}>
           {item.createdAt}
         </AppText>
       </View>
+
       <Pressable hitSlop={8} onPress={() => onPressMore(item)}>
         <DotsVertical width={ms(20)} height={ms(20)} fill={AppColors.gray50} />
       </Pressable>

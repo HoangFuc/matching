@@ -1,4 +1,4 @@
-import type {TAlertType} from '@/src/component/AppAlert';
+import type { TAlertType } from '@/src/component/AppAlert';
 
 type GlobalToastFn = (
   type: TAlertType,
@@ -18,7 +18,7 @@ type ShowToastParams = {
   message?: string;
 };
 
-export const showGlobalToast = ({type, title, message}: ShowToastParams) => {
+export const showGlobalToast = ({ type, title, message }: ShowToastParams) => {
   if (globalToast) {
     globalToast(type, title, message);
   } else {

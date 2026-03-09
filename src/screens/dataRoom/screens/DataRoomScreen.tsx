@@ -2,39 +2,49 @@ import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ArrowLeft2, SearchNormal1 } from '@/src/constants/icons';
-import { ms } from 'react-native-size-matters/extend';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import type { DataRoomStackParamList } from '@/src/interface/tab.interface';
-import { FAKE_FOLDERS, IFolder } from '@/src/store/api/dataRoom.api';
+import { IFolder, useGetFoldersQuery } from '@/src/store/api/dataRoom.api';
 import { MemoFABWithMenu } from '../components/FABWithMenu';
-import { MemoFolderCard, MemoFolderActionSheet, MemoMoveFolderSheet } from '../components/folder';
 import type { TFolderAction } from '../components/folder';
-import { MemoRenameSheet } from '../components/RenameSheet';
+import {
+  MemoFolderActionSheet,
+  MemoFolderCard,
+  MemoMoveFolderSheet,
+} from '../components/folder';
 import { MemoNoData } from '../components/NoData';
+import { MemoRenameSheet } from '../components/RenameSheet';
+import {
+  DATA_ROOM_TAB_LABEL,
+  DATA_ROOM_TABS,
+  type TDataRoomTabType,
+} from '../constants';
 
 type TNav = NativeStackNavigationProp<DataRoomStackParamList, 'DataRoomMain'>;
-type TTabType = '시세 자료' | '분양자료';
-
-const TABS: TTabType[] = ['시세 자료', '분양자료'];
 
 const DataRoomScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
-  const [activeTab, setActiveTab] = React.useState<TTabType>('시세 자료');
+  const [activeTab, setActiveTab] =
+    React.useState<TDataRoomTabType>('MARKET_PRICE');
+  const { data: folders = [] } = useGetFoldersQuery();
 
   // Sheet states
   const [actionSheetVisible, setActionSheetVisible] = React.useState(false);
   const [moveSheetVisible, setMoveSheetVisible] = React.useState(false);
   const [renameSheetVisible, setRenameSheetVisible] = React.useState(false);
-  const [selectedFolder, setSelectedFolder] = React.useState<IFolder | null>(null);
+  const [selectedFolder, setSelectedFolder] = React.useState<IFolder | null>(
+    null,
+  );
 
   const filteredFolders = React.useMemo(
-    () => FAKE_FOLDERS.filter(f => f.type === activeTab),
-    [activeTab],
+    () => folders.filter(f => f.type === activeTab),
+    [folders, activeTab],
   );
 
   const handlePressSearch = React.useCallback(() => {
@@ -123,7 +133,7 @@ const DataRoomScreen: React.FC = () => {
       <View style={styles.content}>
         {/* Tabs */}
         <View style={styles.tabContainer}>
-          {TABS.map(tab => (
+          {DATA_ROOM_TABS.map(tab => (
             <Pressable
               key={tab}
               style={[styles.tab, activeTab === tab && styles.tabActive]}
@@ -133,7 +143,7 @@ const DataRoomScreen: React.FC = () => {
                 variant="body6"
                 color={activeTab === tab ? AppColors.white : AppColors.gray80}
               >
-                {tab}
+                {DATA_ROOM_TAB_LABEL[tab]}
               </AppText>
             </Pressable>
           ))}

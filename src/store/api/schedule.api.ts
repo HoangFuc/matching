@@ -3,7 +3,7 @@ import { API_BASE_URL, TOKEN } from '@env';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const scheduleApi = createApi({
-  reducerPath: 'dataRoomApi',
+  reducerPath: 'scheduleApi',
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}`,
     prepareHeaders: async headers => {

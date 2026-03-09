@@ -8,21 +8,16 @@ import {
   View,
 } from 'react-native';
 
-import {ArrowLeft2, SearchNormal1} from '@/src/constants/icons';
-import {ms} from 'react-native-size-matters/extend';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {useNavigation} from '@react-navigation/native';
+import { ArrowLeft2, SearchNormal1 } from '@/src/constants/icons';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ms } from 'react-native-size-matters/extend';
 
-import {AppText} from '@/src/component/AppText';
-import {AppColors} from '@/src/constants/colors';
-import {FontWeight} from '@/src/constants/typography';
-import {
-  FAKE_FILES,
-  FAKE_FOLDERS,
-  IFile,
-  IFolder,
-} from '@/src/store/api/dataRoom.api';
-import {MemoFolderCard} from '../components/folder';
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { FontWeight } from '@/src/constants/typography';
+import { IFile, IFolder, useSearchQuery } from '@/src/store/api/dataRoom.api';
+import { MemoFolderCard } from '../components/folder';
 
 type TSearchResult = {
   type: 'folder' | 'file';
@@ -33,43 +28,44 @@ const SearchScreen: React.FC = () => {
   const navigation = useNavigation();
   const [keyword, setKeyword] = React.useState('');
   const inputRef = React.useRef<TextInput>(null);
+  const { data: dataSearch } = useSearchQuery(keyword.trim(), {
+    skip: !keyword.trim(),
+  });
 
-  React.useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 300);
-  }, []);
-
+  //---------------------------------------
   const results = React.useMemo<TSearchResult[]>(() => {
-    if (!keyword.trim()) {
+    if (!keyword.trim() || !dataSearch) {
       return [];
     }
-    const lower = keyword.toLowerCase();
 
-    const folderResults: TSearchResult[] = FAKE_FOLDERS.filter(f =>
-      f.name.toLowerCase().includes(lower),
-    ).map(item => ({type: 'folder', item}));
+    const folderResults: TSearchResult[] = dataSearch.folders.map(item => ({
+      type: 'folder',
+      item,
+    }));
 
-    const fileResults: TSearchResult[] = FAKE_FILES.filter(f =>
-      f.name.toLowerCase().includes(lower),
-    ).map(item => ({type: 'file', item}));
+    const fileResults: TSearchResult[] = dataSearch.files.map(item => ({
+      type: 'file',
+      item,
+    }));
 
     return [...folderResults, ...fileResults];
-  }, [keyword]);
+  }, [keyword, dataSearch]);
 
+  //---------------------------------------
   const handleGoBack = React.useCallback(() => {
     navigation.goBack();
   }, [navigation]);
 
-  const renderItem = React.useCallback(
-    ({item}: {item: TSearchResult}) => {
-      if (item.type === 'folder') {
-        const folder = item.item as IFolder;
-        return <MemoFolderCard folder={folder} showMore={false} />;
-      }
-      return null;
-    },
-    [],
-  );
+  //---------------------------------------
+  const renderItem = React.useCallback(({ item }: { item: TSearchResult }) => {
+    if (item.type === 'folder') {
+      const folder = item.item as IFolder;
+      return <MemoFolderCard folder={folder} showMore={false} />;
+    }
+    return null;
+  }, []);
 
+  //---------------------------------------
   const keyExtractor = React.useCallback(
     (item: TSearchResult) =>
       item.type === 'folder'
@@ -77,6 +73,11 @@ const SearchScreen: React.FC = () => {
         : `file-${(item.item as IFile).id}`,
     [],
   );
+
+  //---------------------------------------
+  React.useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 300);
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>

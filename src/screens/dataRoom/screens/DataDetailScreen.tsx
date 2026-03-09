@@ -1,18 +1,18 @@
+import React from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
+
 import {
   errorCodes,
   isErrorWithCode,
   pick,
   types,
 } from '@react-native-documents/picker';
-import React from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-
-import {
-  ArrowLeft2,
-  Element3,
-  Fatrows,
-  SearchNormal1,
-} from '@/src/constants/icons';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -21,8 +21,18 @@ import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import {
+  ArrowLeft2,
+  Element3,
+  Fatrows,
+  SearchNormal1,
+} from '@/src/constants/icons';
 import type { DataRoomStackParamList } from '@/src/interface/tab.interface';
-import { IFile, useGetFilesByFolderQuery } from '@/src/store/api/dataRoom.api';
+import {
+  IFile,
+  useGetFilesByFolderQuery,
+  useUploadFileMutation,
+} from '@/src/store/api/dataRoom.api';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
 import { toggleViewMode } from '@/src/store/slices/dataRoomSlice';
 import { MemoFABWithMenu } from '../components/FABWithMenu';
@@ -44,47 +54,61 @@ const DataDetailScreen: React.FC = () => {
   const dispatch = useAppDispatch();
   const viewMode = useAppSelector(state => state.dataRoom.viewMode);
 
+  //---------------------------------------
   const { folderId, folderName } = route.params;
   const { data: files = [] } = useGetFilesByFolderQuery(folderId);
+  const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
 
-  // Sheet states
+  //---------------------------------------
   const [actionSheetVisible, setActionSheetVisible] = React.useState(false);
   const [moveSheetVisible, setMoveSheetVisible] = React.useState(false);
   const [renameSheetVisible, setRenameSheetVisible] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState<IFile | null>(null);
 
+  //---------------------------------------
   const handlePressBack = React.useCallback(() => {
     navigation.goBack();
   }, [navigation]);
 
+  //---------------------------------------
   const handlePressSearch = React.useCallback(() => {
     navigation.navigate('DataRoomSearch');
   }, [navigation]);
 
+  //---------------------------------------
   const handleToggleView = React.useCallback(() => {
     dispatch(toggleViewMode());
   }, [dispatch]);
 
+  //---------------------------------------
   const handleUploadFile = React.useCallback(async () => {
     try {
       const result = await pick({
         type: [types.allFiles],
         allowMultiSelection: true,
       });
-      // TODO: upload files to server
-      console.log('Selected files:', result);
+
+      const pickedFiles = result.map(file => ({
+        uri: file.uri,
+        name: file.name ?? 'file',
+        type: file.type ?? 'application/octet-stream',
+      }));
+
+      await uploadFile({ folderId, files: pickedFiles }).unwrap();
     } catch (err) {
       if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
-        console.error('DocumentPicker error:', err);
+        console.error('Upload error:', err);
       }
     }
-  }, []);
+  }, [folderId, uploadFile]);
 
+  //---------------------------------------
   const handlePressMore = React.useCallback((file: IFile) => {
     setSelectedFile(file);
     setActionSheetVisible(true);
   }, []);
 
+  //---------------------------------------
   const handleFileAction = React.useCallback(
     (action: 'share' | 'move' | 'rename' | 'info') => {
       if (!selectedFile) {
@@ -104,6 +128,7 @@ const DataDetailScreen: React.FC = () => {
     [selectedFile],
   );
 
+  //---------------------------------------
   const renderListItem = React.useCallback(
     ({ item }: { item: IFile }) => (
       <MemoFileListItem item={item} onPressMore={handlePressMore} />
@@ -111,6 +136,7 @@ const DataDetailScreen: React.FC = () => {
     [handlePressMore],
   );
 
+  //---------------------------------------
   const renderGridItem = React.useCallback(
     ({ item }: { item: IFile }) => (
       <MemoFileGridItem item={item} onPressMore={handlePressMore} />
@@ -118,6 +144,7 @@ const DataDetailScreen: React.FC = () => {
     [handlePressMore],
   );
 
+  //---------------------------------------
   const keyExtractor = React.useCallback((item: IFile) => item.id, []);
 
   return (
@@ -157,6 +184,7 @@ const DataDetailScreen: React.FC = () => {
           <AppText variant="body1" color={AppColors.gray100}>
             {folderName}
           </AppText>
+
           <Pressable hitSlop={8} onPress={handleToggleView}>
             {viewMode === 'list' ? (
               <Element3
@@ -217,7 +245,7 @@ const DataDetailScreen: React.FC = () => {
       <MemoFileActionSheet
         visible={actionSheetVisible}
         onClose={() => setActionSheetVisible(false)}
-        fileName={selectedFile?.name || ''}
+        fileName={selectedFile?.originalName || ''}
         onAction={handleFileAction}
       />
 
@@ -231,13 +259,27 @@ const DataDetailScreen: React.FC = () => {
         />
       )}
 
+      {/* Loading Overlay */}
+      {isUploading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={AppColors.purple} />
+          <AppText
+            variant="body1"
+            color={AppColors.gray100}
+            style={styles.loadingText}
+          >
+            파일 업로드 중...
+          </AppText>
+        </View>
+      )}
+
       {/* Rename Sheet */}
       {selectedFile && (
         <MemoRenameSheet
           visible={renameSheetVisible}
           onClose={() => setRenameSheetVisible(false)}
           itemId={selectedFile.id}
-          currentName={selectedFile.name}
+          currentName={selectedFile.originalName}
           kind="file"
         />
       )}
@@ -289,5 +331,15 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  loadingText: {
+    marginTop: ms(12),
   },
 });

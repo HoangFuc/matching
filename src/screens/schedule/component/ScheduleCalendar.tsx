@@ -80,6 +80,15 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode, onDayPress }) => {
   }, [month]);
 
   //---------------------------------------
+  const handleSelectYearMonth = React.useCallback(
+    (selectedYear: number, selectedMonth: number) => {
+      setYear(selectedYear);
+      setMonth(selectedMonth);
+    },
+    [],
+  );
+
+  //---------------------------------------
   const handleDayPress = React.useCallback(
     (dateKey: string) => {
       const dayEvents = events[dateKey] || [];
@@ -177,6 +186,7 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode, onDayPress }) => {
         month={month}
         onPrev={goToPrev}
         onNext={goToNext}
+        onSelectYearMonth={handleSelectYearMonth}
         rightAction={
           mode !== 'attendance' ? <MemoScheduleRightAction /> : undefined
         }

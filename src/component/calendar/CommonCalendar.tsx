@@ -15,6 +15,7 @@ interface IProps {
   month: number;
   onPrev: () => void;
   onNext: () => void;
+  onSelectYearMonth?: (year: number, month: number) => void;
   rightAction?: React.ReactNode;
   renderDayContent: (
     cell: TDayCell,
@@ -30,6 +31,7 @@ const CommonCalendar: React.FC<IProps> = ({
   month,
   onPrev,
   onNext,
+  onSelectYearMonth,
   rightAction,
   renderDayContent,
   onDayPress,
@@ -42,6 +44,7 @@ const CommonCalendar: React.FC<IProps> = ({
         month={month}
         onPrev={onPrev}
         onNext={onNext}
+        onSelectYearMonth={onSelectYearMonth}
         rightAction={rightAction}
       />
 

@@ -6,12 +6,14 @@ import { ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { ArrowLeft2, ArrowRight2 } from '@/src/constants/icons';
+import { MemoMonthYearPickerModal } from './MonthYearPickerModal';
 
 interface IProps {
   year: number;
   month: number;
   onPrev: () => void;
   onNext: () => void;
+  onSelectYearMonth?: (year: number, month: number) => void;
   rightAction?: React.ReactNode;
 }
 
@@ -20,8 +22,29 @@ const CalendarHeader: React.FC<IProps> = ({
   month,
   onPrev,
   onNext,
+  onSelectYearMonth,
   rightAction,
 }) => {
+  const [pickerVisible, setPickerVisible] = React.useState(false);
+
+  //---------------------------------------
+  const handleOpenPicker = React.useCallback(() => {
+    setPickerVisible(true);
+  }, []);
+
+  //---------------------------------------
+  const handleClosePicker = React.useCallback(() => {
+    setPickerVisible(false);
+  }, []);
+
+  //---------------------------------------
+  const handleConfirm = React.useCallback(
+    (selectedYear: number, selectedMonth: number) => {
+      onSelectYearMonth?.(selectedYear, selectedMonth);
+    },
+    [onSelectYearMonth],
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.monthSelector}>
@@ -33,9 +56,11 @@ const CalendarHeader: React.FC<IProps> = ({
           />
         </Pressable>
 
-        <AppText variant="heading3" color={AppColors.gray100}>
-          {year}년 {month + 1}월
-        </AppText>
+        <Pressable onPress={handleOpenPicker}>
+          <AppText variant="heading3" color={AppColors.gray100}>
+            {year}년 {month + 1}월
+          </AppText>
+        </Pressable>
 
         <Pressable onPress={onNext} hitSlop={8}>
           <ArrowRight2
@@ -47,6 +72,14 @@ const CalendarHeader: React.FC<IProps> = ({
       </View>
 
       {rightAction}
+
+      <MemoMonthYearPickerModal
+        visible={pickerVisible}
+        year={year}
+        month={month}
+        onClose={handleClosePicker}
+        onConfirm={handleConfirm}
+      />
     </View>
   );
 };

@@ -1,3 +1,7 @@
+import { TScheduleEvent } from '@/src/interface/schedule.interface';
+import { ScheduleStackParamList } from '@/src/interface/tab.interface';
+import { RouteProp } from '@react-navigation/native';
+
 export type TScheduleMode = 'schedule' | 'attendance';
 
 //---------------------------------------
@@ -45,3 +49,12 @@ export interface ISchedulePayload {
   customerPhone: string;
   memo: string;
 }
+
+//---------------------------------------
+export type TScheduleRoute = RouteProp<ScheduleStackParamList, 'ScheduleMain'>;
+
+//---------------------------------------
+export type TDetailData = {
+  dateKey: string;
+  events: TScheduleEvent[];
+};

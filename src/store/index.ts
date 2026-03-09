@@ -12,6 +12,7 @@ import {
 } from 'redux-persist';
 
 // import {dataRoomApi} from './api/dataRoom.api';
+import { checkinApi } from './api/checkin.api';
 import { scheduleApi } from './api/schedule.api';
 import { toastMiddleware } from './middleware/toastMiddleware';
 import dataRoomReducer from './slices/dataRoomSlice';
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
   dataRoom: dataRoomReducer,
   schedule: scheduleReducer,
   [scheduleApi.reducerPath]: scheduleApi.reducer,
+  [checkinApi.reducerPath]: checkinApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -40,7 +42,8 @@ export const store = configureStore({
       },
     })
       .concat(toastMiddleware)
-      .concat(scheduleApi.middleware),
+      .concat(scheduleApi.middleware)
+      .concat(checkinApi.middleware),
   // TODO: 실제 API 연결 시 .concat(dataRoomApi.middleware) 추가
 });
 

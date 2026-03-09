@@ -29,7 +29,7 @@ const ScheduleDetail: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <MemoScheduleHeader onPressFilter={() => {}} />
+      <MemoScheduleHeader onPressFilter={() => {}} mode="detail" />
 
       <MemoEventCardContent handlePressBack={handlePressBack} dateKey={dateKey} events={events} />
     </SafeAreaView>

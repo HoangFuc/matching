@@ -11,6 +11,7 @@ import {
   persistStore,
 } from 'redux-persist';
 
+import { bulletinApi } from './api/bulletin.api';
 import {dataRoomApi} from './api/dataRoom.api';
 import { checkinApi } from './api/checkin.api';
 import { scheduleApi } from './api/schedule.api';
@@ -30,6 +31,7 @@ const rootReducer = combineReducers({
   [scheduleApi.reducerPath]: scheduleApi.reducer,
   [checkinApi.reducerPath]: checkinApi.reducer,
   [dataRoomApi.reducerPath]: dataRoomApi.reducer,
+  [bulletinApi.reducerPath]: bulletinApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -45,7 +47,8 @@ export const store = configureStore({
       .concat(toastMiddleware)
       .concat(scheduleApi.middleware)
       .concat(checkinApi.middleware)
-      .concat(dataRoomApi.middleware),
+      .concat(dataRoomApi.middleware)
+      .concat(bulletinApi.middleware),
 });
 
 export const persistor = persistStore(store);

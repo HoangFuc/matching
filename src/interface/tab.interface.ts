@@ -5,7 +5,6 @@ import type {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { TScheduleMode } from '../screens/schedule/type';
-import type { TBulletinPost } from './bulletin.interface';
 import type { TMeetingMinutes } from './meetingMinutes.interface';
 import type { TScheduleEvent } from './schedule.interface';
 
@@ -13,7 +12,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   DataRoom: undefined;
   BulletinBoard: undefined;
-  BulletinDetail: { post: TBulletinPost };
+  BulletinDetail: { postId: string };
   CreateBulletin: undefined;
 };
 

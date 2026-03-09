@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
@@ -19,15 +20,19 @@ import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
 import { Add, CloseCircle } from '@/src/constants/icons';
+import { useCreateBulletinMutation } from '@/src/store/api/bulletin.api';
 
 const MAX_IMAGES = 3;
 
 type TImageItem = {
   uri: string;
+  type: string;
+  name: string;
 };
 
 const CreateBulletinScreen: React.FC = () => {
   const navigation = useNavigation();
+  const [createBulletin, { isLoading }] = useCreateBulletinMutation();
 
   //---------------------------------------
   const [title, setTitle] = useState('');
@@ -35,10 +40,26 @@ const CreateBulletinScreen: React.FC = () => {
   const [images, setImages] = useState<TImageItem[]>([]);
 
   //---------------------------------------
-  const handlePickImage = useCallback(() => {
-    // TODO: integrate image picker library (e.g. react-native-image-picker)
-    Alert.alert('Image Picker', 'Image picker will be integrated later.');
-  }, []);
+  const handlePickImage = useCallback(async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      selectionLimit: MAX_IMAGES - images.length,
+    });
+
+    if (result.didCancel || !result.assets) {
+      return;
+    }
+
+    const picked: TImageItem[] = result.assets
+      .filter(asset => asset.uri)
+      .map(asset => ({
+        uri: asset.uri!,
+        type: asset.type || 'image/jpeg',
+        name: asset.fileName || `image_${Date.now()}.jpg`,
+      }));
+
+    setImages(prev => [...prev, ...picked].slice(0, MAX_IMAGES));
+  }, [images.length]);
 
   //---------------------------------------
   const handleRemoveImage = useCallback((index: number) => {
@@ -46,15 +67,23 @@ const CreateBulletinScreen: React.FC = () => {
   }, []);
 
   //---------------------------------------
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (content.length < 10) {
       Alert.alert('', '내용은 10자 이상 입력해주세요.');
       return;
     }
 
-    // TODO: call API to create bulletin post
-    navigation.goBack();
-  }, [content, navigation]);
+    try {
+      await createBulletin({
+        title,
+        content,
+        images,
+      }).unwrap();
+      navigation.goBack();
+    } catch {
+      Alert.alert('', '게시글 등록에 실패했습니다.');
+    }
+  }, [title, content, images, createBulletin, navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -139,6 +168,7 @@ const CreateBulletinScreen: React.FC = () => {
             onPress={handleSubmit}
             variant="primary"
             style={styles.submitBtn}
+            disabled={isLoading}
           />
         </View>
       </MemoScreenBody>

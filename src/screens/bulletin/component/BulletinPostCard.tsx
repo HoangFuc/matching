@@ -6,29 +6,35 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
-import { TBulletinPost } from '@/src/interface/bulletin.interface';
+import { AppImages } from '@/src/constants/images';
+import { IBulletinPost } from '@/src/interface/bulletin.interface';
+import { formatTimeAgo } from '@/src/utils/date';
 import { MemoPostStats } from './PostStats';
 
 interface IProps {
-  post: TBulletinPost;
+  post: IBulletinPost;
   onPress?: () => void;
 }
 
 const BulletinPostCard: React.FC<IProps> = ({ post, onPress }) => {
+  const avatarSource = post.author.profileImage
+    ? { uri: post.author.profileImage }
+    : AppImages.avatar;
+
   return (
     <MemoBaseCard style={styles.card} onPress={onPress}>
       {/* Author row */}
       <View style={styles.authorRow}>
-        <Image source={post.avatar} style={styles.avatar} />
+        <Image source={avatarSource} style={styles.avatar} />
 
         <View style={styles.authorInfo}>
           <AppText variant="body6" color={AppColors.gray100}>
-            {post.author}
+            {post.author.name}
           </AppText>
         </View>
 
         <AppText variant="detail" color={AppColors.gray80}>
-          {post.timeAgo}
+          {formatTimeAgo(post.createdAt)}
         </AppText>
       </View>
 
@@ -51,12 +57,12 @@ const BulletinPostCard: React.FC<IProps> = ({ post, onPress }) => {
         </AppText>
 
         {post.images && post.images.length > 0 && (
-          <Image source={post.images[0]} style={styles.postImage} />
+          <Image source={{ uri: post.images[0].url }} style={styles.postImage} />
         )}
       </View>
 
       {/* Footer - likes & comments */}
-      <MemoPostStats likes={post.likes} comments={post.comments} />
+      <MemoPostStats likes={post.likesCount} comments={post.commentsCount} />
     </MemoBaseCard>
   );
 };

@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoCommonCalendar } from '@/src/component/calendar/CommonCalendar';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { AppColors } from '@/src/constants/colors';
 import { CloseCircle } from '@/src/constants/icons';
-import { TDayCell } from '@/src/interface/schedule.interface';
-import type { ScheduleNavigationProp } from '@/src/interface/tab.interface';
+import { TDayCell, TScheduleEvent } from '@/src/interface/schedule.interface';
 import { useGetSchedulesQuery } from '@/src/store/api';
 import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
 import { TScheduleMode } from '../type';
@@ -39,13 +37,13 @@ const MOCK_CHECKIN_TIMES: Record<string, string> = {
 
 interface IProps {
   mode: TScheduleMode;
+  onDayPress: (dateKey: string, events: TScheduleEvent[]) => void;
 }
 
-const ScheduleCalendar: React.FC<IProps> = ({ mode }) => {
+const ScheduleCalendar: React.FC<IProps> = ({ mode, onDayPress }) => {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
-  const navigation = useNavigation<ScheduleNavigationProp>();
 
   //---------------------------------------
   const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
@@ -85,9 +83,9 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode }) => {
   const handleDayPress = React.useCallback(
     (dateKey: string) => {
       const dayEvents = events[dateKey] || [];
-      navigation.navigate('ScheduleDetail', { dateKey, events: dayEvents });
+      onDayPress(dateKey, dayEvents);
     },
-    [events, navigation],
+    [events, onDayPress],
   );
 
   //---------------------------------------

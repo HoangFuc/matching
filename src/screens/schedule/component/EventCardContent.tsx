@@ -7,20 +7,17 @@ import { MemoEventCard } from './EventCard';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { TScheduleEvent } from '@/src/interface/schedule.interface';
 import { formatDateHeader } from '@/src/utils/calendar.helper';
-import { RouteProp, useRoute } from '@react-navigation/native';
-import { ScheduleStackParamList } from '@/src/interface/tab.interface';
 
 interface IProps {
   handlePressBack: () => void;
+  dateKey: string;
+  events: TScheduleEvent[];
 }
 
 const EventCardContent: React.FC<IProps> = props => {
-  const { handlePressBack } = props;
-
-  //---------------------------------------
-  const route = useRoute<RouteProp<ScheduleStackParamList, 'ScheduleDetail'>>();
-  const { dateKey, events } = route.params;
+  const { handlePressBack, dateKey, events } = props;
 
   return (
     <View style={styles.content}>
@@ -33,7 +30,7 @@ const EventCardContent: React.FC<IProps> = props => {
           />
         </Pressable>
 
-        <AppText variant="heading3" color={AppColors.gray90}>
+        <AppText variant="heading3" color={AppColors.gray100}>
           {formatDateHeader(dateKey)}
         </AppText>
       </View>
@@ -43,8 +40,8 @@ const EventCardContent: React.FC<IProps> = props => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {events.map(event => (
-          <MemoEventCard key={event.id} event={event} />
+        {events.map((event, index) => (
+          <MemoEventCard key={`${event.id}-${index}`} event={event} />
         ))}
 
         {events.length === 0 && (

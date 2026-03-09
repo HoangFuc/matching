@@ -34,8 +34,6 @@ const AppButton: React.FC<IAppButtonProps> = ({
 }) => {
   const isPrimary = variant === 'primary';
 
-  console.log('======================label', label);
-
   return (
     <TouchableOpacity
       style={[
@@ -51,7 +49,13 @@ const AppButton: React.FC<IAppButtonProps> = ({
 
       <AppText
         variant={textVariant}
-        color={isPrimary ? AppColors.purple : AppColors.gray90}
+        color={
+          disabled
+            ? AppColors.gray40
+            : isPrimary
+            ? AppColors.purple
+            : AppColors.gray90
+        }
       >
         {label}
       </AppText>
@@ -75,6 +79,6 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.gray20,
   },
   disabled: {
-    opacity: 0.5,
+    backgroundColor: AppColors.gray20,
   },
 });

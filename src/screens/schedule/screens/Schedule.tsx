@@ -10,16 +10,23 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppColors } from '@/src/constants/colors';
+import { TScheduleEvent } from '@/src/interface/schedule.interface';
 import {
   ScheduleNavigationProp,
   ScheduleStackParamList,
 } from '@/src/interface/tab.interface';
+import { MemoEventCardContent } from '../component/EventCardContent';
 import { MemoScheduleCalendar } from '../component/ScheduleCalendar';
 import { MemoScheduleFilterModal } from '../component/ScheduleFilterModal';
 import { MemoScheduleHeader } from '../component/ScheduleHeader';
 import { TScheduleType } from '../component/ScheduleTypePicker';
 
 type TScheduleRoute = RouteProp<ScheduleStackParamList, 'ScheduleMain'>;
+
+type TDetailData = {
+  dateKey: string;
+  events: TScheduleEvent[];
+};
 
 const Schedule: React.FC = () => {
   const route = useRoute<TScheduleRoute>();
@@ -38,6 +45,7 @@ const Schedule: React.FC = () => {
   const [selectedFilterTypes, setSelectedFilterTypes] = React.useState<
     TScheduleType[]
   >(['계약 일정']);
+  const [detailData, setDetailData] = React.useState<TDetailData | null>(null);
 
   const handleOpenFilter = React.useCallback(() => {
     setFilterVisible(true);
@@ -47,13 +55,32 @@ const Schedule: React.FC = () => {
     setFilterVisible(false);
   }, []);
 
+  const handleDayPress = React.useCallback(
+    (dateKey: string, events: TScheduleEvent[]) => {
+      setDetailData({ dateKey, events });
+    },
+    [],
+  );
+
+  const handlePressBack = React.useCallback(() => {
+    setDetailData(null);
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <MemoScheduleHeader onPressFilter={handleOpenFilter} mode={mode} />
 
-      <View style={styles.content}>
-        <MemoScheduleCalendar mode={mode} />
-      </View>
+      {detailData ? (
+        <MemoEventCardContent
+          handlePressBack={handlePressBack}
+          dateKey={detailData.dateKey}
+          events={detailData.events}
+        />
+      ) : (
+        <View style={styles.content}>
+          <MemoScheduleCalendar mode={mode} onDayPress={handleDayPress} />
+        </View>
+      )}
 
       <MemoScheduleFilterModal
         visible={filterVisible}

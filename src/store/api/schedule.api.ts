@@ -1,6 +1,6 @@
-import { ISchedule } from '@/src/screens/schedule/type';
+import { ISchedule, ISchedulePayload } from '@/src/screens/schedule/type';
+import { API_BASE_URL, TOKEN } from '@env';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { API_BASE_URL } from '@env';
 
 export const scheduleApi = createApi({
   reducerPath: 'dataRoomApi',
@@ -8,8 +8,7 @@ export const scheduleApi = createApi({
     baseUrl: `${API_BASE_URL}`,
     prepareHeaders: async headers => {
       // const auth = await _retrieveData('auth');
-      const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZW1haWwiOiJkZXZAdGVzdC5jb20iLCJpYXQiOjE3NzI3OTE2MTAsImV4cCI6MTc3MzM5NjQxMH0.b0MvbVjnXGtcG3VqTi_CvU_pVB_BwpzqPl2s-PujXeA';
+      const token = TOKEN;
       // const token = JSON.parse(auth || '{}')?.accessToken;
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
@@ -19,11 +18,24 @@ export const scheduleApi = createApi({
   }),
   tagTypes: ['Schedule', 'Calendar'],
   endpoints: builder => ({
-    getSchedules: builder.query<ISchedule[], { startDate: string; endDate: string }>({
-      query: ({ startDate, endDate }) => `/schedules?startDate=${startDate}&endDate=${endDate}`,
+    getSchedules: builder.query<
+      ISchedule[],
+      { startDate: string; endDate: string }
+    >({
+      query: ({ startDate, endDate }) =>
+        `/schedules?startDate=${startDate}&endDate=${endDate}`,
       transformResponse: (response: any) =>
         Array.isArray(response) ? response : response?.data ?? [],
       providesTags: ['Schedule'],
+    }),
+    //---------------------------------------
+    createSchedule: builder.mutation<any, ISchedulePayload>({
+      query: body => ({
+        url: '/schedules',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Schedule'],
     }),
     // createFolder: builder.mutation<IFolder, ICreateFolderPayload>({
     //   query: body => ({
@@ -75,4 +87,4 @@ export const scheduleApi = createApi({
   }),
 });
 
-export const { useGetSchedulesQuery } = scheduleApi;
+export const { useGetSchedulesQuery, useCreateScheduleMutation } = scheduleApi;

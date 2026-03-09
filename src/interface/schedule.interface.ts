@@ -1,3 +1,4 @@
+//---------------------------------------
 export type TScheduleEvent = {
   id: string;
   title: string;
@@ -7,6 +8,7 @@ export type TScheduleEvent = {
   description?: string;
 };
 
+//---------------------------------------
 export type TDayCell = {
   date: number;
   month: number;

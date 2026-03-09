@@ -1,5 +1,6 @@
 export type TScheduleMode = 'schedule' | 'attendance';
 
+//---------------------------------------
 export interface ISchedule {
   companyId: string;
   createdBy: string;
@@ -19,14 +20,28 @@ export interface ISchedule {
   meetingLog: MeetingLog;
 }
 
+//---------------------------------------
 export interface Creator {
   id: string;
   fullName: string;
   avatarUrl: string;
 }
 
+//---------------------------------------
 export interface MeetingLog {
   id: string;
   content: string;
   createdAt: string;
+}
+
+//---------------------------------------
+export interface ISchedulePayload {
+  scheduleType: string;
+  title: string;
+  description: string;
+  scheduleDate: string;
+  startTime: string;
+  customerName: string;
+  customerPhone: string;
+  memo: string;
 }

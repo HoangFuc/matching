@@ -9,39 +9,30 @@ import {
 
 import { ArrowDown2, Calendar, Clock } from '@/src/constants/icons';
 import dayjs from 'dayjs';
+import { Control, Controller } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
 import { ms } from 'react-native-size-matters';
 
 import { AppText } from '@/src/component/AppText';
+import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { AppColors } from '@/src/constants/colors';
 import { FontWeight } from '@/src/constants/typography';
+import type { ISchedulePayload } from '@/src/screens/schedule/type';
 
 interface IProps {
+  control: Control<ISchedulePayload>;
   setShowTypePicker: (show: boolean) => void;
   scheduleType: string;
-  date: string;
-  setDate: (date: string) => void;
-  time: string;
-  setTime: (time: string) => void;
-  renderGeneralFields: () => React.ReactNode;
-  renderMeetingFields: () => React.ReactNode;
 }
 
 const formatDate = (d: Date) => dayjs(d).format('YYYY.MM.DD');
 const formatTime = (d: Date) => dayjs(d).format('HH:mm');
 
-const FormCreateSchedule: React.FC<IProps> = props => {
-  const {
-    setShowTypePicker,
-    scheduleType,
-    date,
-    setDate,
-    time,
-    setTime,
-    renderGeneralFields,
-    renderMeetingFields,
-  } = props;
-
+const FormCreateSchedule: React.FC<IProps> = ({
+  control,
+  setShowTypePicker,
+  scheduleType,
+}) => {
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [showTimePicker, setShowTimePicker] = React.useState(false);
 
@@ -88,37 +79,47 @@ const FormCreateSchedule: React.FC<IProps> = props => {
               날짜
             </AppText>
 
-            <Pressable
-              style={styles.dateInputWrapper}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <View style={[styles.input, styles.dateDisplay]}>
-                <AppText
-                  variant="body8"
-                  color={date ? AppColors.gray100 : AppColors.gray40}
-                >
-                  {date || 'yyyy.mm.dd'}
-                </AppText>
-              </View>
+            <Controller
+              control={control}
+              name="scheduleDate"
+              render={({ field: { value, onChange } }) => (
+                <>
+                  <Pressable
+                    style={styles.dateInputWrapper}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <View style={[styles.input, styles.dateDisplay]}>
+                      <AppText
+                        variant="body8"
+                        color={value ? AppColors.gray100 : AppColors.gray40}
+                      >
+                        {value || 'yyyy.mm.dd'}
+                      </AppText>
+                    </View>
 
-              <Calendar
-                size={`${ms(18)}`}
-                color={AppColors.gray40}
-                variant="Linear"
-                style={styles.inputIcon}
-              />
-            </Pressable>
+                    <Calendar
+                      size={`${ms(18)}`}
+                      color={AppColors.gray40}
+                      variant="Linear"
+                      style={styles.inputIcon}
+                    />
+                  </Pressable>
 
-            <DatePicker
-              modal
-              open={showDatePicker}
-              date={date ? new Date(date.replace(/\./g, '-')) : new Date()}
-              mode="date"
-              onConfirm={d => {
-                setShowDatePicker(false);
-                setDate(formatDate(d));
-              }}
-              onCancel={() => setShowDatePicker(false)}
+                  <DatePicker
+                    modal
+                    open={showDatePicker}
+                    date={
+                      value ? new Date(value.replace(/\./g, '-')) : new Date()
+                    }
+                    mode="date"
+                    onConfirm={d => {
+                      setShowDatePicker(false);
+                      onChange(formatDate(d));
+                    }}
+                    onCancel={() => setShowDatePicker(false)}
+                  />
+                </>
+              )}
             />
           </View>
 
@@ -127,49 +128,106 @@ const FormCreateSchedule: React.FC<IProps> = props => {
               시간
             </AppText>
 
-            <Pressable
-              style={styles.dateInputWrapper}
-              onPress={() => setShowTimePicker(true)}
-            >
-              <View style={[styles.input, styles.dateDisplay]}>
-                <AppText
-                  variant="body8"
-                  color={time ? AppColors.gray100 : AppColors.gray40}
-                >
-                  {time || '00:00'}
-                </AppText>
-              </View>
+            <Controller
+              control={control}
+              name="startTime"
+              render={({ field: { value, onChange } }) => (
+                <>
+                  <Pressable
+                    style={styles.dateInputWrapper}
+                    onPress={() => setShowTimePicker(true)}
+                  >
+                    <View style={[styles.input, styles.dateDisplay]}>
+                      <AppText
+                        variant="body8"
+                        color={value ? AppColors.gray100 : AppColors.gray40}
+                      >
+                        {value || '00:00'}
+                      </AppText>
+                    </View>
 
-              <Clock
-                size={`${ms(18)}`}
-                color={AppColors.gray40}
-                variant="Linear"
-                style={styles.inputIcon}
-              />
-            </Pressable>
+                    <Clock
+                      size={`${ms(18)}`}
+                      color={AppColors.gray40}
+                      variant="Linear"
+                      style={styles.inputIcon}
+                    />
+                  </Pressable>
 
-            <DatePicker
-              modal
-              open={showTimePicker}
-              date={
-                time
-                  ? new Date(`2000-01-01T${time}:00`)
-                  : new Date()
-              }
-              mode="time"
-              onConfirm={d => {
-                setShowTimePicker(false);
-                setTime(formatTime(d));
-              }}
-              onCancel={() => setShowTimePicker(false)}
+                  <DatePicker
+                    modal
+                    open={showTimePicker}
+                    date={
+                      value ? new Date(`2000-01-01T${value}:00`) : new Date()
+                    }
+                    mode="time"
+                    onConfirm={d => {
+                      setShowTimePicker(false);
+                      onChange(formatTime(d));
+                    }}
+                    onCancel={() => setShowTimePicker(false)}
+                  />
+                </>
+              )}
             />
           </View>
         </View>
 
         {/* Dynamic fields based on schedule type */}
-        {scheduleType === '일반일정'
-          ? renderGeneralFields()
-          : renderMeetingFields()}
+        {scheduleType === '일반일정' ? (
+          <View style={{ gap: ms(16) }}>
+            <RHFFormInput
+              control={control}
+              name="title"
+              label="일정명"
+              placeholder="일정명을 입력하세요"
+            />
+
+            <RHFFormInput
+              control={control}
+              name="description"
+              label="일정내용"
+              placeholder="일정 내용을 입력하세요"
+              multiline
+            />
+          </View>
+        ) : (
+          <View style={{ gap: ms(16) }}>
+            <RHFFormInput
+              control={control}
+              name="customerName"
+              label="고객명"
+              labelVariant="body6"
+              placeholder="고객명을 입력하세요"
+            />
+
+            <RHFFormInput
+              control={control}
+              name="customerPhone"
+              label="연락처"
+              labelVariant="body6"
+              placeholder="연락처를 입력하세요"
+              keyboardType="phone-pad"
+            />
+
+            <RHFFormInput
+              control={control}
+              name="title"
+              label="일정명"
+              labelVariant="body6"
+              placeholder="일정명을 입력하세요"
+            />
+
+            <RHFFormInput
+              control={control}
+              name="memo"
+              label="메모"
+              labelVariant="body6"
+              placeholder="메모를 입력하세요"
+              multiline
+            />
+          </View>
+        )}
       </View>
     </ScrollView>
   );

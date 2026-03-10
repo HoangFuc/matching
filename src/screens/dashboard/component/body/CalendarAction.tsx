@@ -15,7 +15,7 @@ import { MemoSchedule } from '../calendarAction/Schedule';
 
 const CalendarAction: React.FC = () => {
   const { data: attendance } = useGetAttendanceTodayQuery();
-  const [checkin] = useCheckinMutation();
+  const [checkin, { isLoading }] = useCheckinMutation();
 
   //---------------------------------------
   const checkinTime = React.useMemo(
@@ -77,7 +77,11 @@ const CalendarAction: React.FC = () => {
     <View style={styles.container}>
       <MemoSchedule />
 
-      <MemoCheckin checkinTime={checkinTime} onCheckin={handleCheckin} />
+      <MemoCheckin
+        checkinTime={checkinTime}
+        onCheckin={handleCheckin}
+        isLoading={isLoading}
+      />
     </View>
   );
 };

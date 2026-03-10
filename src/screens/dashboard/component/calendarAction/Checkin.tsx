@@ -1,7 +1,14 @@
 import React from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -14,11 +21,27 @@ import type { RootTabNavigationProp } from '@/src/interface/tab.interface';
 interface IProps {
   checkinTime: string | null;
   onCheckin: () => void;
+  isLoading?: boolean;
 }
 
-const Checkin: React.FC<IProps> = ({ checkinTime, onCheckin }) => {
+const Checkin: React.FC<IProps> = props => {
+  const { checkinTime, onCheckin, isLoading } = props;
+
+  //---------------------------------------
   const navigation = useNavigation<RootTabNavigationProp>();
 
+  //---------------------------------------
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={AppColors.purple} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  //---------------------------------------
   if (checkinTime) {
     return (
       <MemoBaseCard
@@ -65,10 +88,7 @@ const Checkin: React.FC<IProps> = ({ checkinTime, onCheckin }) => {
 
   return (
     <MemoBaseCard style={styles.card}>
-      <Image
-        style={styles.image}
-        source={AppImages.task}
-      />
+      <Image style={styles.image} source={AppImages.task} />
 
       <AppText variant="body5" color={AppColors.gray90}>
         {'오늘 출근을 체크하세요'}
@@ -122,5 +142,15 @@ const styles = StyleSheet.create({
     borderRadius: ms(8),
     padding: ms(12),
     gap: ms(4),
+  },
+  safeAreaTop: {
+    flex: 1,
+    backgroundColor: AppColors.purple,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: AppColors.white,
   },
 });

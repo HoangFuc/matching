@@ -2,10 +2,17 @@ import { API_BASE_URL, TOKEN } from '@env';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import {
+  IBulletinComment,
+  IBulletinCommentListResponse,
   IBulletinListParams,
   IBulletinListResponse,
   IBulletinPost,
   ICreateBulletinParams,
+  ICreateCommentParams,
+  IDeleteCommentParams,
+  IToggleCommentLikeParams,
+  IToggleLikeResponse,
+  IUpdateCommentParams,
 } from '@/src/interface/bulletin.interface';
 
 export const bulletinApi = createApi({
@@ -20,7 +27,7 @@ export const bulletinApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['BulletinList', 'BulletinDetail'],
+  tagTypes: ['BulletinList', 'BulletinDetail', 'Comments'],
   endpoints: builder => ({
     //---------------------------------------
     getBulletins: builder.query<IBulletinListResponse, IBulletinListParams>({
@@ -53,23 +60,114 @@ export const bulletinApi = createApi({
     }),
 
     //---------------------------------------
+    toggleLike: builder.mutation<IToggleLikeResponse, string>({
+      query: postId => ({
+        url: `/posts/${postId}/likes`,
+        method: 'POST',
+      }),
+      transformResponse: (response: any): IToggleLikeResponse =>
+        response?.data ?? response,
+    }),
+
+    //---------------------------------------
+    getComments: builder.query<IBulletinCommentListResponse, string>({
+      query: postId => `/posts/${postId}/comments`,
+      transformResponse: (response: any): IBulletinCommentListResponse =>
+        response,
+      providesTags: (_result, _error, postId) => [
+        { type: 'Comments', id: postId },
+      ],
+    }),
+
+    //---------------------------------------
+    createComment: builder.mutation<IBulletinComment, ICreateCommentParams>({
+      query: ({ postId, content, parentId }) => ({
+        url: `/posts/${postId}/comments`,
+        method: 'POST',
+        body: { content, ...(parentId && { parentId }) },
+      }),
+      invalidatesTags: (_result, _error, { postId }) => [
+        { type: 'Comments', id: postId },
+      ],
+    }),
+
+    //---------------------------------------
+    updateComment: builder.mutation<IBulletinComment, IUpdateCommentParams>({
+      query: ({ commentId, content }) => ({
+        url: `/comments/${commentId}`,
+        method: 'PATCH',
+        body: { content },
+      }),
+      invalidatesTags: (_result, _error, { postId }) => [
+        { type: 'Comments', id: postId },
+      ],
+    }),
+
+    //---------------------------------------
+    deleteComment: builder.mutation<void, IDeleteCommentParams>({
+      query: ({ commentId }) => ({
+        url: `/comments/${commentId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { postId }) => [
+        { type: 'Comments', id: postId },
+      ],
+    }),
+
+    //---------------------------------------
+    toggleCommentLike: builder.mutation<
+      IToggleLikeResponse,
+      IToggleCommentLikeParams
+    >({
+      query: ({ commentId }) => ({
+        url: `/comments/${commentId}/likes`,
+        method: 'POST',
+      }),
+      transformResponse: (response: any): IToggleLikeResponse =>
+        response?.data ?? response,
+      invalidatesTags: (_result, _error, { postId }) => [
+        { type: 'Comments', id: postId },
+      ],
+    }),
+
+    //---------------------------------------
     createBulletin: builder.mutation<IBulletinPost, ICreateBulletinParams>({
-      query: ({ title, content, images }) => {
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('content', content);
-        images?.forEach(image => {
-          formData.append('images', {
-            uri: image.uri,
-            type: image.type || 'image/jpeg',
-            name: image.name || 'image.jpg',
-          } as any);
-        });
-        return {
-          url: '',
-          method: 'POST',
-          body: formData,
-        };
+      async queryFn({ title, content, images }) {
+        try {
+          const formData = new FormData();
+          formData.append('title', title);
+          formData.append('content', content);
+
+          if (images?.length) {
+            for (const image of images) {
+              formData.append('images', {
+                uri: image.uri,
+                type: image.type || 'image/jpeg',
+                name: image.name || 'image.jpg',
+              } as any);
+            }
+          }
+
+          const res = await fetch(`${API_BASE_URL}/bulletins`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${TOKEN}`,
+            },
+            body: formData,
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            return { error: { status: res.status, data: errorData } };
+          }
+
+          const data = await res.json();
+          return { data: data?.data ?? data };
+        } catch (error: any) {
+          return {
+            error: { status: 'FETCH_ERROR', error: error.message },
+          };
+        }
       },
       invalidatesTags: ['BulletinList'],
     }),
@@ -79,5 +177,11 @@ export const bulletinApi = createApi({
 export const {
   useGetBulletinsQuery,
   useGetBulletinDetailQuery,
+  useGetCommentsQuery,
   useCreateBulletinMutation,
+  useCreateCommentMutation,
+  useUpdateCommentMutation,
+  useDeleteCommentMutation,
+  useToggleLikeMutation,
+  useToggleCommentLikeMutation,
 } = bulletinApi;

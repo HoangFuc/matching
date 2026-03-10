@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Pressable,
@@ -9,6 +10,7 @@ import {
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
+import { useForm } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -30,20 +32,42 @@ type TImageItem = {
   name: string;
 };
 
+type TBulletinForm = {
+  title: string;
+  content: string;
+  images: TImageItem[];
+};
+
 const CreateBulletinScreen: React.FC = () => {
   const navigation = useNavigation();
   const [createBulletin, { isLoading }] = useCreateBulletinMutation();
 
   //---------------------------------------
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<TImageItem[]>([]);
+  const { watch, setValue } = useForm<TBulletinForm>({
+    defaultValues: {
+      title: '',
+      content: '',
+      images: [],
+    },
+  });
+
+  const title = watch('title');
+  const content = watch('content');
+  const images = watch('images');
 
   //---------------------------------------
-  const handlePickImage = useCallback(async () => {
+  const isDisableButton = React.useMemo(() => {
+    return !title.trim() || content.trim().length < 10 || images.length === 0;
+  }, [title, content, images]);
+
+  //---------------------------------------
+  const handlePickImage = React.useCallback(async () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: MAX_IMAGES - images.length,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      quality: 0.7,
     });
 
     if (result.didCancel || !result.assets) {
@@ -58,16 +82,22 @@ const CreateBulletinScreen: React.FC = () => {
         name: asset.fileName || `image_${Date.now()}.jpg`,
       }));
 
-    setImages(prev => [...prev, ...picked].slice(0, MAX_IMAGES));
-  }, [images.length]);
+    setValue('images', [...images, ...picked].slice(0, MAX_IMAGES));
+  }, [images, setValue]);
 
   //---------------------------------------
-  const handleRemoveImage = useCallback((index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-  }, []);
+  const handleRemoveImage = React.useCallback(
+    (index: number) => {
+      setValue(
+        'images',
+        images.filter((_, i) => i !== index),
+      );
+    },
+    [images, setValue],
+  );
 
   //---------------------------------------
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = React.useCallback(async () => {
     if (content.length < 10) {
       Alert.alert('', '내용은 10자 이상 입력해주세요.');
       return;
@@ -98,7 +128,7 @@ const CreateBulletinScreen: React.FC = () => {
             label="제목"
             placeholder="제목을입력해주세요"
             value={title}
-            onChangeText={setTitle}
+            onChangeText={v => setValue('title', v)}
           />
 
           <View>
@@ -112,7 +142,7 @@ const CreateBulletinScreen: React.FC = () => {
               label=""
               placeholder="내용을입력해주세요"
               value={content}
-              onChangeText={setContent}
+              onChangeText={v => setValue('content', v)}
               multiline
             />
           </View>
@@ -168,10 +198,16 @@ const CreateBulletinScreen: React.FC = () => {
             onPress={handleSubmit}
             variant="primary"
             style={styles.submitBtn}
-            disabled={isLoading}
+            disabled={isLoading || isDisableButton}
           />
         </View>
       </MemoScreenBody>
+
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={AppColors.purple} />
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -228,5 +264,15 @@ const styles = StyleSheet.create({
   submitBtn: {
     width: ms(163),
     paddingVertical: ms(8),
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

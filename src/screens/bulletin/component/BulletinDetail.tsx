@@ -1,8 +1,12 @@
 import React from 'react';
 import {
   ActivityIndicator,
+  Dimensions,
+  FlatList,
   Image,
   KeyboardAvoidingView,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Platform,
   Pressable,
   ScrollView,
@@ -12,73 +16,96 @@ import {
 } from 'react-native';
 
 import { RouteProp, useRoute } from '@react-navigation/native';
+import dayjs from 'dayjs';
+import { XMarkIcon } from 'react-native-heroicons/solid';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
-import { AppImages } from '@/src/constants/images';
 import { Send } from '@/src/constants/icons';
-import { TBulletinComment } from '@/src/interface/bulletin.interface';
+import { AppImages } from '@/src/constants/images';
 import { RootStackParamList } from '@/src/interface/tab.interface';
-import { useGetBulletinDetailQuery } from '@/src/store/api/bulletin.api';
-import { formatTimeAgo } from '@/src/utils/date';
+import {
+  useCreateCommentMutation,
+  useGetBulletinDetailQuery,
+  useGetCommentsQuery,
+} from '@/src/store/api/bulletin.api';
 import { MemoCommentItem } from './CommentItem';
 import { MemoPostStats } from './PostStats';
-
-const MOCK_COMMENTS: TBulletinComment[] = [
-  {
-    id: '1',
-    author: '나태원',
-    avatar: AppImages.avatar,
-    timeAgo: '1분전',
-    content: '선생님이 잘 가르침',
-    likes: 15,
-    replies: [
-      {
-        id: '1-1',
-        author: '제갈공명',
-        avatar: AppImages.avatar,
-        timeAgo: '1분전',
-        content: '@나태원 선생님이 잘 가르침',
-        likes: 15,
-        isAuthor: true,
-      },
-    ],
-  },
-  {
-    id: '2',
-    author: '김유신',
-    avatar: AppImages.avatar,
-    timeAgo: '2분 전',
-    content: '선생님이 잘 가르침',
-    likes: 0,
-  },
-  {
-    id: '3',
-    author: '나태원',
-    avatar: AppImages.avatar,
-    timeAgo: '2분 전',
-    content:
-      '설악산 설악산의 가을빛은 눈을 뗄 수 없는 만큼 아름답습니다. 노랗게 물든 잎들은 시간이 이곳에서 속삭이고, 바람은 부드럽게 말들을 싣어 나릅...',
-    likes: 15,
-  },
-];
 
 const BulletinDetail: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'BulletinDetail'>>();
   const { postId } = route.params;
 
+  //---------------------------------------
   const { data: post, isLoading } = useGetBulletinDetailQuery(postId);
+  const { data: commentsData } = useGetCommentsQuery(postId);
 
+  //---------------------------------------
+  const [createComment] = useCreateCommentMutation();
   const [commentText, setCommentText] = React.useState('');
+
+  //---------------------------------------
+  const totalCommentCount = React.useMemo(() => {
+    if (!commentsData?.data) return post?.commentCount ?? 0;
+    const countReplies = (comments: typeof commentsData.data): number =>
+      comments.reduce(
+        (sum, c) => sum + 1 + (c.replies ? countReplies(c.replies) : 0),
+        0,
+      );
+    return countReplies(commentsData.data);
+  }, [commentsData, post?.commentCount]);
+
+  //---------------------------------------
+  const [replyTo, setReplyTo] = React.useState<{
+    commentId: string;
+    authorName: string;
+  } | null>(null);
+  const inputRef = React.useRef<TextInput>(null);
+  const [activeImageIndex, setActiveImageIndex] = React.useState(0);
+  const imageWidth = Dimensions.get('window').width - ms(32);
+
+  //---------------------------------------
+  const handleImageScroll = React.useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const index = Math.round(e.nativeEvent.contentOffset.x / imageWidth);
+      setActiveImageIndex(index);
+    },
+    [imageWidth],
+  );
+
+  //---------------------------------------
+  const avatarSource = post?.author.avatarUrl
+    ? { uri: post.author.avatarUrl }
+    : AppImages.avatar;
+
+  //---------------------------------------
+  const handleReply = React.useCallback(
+    (commentId: string, authorName: string) => {
+      setReplyTo({ commentId, authorName });
+      inputRef.current?.focus();
+    },
+    [],
+  );
+
+  //---------------------------------------
+  const handleCancelReply = React.useCallback(() => {
+    setReplyTo(null);
+  }, []);
 
   //---------------------------------------
   const handleSend = React.useCallback(() => {
     if (!commentText.trim()) return;
+    createComment({
+      postId,
+      content: commentText.trim(),
+      ...(replyTo && { parentId: replyTo.commentId }),
+    });
     setCommentText('');
-  }, [commentText]);
+    setReplyTo(null);
+  }, [commentText, createComment, postId, replyTo]);
 
   //---------------------------------------
   if (isLoading || !post) {
@@ -91,10 +118,6 @@ const BulletinDetail: React.FC = () => {
       </SafeAreaView>
     );
   }
-
-  const avatarSource = post.author.profileImage
-    ? { uri: post.author.profileImage }
-    : AppImages.avatar;
 
   return (
     <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
@@ -116,42 +139,63 @@ const BulletinDetail: React.FC = () => {
 
             <View style={styles.authorInfo}>
               <AppText variant="body1" color={AppColors.gray100}>
-                {post.author.name}
+                {post.author.fullName}
               </AppText>
             </View>
           </View>
 
           {/* Post content */}
           <View style={styles.postContent}>
-            {!!post.title && (
-              <AppText variant="body2" color={AppColors.gray100}>
-                {post.title}
-              </AppText>
-            )}
-
             <AppText variant="body8" color={AppColors.gray90}>
               {post.content}
             </AppText>
 
-            {post.images.map((img) => (
-              <Image
-                key={img.id}
-                source={{ uri: img.url }}
-                style={styles.postImage}
-                resizeMode="cover"
-              />
-            ))}
+            {post.images && post.images.length > 0 && (
+              <View>
+                <FlatList
+                  data={post.images}
+                  keyExtractor={img => `${img.id}-${img.postId}`}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  onScroll={handleImageScroll}
+                  scrollEventThrottle={16}
+                  renderItem={({ item }) => (
+                    <Image
+                      source={{ uri: item.presignedUrl }}
+                      style={[styles.postImage, { width: imageWidth }]}
+                      resizeMode="cover"
+                    />
+                  )}
+                />
+                {post.images.length > 1 && (
+                  <View style={styles.dotContainer}>
+                    {post.images.map((img, index) => (
+                      <View
+                        key={`dot-${img.id}`}
+                        style={[
+                          styles.dot,
+                          index === activeImageIndex && styles.dotActive,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
 
             <AppText variant="detail" color={AppColors.gray80}>
-              {formatTimeAgo(post.createdAt)}
+              {dayjs(post.createdAt).format('YYYY.MM.DD')}
             </AppText>
           </View>
 
           {/* Post stats */}
           <View style={styles.statsRow}>
             <MemoPostStats
-              likes={post.likesCount}
-              comments={post.commentsCount}
+              postId={postId}
+              likes={post.likeCount}
+              comments={totalCommentCount}
+              isLiked={post.isLiked}
               extra={
                 <Pressable>
                   <AppText variant="pretendard" color={AppColors.gray100}>
@@ -162,20 +206,36 @@ const BulletinDetail: React.FC = () => {
             />
           </View>
 
-          {/* Comments (still mock for now) */}
+          {/* Comments */}
           <View style={styles.commentsSection}>
-            {MOCK_COMMENTS.map(comment => (
-              <MemoCommentItem key={comment.id} comment={comment} />
+            {commentsData?.data?.map(comment => (
+              <MemoCommentItem
+                key={`${comment.id}-${comment.postId}`}
+                comment={comment}
+                authorId={post.author.id}
+                onReply={handleReply}
+              />
             ))}
           </View>
         </ScrollView>
 
         {/* Comment input */}
         <SafeAreaView style={styles.safeAreaBottom} edges={['bottom']}>
+          {replyTo && (
+            <View style={styles.replyIndicator}>
+              <AppText variant="body8" color={AppColors.gray80}>
+                {replyTo.authorName}에게 답글 남기는 중
+              </AppText>
+              <Pressable onPress={handleCancelReply} hitSlop={8}>
+                <XMarkIcon color={AppColors.gray80} size={ms(16)} />
+              </Pressable>
+            </View>
+          )}
           <View style={styles.inputContainer}>
             <TextInput
+              ref={inputRef}
               style={styles.input}
-              placeholder="댓글을 남겨보세요"
+              placeholder="내용을 입력해주세요"
               placeholderTextColor={AppColors.gray40}
               value={commentText}
               onChangeText={setCommentText}
@@ -244,9 +304,24 @@ const styles = StyleSheet.create({
     paddingBottom: ms(12),
   },
   postImage: {
-    width: '100%',
     height: ms(343),
     borderRadius: ms(8),
+  },
+  dotContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: ms(6),
+    marginTop: ms(10),
+  },
+  dot: {
+    width: ms(8),
+    height: ms(8),
+    borderRadius: ms(4),
+    backgroundColor: AppColors.gray30,
+  },
+  dotActive: {
+    backgroundColor: AppColors.purple,
   },
   statsRow: {
     flexDirection: 'row',
@@ -258,6 +333,16 @@ const styles = StyleSheet.create({
   },
   commentsSection: {
     paddingTop: ms(4),
+  },
+  replyIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: ms(16),
+    paddingVertical: ms(8),
+    backgroundColor: AppColors.gray10,
+    borderTopWidth: 1,
+    borderTopColor: AppColors.gray20,
   },
   inputContainer: {
     flexDirection: 'row',

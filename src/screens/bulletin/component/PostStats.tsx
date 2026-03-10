@@ -1,33 +1,66 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { Like1, Message } from '@/src/constants/icons';
+import {
+  useToggleCommentLikeMutation,
+  useToggleLikeMutation,
+} from '@/src/store/api/bulletin.api';
 
 interface IProps {
+  postId?: string;
+  commentId?: string;
   likes: number;
   comments: number;
+  isLiked?: boolean;
   extra?: React.ReactNode;
   isAuthor?: boolean;
 }
 
-const PostStats: React.FC<IProps> = ({ likes, comments, extra, isAuthor }) => {
+const PostStats: React.FC<IProps> = ({
+  postId,
+  commentId,
+  likes,
+  comments,
+  isLiked,
+  extra,
+  isAuthor,
+}) => {
+  const [toggleLike, { data: postLikeResponse }] = useToggleLikeMutation();
+  const [toggleCommentLike, { data: commentLikeResponse }] =
+    useToggleCommentLikeMutation();
+
+  //---------------------------------------
+  const likeResponse = commentId ? commentLikeResponse : postLikeResponse;
+  const currentLikeCount = likeResponse?.likeCount ?? likes;
+  const currentLiked = likeResponse?.isLiked ?? isLiked ?? false;
+
+  //---------------------------------------
+  const handleLike = React.useCallback(() => {
+    if (commentId && postId) {
+      toggleCommentLike({ commentId, postId });
+    } else if (postId) {
+      toggleLike(postId);
+    }
+  }, [toggleLike, toggleCommentLike, postId, commentId]);
+
   return (
     <View style={styles.container}>
       <View style={styles.stats}>
-        <View style={styles.stat}>
+        <Pressable style={styles.stat} onPress={handleLike} hitSlop={8}>
           <Like1
             size={`${ms(16)}`}
-            color={AppColors.gray100}
-            variant="Linear"
+            color={currentLiked ? AppColors.purple : AppColors.gray100}
+            variant={currentLiked ? 'Bold' : 'Linear'}
           />
           <AppText variant="detail" color={AppColors.gray100}>
-            {likes}
+            {currentLikeCount}
           </AppText>
-        </View>
+        </Pressable>
 
         {!isAuthor && (
           <View style={styles.stat}>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -52,6 +52,13 @@ const BulletinBoard: React.FC = () => {
 
   //---------------------------------------
   const keyExtractor = React.useCallback((item: IBulletinPost) => item.id, []);
+
+  //---------------------------------------
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   //---------------------------------------
   const renderFooter = React.useCallback(() => {

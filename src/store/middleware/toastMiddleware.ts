@@ -5,6 +5,8 @@ import { isFulfilled, isRejected, Middleware } from '@reduxjs/toolkit';
 const ToastSuccessMap: Record<string, string> = {
   // 자료실
   'dataRoomApi/executeMutation/fulfilled': '처리가 완료되었습니다.',
+  // 게시판
+  'bulletinApi/executeMutation/fulfilled': '게시글이 등록되었습니다.',
 };
 
 export const toastMiddleware: Middleware = () => next => action => {

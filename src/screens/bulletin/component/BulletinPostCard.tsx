@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
@@ -17,8 +17,13 @@ interface IProps {
 }
 
 const BulletinPostCard: React.FC<IProps> = ({ post, onPress }) => {
-  const avatarSource = post.author.profileImage
-    ? { uri: post.author.profileImage }
+  //---------------------------------------
+  const [isTruncated, setIsTruncated] = React.useState<boolean | null>(null);
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
+  //---------------------------------------
+  const avatarSource = post.author.avatarUrl
+    ? { uri: post.author.avatarUrl }
     : AppImages.avatar;
 
   return (
@@ -29,7 +34,7 @@ const BulletinPostCard: React.FC<IProps> = ({ post, onPress }) => {
 
         <View style={styles.authorInfo}>
           <AppText variant="body6" color={AppColors.gray100}>
-            {post.author.name}
+            {post.author.fullName}
           </AppText>
         </View>
 
@@ -47,22 +52,34 @@ const BulletinPostCard: React.FC<IProps> = ({ post, onPress }) => {
 
       {/* Content + Image */}
       <View style={styles.contentRow}>
-        <AppText
-          variant="body8"
-          color={AppColors.gray90}
-          numberOfLines={3}
-          style={styles.textContent}
-        >
-          {post.content}
-        </AppText>
+        <View style={styles.textContent}>
+          <AppText
+            variant="body8"
+            color={AppColors.gray90}
+            numberOfLines={isTruncated !== null && !isExpanded ? 3 : undefined}
+            onTextLayout={e => {
+              if (isTruncated === null) {
+                setIsTruncated(e.nativeEvent.lines.length > 3);
+              }
+            }}
+          >
+            {post.content}
+          </AppText>
 
-        {post.images && post.images.length > 0 && (
-          <Image source={{ uri: post.images[0].url }} style={styles.postImage} />
-        )}
+          {isTruncated && !isExpanded && (
+            <Pressable onPress={() => setIsExpanded(true)}>
+              <AppText variant="body6" color={AppColors.gray90}>
+                더보기
+              </AppText>
+            </Pressable>
+          )}
+        </View>
+
+        <Image source={{ uri: post.thumbnailUrl }} style={styles.postImage} />
       </View>
 
       {/* Footer - likes & comments */}
-      <MemoPostStats likes={post.likesCount} comments={post.commentsCount} />
+      <MemoPostStats likes={post.likeCount} comments={post.commentCount} />
     </MemoBaseCard>
   );
 };

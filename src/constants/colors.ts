@@ -25,7 +25,9 @@ export const Primary = {
   lightPink: '#FFEEEE',
   lightGreen: '#DEFFCF',
   lightCream: '#FFF5E5',
+  lightLavendar: '#D3C2FF',
   amber: '#F6A101',
+  black: '#000000',
 } as const;
 
 export const AppColors = {

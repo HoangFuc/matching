@@ -4,16 +4,21 @@ import type {
   NavigatorScreenParams,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { TScheduleType } from '../screens/schedule/component/ScheduleTypePicker';
 import { TScheduleMode } from '../screens/schedule/type';
 import type { TMeetingMinutes } from './meetingMinutes.interface';
+import type { IMeetingScheduleManagement } from './meetingScheduleManagement.interface';
 import type { TScheduleEvent } from './schedule.interface';
 
 export type RootStackParamList = {
-  MainTabs: undefined;
+  MainTabs: NavigatorScreenParams<RootTabParamList> | undefined;
   DataRoom: undefined;
   BulletinBoard: undefined;
   BulletinDetail: { postId: string };
   CreateBulletin: undefined;
+  MeetingScheduleManagement: undefined;
+  CreateMeetingSchedule: undefined;
+  MeetingScheduleDetail: { item: IMeetingScheduleManagement };
 };
 
 export type MeetingMinutesStackParamList = {
@@ -36,7 +41,7 @@ export type HomeStackParamList = {
 };
 
 export type ScheduleStackParamList = {
-  ScheduleMain: { mode?: TScheduleMode } | undefined;
+  ScheduleMain: { mode?: TScheduleMode; filterTypes?: TScheduleType[] } | undefined;
   ScheduleDetail: {
     dateKey: string;
     events: TScheduleEvent[];

@@ -2,16 +2,17 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { moderateScale as ms } from 'react-native-size-matters/extend';
+import { ms } from 'react-native-size-matters/extend';
 
-import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { Add } from '@/src/constants/icons';
 import { MemoBodyDashboard } from './Body';
 import { MemoQuickActionModal } from '../component/calendarAction/QuickActionModal';
 import { MemoHeaderDashboard } from './Header';
+import { CardShadow } from '@/src/constants/shadows';
 
 export const Dashboard: React.FC = () => {
-  const [modalVisible, setModalVisible] = React.useState(false);
+  const [menuVisible, setMenuVisible] = React.useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -21,18 +22,23 @@ export const Dashboard: React.FC = () => {
         <MemoBodyDashboard />
       </View>
 
-      {!modalVisible && (
-        <Pressable style={styles.fab} onPress={() => setModalVisible(true)}>
-          <AppText variant="body5" color={AppColors.white}>
-            {'+'}
-          </AppText>
+      <MemoQuickActionModal
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+      />
+
+      {!menuVisible && (
+        <Pressable
+          style={styles.fab}
+          onPress={() => setMenuVisible(true)}
+        >
+          <Add
+            size={`${ms(28)}`}
+            color={AppColors.purple}
+            variant="Linear"
+          />
         </Pressable>
       )}
-
-      <MemoQuickActionModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-      />
     </SafeAreaView>
   );
 };
@@ -49,16 +55,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: ms(24),
     right: ms(16),
+    zIndex: 2,
     width: ms(48),
     height: ms(48),
-    borderRadius: ms(24),
-    backgroundColor: AppColors.purple,
+    borderRadius: ms(100),
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: ms(4) },
-    shadowOpacity: 0.2,
-    shadowRadius: ms(6),
-    elevation: 6,
+    backgroundColor: AppColors.white,
+    borderColor: AppColors.gray30,
+    ...CardShadow,
   },
 });

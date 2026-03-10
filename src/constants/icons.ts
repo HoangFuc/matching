@@ -24,12 +24,14 @@ export {
   Message,
   More,
   Notification,
+  Pause,
   Play,
   SearchNormal1,
   Send,
   Sort,
   TickCircle,
   Trash,
+  Microphone2,
 } from 'iconsax-react-nativejs';
 
 export { default as DotsVertical } from '@/src/assets/icons/dots_vertical.svg';

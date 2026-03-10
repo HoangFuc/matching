@@ -18,6 +18,9 @@ import type {
 import { MemoBulletinDetail } from '../screens/bulletin/component/BulletinDetail';
 import { MemoBulletinBoard } from '../screens/bulletin/screens/BulletinBoard';
 import { MemoCreateBulletinScreen } from '../screens/bulletin/screens/CreateBulletinScreen';
+import { MemoMeetingScheduleManagementScreen } from '../screens/meetingScheduleManagement/screens/MeetingScheduleManagementScreen';
+import { MemoCreateMeetingScheduleScreen } from '../screens/meetingScheduleManagement/screens/CreateMeetingScheduleScreen';
+import { MemoMeetingScheduleDetailScreen } from '../screens/meetingScheduleManagement/screens/MeetingScheduleDetailScreen';
 import HomeStack from './HomeStack';
 import MeetingMinutesStack from './MeetingMinutesStack';
 import ScheduleStack from './ScheduleStack';
@@ -130,6 +133,18 @@ const AppNavigator: React.FC = () => {
           <RootStack.Screen
             name="CreateBulletin"
             component={MemoCreateBulletinScreen}
+          />
+          <RootStack.Screen
+            name="MeetingScheduleManagement"
+            component={MemoMeetingScheduleManagementScreen}
+          />
+          <RootStack.Screen
+            name="CreateMeetingSchedule"
+            component={MemoCreateMeetingScheduleScreen}
+          />
+          <RootStack.Screen
+            name="MeetingScheduleDetail"
+            component={MemoMeetingScheduleDetailScreen}
           />
         </RootStack.Navigator>
       </NavigationContainer>

@@ -1,13 +1,26 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Image, StyleSheet, View } from "react-native";
+
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { moderateScale as ms } from "react-native-size-matters/extend";
 
 import { AppText } from "@/src/component/AppText";
 import { AppColors } from "@/src/constants/colors";
 import { AppImages } from "@/src/constants/images";
-import { moderateScale as ms } from "react-native-size-matters/extend";
+import { RootStackParamList } from "@/src/interface/tab.interface";
 import { MemoTemplateMeetingCard } from "../meetingSchedule/TemplateMeetingCard";
 
+type TNav = NativeStackNavigationProp<RootStackParamList>;
+
 const MeetingSchedule: React.FC = () => {
+  const navigation = useNavigation<TNav>();
+
+  //---------------------------------------
+  const handlePressMeetingSchedule = useCallback(() => {
+    navigation.navigate("MeetingScheduleManagement");
+  }, [navigation]);
+
   return (
     <View style={styles.container}>
       <AppText variant="body1" color={AppColors.gray90}>
@@ -17,6 +30,7 @@ const MeetingSchedule: React.FC = () => {
       <View style={styles.row}>
         <MemoTemplateMeetingCard
           text="OO고객과의 미팅"
+          onPress={handlePressMeetingSchedule}
           image={
             <Image
               source={AppImages.chatBubble}
@@ -27,6 +41,7 @@ const MeetingSchedule: React.FC = () => {
 
         <MemoTemplateMeetingCard
           text="OO 분양 1차 회의"
+          onPress={handlePressMeetingSchedule}
           image={
             <Image
               source={AppImages.list}

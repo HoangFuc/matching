@@ -17,13 +17,15 @@ import { MemoAttendanceSummary } from './AttendanceSummary';
 import { MemoDateNumber } from './DateNumber';
 import { MemoEvents } from './Events';
 import { MemoScheduleRightAction } from './ScheduleRightAction';
+import { TScheduleType } from './ScheduleTypePicker';
 
 interface IProps {
   mode: TScheduleMode;
+  selectedFilterTypes: TScheduleType[];
   onDayPress: (dateKey: string, events: TScheduleEvent[]) => void;
 }
 
-const ScheduleCalendar: React.FC<IProps> = ({ mode, onDayPress }) => {
+const ScheduleCalendar: React.FC<IProps> = ({ mode, selectedFilterTypes, onDayPress }) => {
   const {
     year,
     month,
@@ -38,10 +40,25 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode, onDayPress }) => {
   const { data: schedules = [] } = useGetSchedulesQuery({ startDate, endDate });
 
   //---------------------------------------
-  const events = React.useMemo(
+  const allEvents = React.useMemo(
     () => convertSchedulesToEvents(schedules),
     [schedules],
   );
+
+  //---------------------------------------
+  const events = React.useMemo(() => {
+    if (selectedFilterTypes.length === 0) return allEvents;
+    const filtered: Record<string, TScheduleEvent[]> = {};
+    for (const [dateKey, dayEvents] of Object.entries(allEvents)) {
+      const matched = dayEvents.filter(e =>
+        selectedFilterTypes.includes(e.type as TScheduleType),
+      );
+      if (matched.length > 0) {
+        filtered[dateKey] = matched;
+      }
+    }
+    return filtered;
+  }, [allEvents, selectedFilterTypes]);
 
   //---------------------------------------
   const { checkinTimes, firstCheckinDate, lastCheckinDate, attendanceStats } =

@@ -11,13 +11,14 @@ import { AppColors } from '@/src/constants/colors';
 interface IProps {
   image: React.ReactNode;
   text: string;
+  onPress?: () => void;
 }
 
 const TemplateMeetingCard: React.FC<IProps> = props => {
-  const { image, text } = props;
+  const { image, text, onPress } = props;
 
   return (
-    <MemoBaseCard style={styles.card}>
+    <MemoBaseCard style={styles.card} onPress={onPress}>
       {image}
 
       <View style={styles.footer}>

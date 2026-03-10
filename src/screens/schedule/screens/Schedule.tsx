@@ -23,11 +23,13 @@ const Schedule: React.FC = () => {
   const navigation = useNavigation<ScheduleNavigationProp>();
   const mode = route.params?.mode ?? 'schedule';
 
+  const filterTypes = route.params?.filterTypes;
+
   //---------------------------------------
   useFocusEffect(
     React.useCallback(() => {
       return () => {
-        navigation.setParams({ mode: undefined });
+        navigation.setParams({ mode: undefined, filterTypes: undefined });
       };
     }, [navigation]),
   );
@@ -37,6 +39,13 @@ const Schedule: React.FC = () => {
   const [selectedFilterTypes, setSelectedFilterTypes] = React.useState<
     TScheduleType[]
   >(['계약 일정']);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    if (filterTypes && filterTypes.length > 0) {
+      setSelectedFilterTypes(filterTypes);
+    }
+  }, [filterTypes]);
   const [detailData, setDetailData] = React.useState<TDetailData>();
 
   //---------------------------------------
@@ -78,7 +87,7 @@ const Schedule: React.FC = () => {
         />
       ) : (
         <View style={styles.content}>
-          <MemoScheduleCalendar mode={mode} onDayPress={handleDayPress} />
+          <MemoScheduleCalendar mode={mode} selectedFilterTypes={selectedFilterTypes} onDayPress={handleDayPress} />
         </View>
       )}
 

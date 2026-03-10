@@ -14,6 +14,7 @@ import {
 import { bulletinApi } from './api/bulletin.api';
 import {dataRoomApi} from './api/dataRoom.api';
 import { checkinApi } from './api/checkin.api';
+import { meetingScheduleManagementApi } from './api/meetingScheduleManagement.api';
 import { scheduleApi } from './api/schedule.api';
 import { toastMiddleware } from './middleware/toastMiddleware';
 import dataRoomReducer from './slices/dataRoomSlice';
@@ -32,6 +33,7 @@ const rootReducer = combineReducers({
   [checkinApi.reducerPath]: checkinApi.reducer,
   [dataRoomApi.reducerPath]: dataRoomApi.reducer,
   [bulletinApi.reducerPath]: bulletinApi.reducer,
+  [meetingScheduleManagementApi.reducerPath]: meetingScheduleManagementApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -48,7 +50,8 @@ export const store = configureStore({
       .concat(scheduleApi.middleware)
       .concat(checkinApi.middleware)
       .concat(dataRoomApi.middleware)
-      .concat(bulletinApi.middleware),
+      .concat(bulletinApi.middleware)
+      .concat(meetingScheduleManagementApi.middleware),
 });
 
 export const persistor = persistStore(store);

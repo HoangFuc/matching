@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import {
   errorCodes,
@@ -28,14 +22,12 @@ import {
   SearchNormal1,
 } from '@/src/constants/icons';
 import type { DataRoomStackParamList } from '@/src/interface/tab.interface';
-import {
-  IFile,
-  useGetFilesByFolderQuery,
-  useUploadFileMutation,
-} from '@/src/store/api/dataRoom.api';
+import { IFile, useGetFilesByFolderQuery } from '@/src/store/api/dataRoom.api';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
 import { toggleViewMode } from '@/src/store/slices/dataRoomSlice';
 import { MemoFABWithMenu } from '../components/FABWithMenu';
+import { MemoUploadProgressBar } from '../components/UploadProgressBar';
+import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
 import {
   MemoFileActionSheet,
   MemoFileGridItem,
@@ -57,7 +49,7 @@ const DataDetailScreen: React.FC = () => {
   //---------------------------------------
   const { folderId, folderName } = route.params;
   const { data: files = [] } = useGetFilesByFolderQuery(folderId);
-  const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
+  const { progress, uploadInFolder, dismiss } = useFileUploadWithProgress();
 
   //---------------------------------------
   const [actionSheetVisible, setActionSheetVisible] = React.useState(false);
@@ -94,13 +86,13 @@ const DataDetailScreen: React.FC = () => {
         type: file.type ?? 'application/octet-stream',
       }));
 
-      await uploadFile({ folderId, files: pickedFiles }).unwrap();
+      await uploadInFolder(folderId, pickedFiles);
     } catch (err) {
       if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
         console.error('Upload error:', err);
       }
     }
-  }, [folderId, uploadFile]);
+  }, [folderId, uploadInFolder]);
 
   //---------------------------------------
   const handlePressMore = React.useCallback((file: IFile) => {
@@ -233,6 +225,17 @@ const DataDetailScreen: React.FC = () => {
           />
         )}
 
+        {/* Upload Progress Bar */}
+        {progress && (
+          <View style={styles.progressOverlay}>
+            <MemoUploadProgressBar
+              progress={progress}
+              onDismiss={dismiss}
+              onAddFile={handleUploadFile}
+            />
+          </View>
+        )}
+
         {/* FAB + Menu */}
         <MemoFABWithMenu
           variant="white"
@@ -259,19 +262,6 @@ const DataDetailScreen: React.FC = () => {
         />
       )}
 
-      {/* Loading Overlay */}
-      {isUploading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={AppColors.purple} />
-          <AppText
-            variant="body1"
-            color={AppColors.gray100}
-            style={styles.loadingText}
-          >
-            파일 업로드 중...
-          </AppText>
-        </View>
-      )}
 
       {/* Rename Sheet */}
       {selectedFile && (
@@ -332,14 +322,11 @@ const styles = StyleSheet.create({
   emptyList: {
     flex: 1,
   },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  progressOverlay: {
+    position: 'absolute',
+    bottom: ms(32),
+    left: 0,
+    right: ms(82),
     zIndex: 10,
-  },
-  loadingText: {
-    marginTop: ms(12),
   },
 });

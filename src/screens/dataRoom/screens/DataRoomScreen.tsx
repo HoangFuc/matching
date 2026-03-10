@@ -10,8 +10,13 @@ import { ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import type { DataRoomStackParamList } from '@/src/interface/tab.interface';
-import { IFolder, useGetFoldersQuery } from '@/src/store/api/dataRoom.api';
+import {
+  IFile,
+  IFolder,
+  useGetFoldersQuery,
+} from '@/src/store/api/dataRoom.api';
 import { MemoFABWithMenu } from '../components/FABWithMenu';
+import { MemoFileGridItem } from '../components/file';
 import type { TFolderAction } from '../components/folder';
 import {
   MemoFolderActionSheet,
@@ -32,7 +37,9 @@ const DataRoomScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
   const [activeTab, setActiveTab] =
     React.useState<TDataRoomTabType>('MARKET_PRICE');
-  const { data: folders = [] } = useGetFoldersQuery();
+  const { data } = useGetFoldersQuery(activeTab);
+  const folders = data?.folders ?? [];
+  const files = data?.files ?? [];
 
   // Sheet states
   const [actionSheetVisible, setActionSheetVisible] = React.useState(false);
@@ -40,11 +47,6 @@ const DataRoomScreen: React.FC = () => {
   const [renameSheetVisible, setRenameSheetVisible] = React.useState(false);
   const [selectedFolder, setSelectedFolder] = React.useState<IFolder | null>(
     null,
-  );
-
-  const filteredFolders = React.useMemo(
-    () => folders.filter(f => f.type === activeTab),
-    [folders, activeTab],
   );
 
   const handlePressSearch = React.useCallback(() => {
@@ -89,6 +91,12 @@ const DataRoomScreen: React.FC = () => {
     [selectedFolder],
   );
 
+  //---------------------------------------
+  const handlePressFileMore = React.useCallback((_file: IFile) => {
+    // TODO: handle file action sheet
+  }, []);
+
+  //---------------------------------------
   const renderFolderItem = React.useCallback(
     ({ item }: { item: IFolder }) => {
       return (
@@ -102,7 +110,17 @@ const DataRoomScreen: React.FC = () => {
     [handlePressFolder, handlePressMore],
   );
 
+  //---------------------------------------
+  const renderFileItem = React.useCallback(
+    ({ item }: { item: IFile }) => {
+      return <MemoFileGridItem item={item} onPressMore={handlePressFileMore} />;
+    },
+    [handlePressFileMore],
+  );
+
+  //---------------------------------------
   const keyExtractor = React.useCallback((item: IFolder) => item.id, []);
+  const fileKeyExtractor = React.useCallback((item: IFile) => item.id, []);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -151,17 +169,31 @@ const DataRoomScreen: React.FC = () => {
 
         {/* Folder Grid */}
         <FlatList
-          data={filteredFolders}
+          data={folders}
           renderItem={renderFolderItem}
           keyExtractor={keyExtractor}
           numColumns={2}
           columnWrapperStyle={styles.row}
-          contentContainerStyle={[
-            styles.listContent,
-            filteredFolders.length === 0 && styles.emptyList,
-          ]}
+          contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          ListEmptyComponent={<MemoNoData message="폴더가 없습니다" />}
+          ListFooterComponent={
+            files.length > 0 ? (
+              <FlatList
+                data={files}
+                renderItem={renderFileItem}
+                keyExtractor={fileKeyExtractor}
+                numColumns={2}
+                columnWrapperStyle={styles.row}
+                contentContainerStyle={styles.fileListContent}
+                scrollEnabled={false}
+              />
+            ) : null
+          }
+          ListEmptyComponent={
+            files.length === 0 ? (
+              <MemoNoData message="데이터가 없습니다" />
+            ) : null
+          }
         />
 
         {/* FAB + Menu */}
@@ -251,5 +283,8 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
+  },
+  fileListContent: {
+    gap: ms(12),
   },
 });

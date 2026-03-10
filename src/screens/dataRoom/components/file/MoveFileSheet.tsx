@@ -8,6 +8,7 @@ import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { RadioCheck } from '@/src/constants/icons';
+import type { TDataRoomTabType } from '@/src/screens/dataRoom/constants';
 import {
   IFolder,
   useGetFoldersQuery,
@@ -19,6 +20,7 @@ interface IProps {
   onClose: () => void;
   fileId: string;
   currentFolderId: string;
+  type?: TDataRoomTabType;
 }
 
 const MoveFileSheet: React.FC<IProps> = ({
@@ -26,8 +28,10 @@ const MoveFileSheet: React.FC<IProps> = ({
   onClose,
   fileId,
   currentFolderId,
+  type = 'MARKET_PRICE',
 }) => {
-  const { data: folders = [] } = useGetFoldersQuery();
+  const { data } = useGetFoldersQuery(type);
+  const folders = data?.folders ?? [];
   const [moveFile, { isLoading }] = useMoveFileMutation();
   const [selectedFolderId, setSelectedFolderId] = React.useState<string | null>(
     null,

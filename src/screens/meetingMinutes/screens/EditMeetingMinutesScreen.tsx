@@ -40,7 +40,9 @@ const EditMeetingMinutesScreen: React.FC = () => {
   const [meetingType, setMeetingType] = useState<TMeetingType>(item.type);
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [date, setDate] = useState(item.date);
+  const [visitLocation, setVisitLocation] = useState(item.visitLocation);
   const [customerName, setCustomerName] = useState(item.customerName);
+  const [phone, setPhone] = useState(item.phone);
   const [content, setContent] = useState(item.content);
   const [uploadFiles, setUploadFiles] = useState<TUploadFile[]>(() => {
     if (item.recordingFile) {
@@ -179,10 +181,24 @@ const EditMeetingMinutesScreen: React.FC = () => {
           </View>
 
           <MemoFormInput
+            label="방문 장소"
+            placeholder="방문 장소를 입력해주세요"
+            value={visitLocation}
+            onChangeText={setVisitLocation}
+          />
+
+          <MemoFormInput
             label="고객명"
             placeholder="고객명을 입력해주세요"
             value={customerName}
             onChangeText={setCustomerName}
+          />
+
+          <MemoFormInput
+            label="연락처"
+            placeholder="연락처를 입력해주세요"
+            value={phone}
+            onChangeText={setPhone}
           />
 
           <MemoFormInput

@@ -23,6 +23,8 @@ const MOCK_DATA: TMeetingMinutes[] = [
     title: '청라 3차 하이배크디움',
     customerName: '박세준 고객',
     date: '2026.02.02',
+    visitLocation: '인천광역시 연수구 해돌이로 456',
+    phone: '010-9876-5432',
     content: '검단 4차 힐스테이트',
     recordingFile: {
       name: 'Meeting record.wav',
@@ -37,6 +39,8 @@ const MOCK_DATA: TMeetingMinutes[] = [
     title: '영종 스카이시티 자이',
     customerName: '최수정 고객',
     date: '2026.02.03',
+    visitLocation: '',
+    phone: '010-1234-5678',
     content: '영종 스카이시티 자이 상담',
     recordingFile: {
       name: 'Meeting record2.wav',
@@ -51,6 +55,8 @@ const MOCK_DATA: TMeetingMinutes[] = [
     title: '가정 푸르지티 SK리더스뷰',
     customerName: '정민혁 고객',
     date: '2026.02.04',
+    visitLocation: '서울시 강남구 테헤란로 123',
+    phone: '010-5555-6666',
     content: '가정 푸르지티 SK리더스뷰 상담',
   },
   {
@@ -60,6 +66,8 @@ const MOCK_DATA: TMeetingMinutes[] = [
     title: '송도 센트럴파크 푸르치오',
     customerName: '김민지 고객',
     date: '2026.02.05',
+    visitLocation: '',
+    phone: '010-7777-8888',
     content: '송도 센트럴파크 푸르치오 상담',
   },
   {
@@ -69,6 +77,8 @@ const MOCK_DATA: TMeetingMinutes[] = [
     title: '주안 더샵 아르테',
     customerName: '강애린 고객',
     date: '2026.02.06',
+    visitLocation: '',
+    phone: '010-3333-4444',
     content: '주안 더샵 아르테 상담',
   },
 ];

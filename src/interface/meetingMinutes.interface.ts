@@ -7,6 +7,8 @@ export type TMeetingMinutes = {
   title: string;
   customerName: string;
   date: string;
+  visitLocation: string;
+  phone: string;
   content: string;
   recordingFile?: {
     name: string;

@@ -5,7 +5,8 @@ import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
-import { Add, CloseCircle } from '@/src/constants/icons';
+import { CloseCircle } from '@/src/constants/icons';
+import { CardShadow } from '@/src/constants/shadows';
 import type { IUploadProgress } from '../hooks/useFileUploadWithProgress';
 
 interface IProps {
@@ -14,11 +15,7 @@ interface IProps {
   onAddFile?: () => void;
 }
 
-const UploadProgressBar: React.FC<IProps> = ({
-  progress,
-  onDismiss,
-  onAddFile,
-}) => {
+const UploadProgressBar: React.FC<IProps> = ({ progress, onDismiss }) => {
   const isUploading = progress.status === 'uploading';
   const percent = Math.round(progress.percent);
 
@@ -37,16 +34,6 @@ const UploadProgressBar: React.FC<IProps> = ({
               variant="Linear"
             />
           </Pressable>
-
-          {onAddFile && (
-            <Pressable hitSlop={8} onPress={onAddFile}>
-              <Add
-                size={`${ms(20)}`}
-                color={AppColors.gray80}
-                variant="Linear"
-              />
-            </Pressable>
-          )}
         </View>
       </View>
 
@@ -63,24 +50,20 @@ export const MemoUploadProgressBar = React.memo(UploadProgressBar);
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: ms(16),
-    marginTop: ms(12),
-    borderRadius: ms(25),
+    borderRadius: ms(100),
     backgroundColor: AppColors.white,
     borderWidth: 1,
     borderColor: AppColors.gray20,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: ms(8),
+    paddingHorizontal: ms(16),
+    marginLeft: ms(16),
+    ...CardShadow,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: ms(16),
     paddingVertical: ms(10),
   },
   text: {

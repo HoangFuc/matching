@@ -8,6 +8,7 @@ import {
   types,
 } from '@react-native-documents/picker';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
@@ -22,17 +23,22 @@ import {
   TMeetingType,
   TUploadFile,
 } from '@/src/interface/meetingMinutes.interface';
+import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
 import { MemoFileUploadSection } from '../components/FileUploadSection';
 import { MemoMeetingTypePicker } from '../components/MeetingTypePicker';
 
+type TNav = NativeStackNavigationProp<MeetingMinutesStackParamList>;
+
 const CreateMeetingMinutesScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<TNav>();
 
   //---------------------------------------
   const [meetingType, setMeetingType] = useState<TMeetingType>('오프라인');
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [date, setDate] = useState('2025.12.13');
+  const [visitLocation, setVisitLocation] = useState('');
   const [customerName, setCustomerName] = useState('');
+  const [phone, setPhone] = useState('');
   const [content, setContent] = useState('');
   const [uploadFiles, setUploadFiles] = useState<TUploadFile[]>([]);
   const isPickingRef = useRef(false);
@@ -102,9 +108,26 @@ const CreateMeetingMinutesScreen: React.FC = () => {
       Alert.alert('', '상담내용을 입력해주세요.');
       return;
     }
+
+    const firstFile = uploadFiles.find(f => f.status === 'done');
     // TODO: call API to create meeting minutes
-    navigation.goBack();
-  }, [customerName, content, navigation]);
+    navigation.navigate('MeetingMinutesDetail', {
+      item: {
+        id: `${Date.now()}`,
+        type: meetingType,
+        isRecorded: !!firstFile,
+        title: content.trim(),
+        customerName: customerName.trim(),
+        date,
+        visitLocation: visitLocation.trim(),
+        phone: phone.trim(),
+        content: content.trim(),
+        recordingFile: firstFile
+          ? { name: firstFile.name, size: firstFile.size, duration: '10:23' }
+          : undefined,
+      },
+    });
+  }, [customerName, content, navigation, meetingType, date, visitLocation, phone, uploadFiles]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -159,10 +182,24 @@ const CreateMeetingMinutesScreen: React.FC = () => {
           </View>
 
           <MemoFormInput
+            label="방문 장소"
+            placeholder="방문 장소를 입력해주세요"
+            value={visitLocation}
+            onChangeText={setVisitLocation}
+          />
+
+          <MemoFormInput
             label="고객명"
             placeholder="고객명을 입력해주세요"
             value={customerName}
             onChangeText={setCustomerName}
+          />
+
+          <MemoFormInput
+            label="연락처"
+            placeholder="연락처를 입력해주세요"
+            value={phone}
+            onChangeText={setPhone}
           />
 
           <MemoFormInput

@@ -1,6 +1,12 @@
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
+import {
+  errorCodes,
+  isErrorWithCode,
+  pick,
+  types,
+} from '@react-native-documents/picker';
 import { ArrowLeft2, SearchNormal1 } from '@/src/constants/icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -25,11 +31,13 @@ import {
 } from '../components/folder';
 import { MemoNoData } from '../components/NoData';
 import { MemoRenameSheet } from '../components/RenameSheet';
+import { MemoUploadProgressBar } from '../components/UploadProgressBar';
 import {
   DATA_ROOM_TAB_LABEL,
   DATA_ROOM_TABS,
   type TDataRoomTabType,
 } from '../constants';
+import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
 
 type TNav = NativeStackNavigationProp<DataRoomStackParamList, 'DataRoomMain'>;
 
@@ -41,7 +49,7 @@ const DataRoomScreen: React.FC = () => {
   const folders = data?.folders ?? [];
   const files = data?.files ?? [];
 
-  // Sheet states
+  //---------------------------------------
   const [actionSheetVisible, setActionSheetVisible] = React.useState(false);
   const [moveSheetVisible, setMoveSheetVisible] = React.useState(false);
   const [renameSheetVisible, setRenameSheetVisible] = React.useState(false);
@@ -49,14 +57,17 @@ const DataRoomScreen: React.FC = () => {
     null,
   );
 
+  //---------------------------------------
   const handlePressSearch = React.useCallback(() => {
     navigation.navigate('DataRoomSearch');
   }, [navigation]);
 
+  //---------------------------------------
   const handlePressBack = React.useCallback(() => {
     navigation.goBack();
   }, [navigation]);
 
+  //---------------------------------------
   const handlePressFolder = React.useCallback(
     (folder: IFolder) => {
       navigation.navigate('DataRoomDetail', {
@@ -67,11 +78,13 @@ const DataRoomScreen: React.FC = () => {
     [navigation],
   );
 
+  //---------------------------------------
   const handlePressMore = React.useCallback((folder: IFolder) => {
     setSelectedFolder(folder);
     setActionSheetVisible(true);
   }, []);
 
+  //---------------------------------------
   const handleFolderAction = React.useCallback(
     (action: TFolderAction) => {
       if (!selectedFolder) {
@@ -90,6 +103,44 @@ const DataRoomScreen: React.FC = () => {
     },
     [selectedFolder],
   );
+
+  //---------------------------------------
+  const { progress, upload, dismiss } = useFileUploadWithProgress();
+  const isPickingRef = React.useRef(false);
+
+  //---------------------------------------
+  const handleUploadFile = React.useCallback(async () => {
+    if (isPickingRef.current) return;
+    isPickingRef.current = true;
+
+    try {
+      const result = await pick({
+        type: [types.allFiles],
+        allowMultiSelection: false,
+      });
+
+      const file = result[0];
+
+      if (!file) return;
+
+      await upload(
+        [
+          {
+            uri: file.uri,
+            name: file.name ?? 'unknown',
+            type: file.type ?? 'application/octet-stream',
+          },
+        ],
+        activeTab,
+      );
+    } catch (err) {
+      if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
+        console.error('DocumentPicker error:', err);
+      }
+    } finally {
+      isPickingRef.current = false;
+    }
+  }, [upload, activeTab]);
 
   //---------------------------------------
   const handlePressFileMore = React.useCallback((_file: IFile) => {
@@ -196,8 +247,13 @@ const DataRoomScreen: React.FC = () => {
           }
         />
 
+        {/* Upload Progress */}
+        {progress && (
+          <MemoUploadProgressBar progress={progress} onDismiss={dismiss} />
+        )}
+
         {/* FAB + Menu */}
-        <MemoFABWithMenu variant="white" />
+        <MemoFABWithMenu variant="white" onUploadFile={handleUploadFile} />
       </View>
 
       {/* Folder Action Sheet */}

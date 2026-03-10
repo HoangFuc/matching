@@ -9,7 +9,13 @@ import { AppImages } from '@/src/constants/images';
 
 const HeaderDashboard: React.FC = () => {
   return (
-    <>
+    <View>
+      <Image
+        source={AppImages.headerBg}
+        style={styles.background}
+        resizeMode="cover"
+      />
+
       <View style={styles.logo}>
         <Image
           style={{
@@ -25,12 +31,6 @@ const HeaderDashboard: React.FC = () => {
 
           <HamburgerMenu size={`${ms(24)}`} color={`${AppColors.white}`} />
         </View>
-
-        <Image
-          source={AppImages.converted}
-          style={styles.background}
-          resizeMode="contain"
-        />
       </View>
 
       <View style={styles.info}>
@@ -53,7 +53,7 @@ const HeaderDashboard: React.FC = () => {
           </AppText>
         </View>
       </View>
-    </>
+    </View>
   );
 };
 
@@ -72,12 +72,10 @@ const styles = StyleSheet.create({
   },
   background: {
     position: 'absolute',
-    top: ms(10),
+    top: ms(-45),
     right: 0,
-    width: ms(179),
-    height: ms(177),
-    opacity: 0.5,
-    paddingVertical: ms(16),
+    bottom: 0,
+    left: ms(20),
   },
   info: {
     flexDirection: 'row',

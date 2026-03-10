@@ -231,6 +231,7 @@ const BulletinDetail: React.FC = () => {
               </Pressable>
             </View>
           )}
+
           <View style={styles.inputContainer}>
             <TextInput
               ref={inputRef}

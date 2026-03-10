@@ -17,4 +17,5 @@ export const AppImages = {
   converted: require('@/src/assets/images/converted.png'),
   avatar: require('@/src/assets/images/avatar.jpg'),
   news: require('@/src/assets/images/news.jpg'),
+  headerBg: require('@/src/assets/images/header_bg.png'),
 };

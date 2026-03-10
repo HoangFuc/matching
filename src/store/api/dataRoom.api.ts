@@ -45,6 +45,7 @@ export interface IUploadFileInFolderPayload {
 
 export interface IUploadFilePayload {
   files: { uri: string; name: string; type: string }[];
+  dataRoomType: TDataRoomTabType;
 }
 
 export interface IUploadResponse {
@@ -180,7 +181,7 @@ export const dataRoomApi = createApi({
       ],
     }),
     uploadFile: builder.mutation<IUploadResponse, IUploadFilePayload>({
-      queryFn: async ({ files }) => {
+      queryFn: async ({ files, dataRoomType }) => {
         try {
           const formData = new FormData();
           files.forEach(file => {
@@ -190,17 +191,15 @@ export const dataRoomApi = createApi({
               name: file.name || 'file',
             } as any);
           });
+          formData.append('type', dataRoomType);
 
-          const response = await fetch(
-            `${API_BASE_URL}/data-room/files`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${TOKEN}`,
-              },
-              body: formData,
+          const response = await fetch(`${API_BASE_URL}/data-room/files`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${TOKEN}`,
             },
-          );
+            body: formData,
+          });
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -213,7 +212,7 @@ export const dataRoomApi = createApi({
           return { error: { status: 'FETCH_ERROR', error: String(err) } };
         }
       },
-      invalidatesTags: ['Files'],
+      invalidatesTags: ['Folders'],
     }),
     deleteFolder: builder.mutation<void, string>({
       query: folderId => ({

@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 import { API_BASE_URL, TOKEN } from '@env';
 import EventSource from 'react-native-sse';
 
+import type { TDataRoomTabType } from '../constants';
 import {
   useUploadFileInFolderMutation,
   useUploadFileMutation,
@@ -50,11 +51,14 @@ export const useFileUploadWithProgress = () => {
         if (!eventData) {
           return;
         }
+        if (!eventSourceRef.current) {
+          return;
+        }
 
         try {
-          const data = JSON.parse(eventData);
-
-          const dataProcess = data.data;
+          const parsed = JSON.parse(eventData);
+          // Handle both wrapped { data: {...} } and flat { status, percent, ... }
+          const dataProcess = parsed.data ?? parsed;
 
           setProgress({
             uploadId: dataProcess.uploadId ?? uploadId,
@@ -72,12 +76,27 @@ export const useFileUploadWithProgress = () => {
             eventSourceRef.current = null;
           }
         } catch (e) {
-          console.error('[SSE] Failed to parse event data:', e);
+          console.error(
+            '[SSE] Failed to parse event data:',
+            e,
+            'raw:',
+            eventData,
+          );
         }
       };
 
-      es.addEventListener('message', event => handleEventData(event.data));
-      es.addEventListener('progress', event => handleEventData(event.data));
+      es.addEventListener('open', () => {
+        console.log('[SSE] Connected to progress stream:', uploadId);
+      });
+
+      es.addEventListener('message', event => {
+        console.log('[SSE] message event:', event.data);
+        handleEventData(event.data);
+      });
+      es.addEventListener('progress', event => {
+        console.log('[SSE] progress event:', event.data);
+        handleEventData(event.data);
+      });
 
       es.addEventListener('error', event => {
         console.error('[SSE] Error:', event);
@@ -123,7 +142,10 @@ export const useFileUploadWithProgress = () => {
 
   //---------------------------------------
   const upload = useCallback(
-    async (files: { uri: string; name: string; type: string }[]) => {
+    async (
+      files: { uri: string; name: string; type: string }[],
+      dataRoomType: TDataRoomTabType,
+    ) => {
       try {
         setProgress({
           uploadId: '',
@@ -132,7 +154,7 @@ export const useFileUploadWithProgress = () => {
           fileName: files[0]?.name ?? '',
         });
 
-        const result = await uploadFile({ files }).unwrap();
+        const result = await uploadFile({ files, dataRoomType }).unwrap();
 
         listenProgress(result.uploadId);
       } catch (err) {

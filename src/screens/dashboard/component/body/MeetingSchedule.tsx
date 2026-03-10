@@ -1,15 +1,15 @@
-import React, { useCallback } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import React, { useCallback } from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { moderateScale as ms } from "react-native-size-matters/extend";
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 
-import { AppText } from "@/src/component/AppText";
-import { AppColors } from "@/src/constants/colors";
-import { AppImages } from "@/src/constants/images";
-import { RootStackParamList } from "@/src/interface/tab.interface";
-import { MemoTemplateMeetingCard } from "../meetingSchedule/TemplateMeetingCard";
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { AppImages } from '@/src/constants/images';
+import { RootStackParamList } from '@/src/interface/tab.interface';
+import { MemoTemplateMeetingCard } from '../meetingSchedule/TemplateMeetingCard';
 
 type TNav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -18,7 +18,7 @@ const MeetingSchedule: React.FC = () => {
 
   //---------------------------------------
   const handlePressMeetingSchedule = useCallback(() => {
-    navigation.navigate("MeetingScheduleManagement");
+    navigation.navigate('MeetingScheduleManagement');
   }, [navigation]);
 
   return (
@@ -32,22 +32,14 @@ const MeetingSchedule: React.FC = () => {
           text="OO고객과의 미팅"
           onPress={handlePressMeetingSchedule}
           image={
-            <Image
-              source={AppImages.chatBubble}
-              style={styles.cardImage}
-            />
+            <Image source={AppImages.chatBubble} style={styles.cardImage} />
           }
         />
 
         <MemoTemplateMeetingCard
           text="OO 분양 1차 회의"
-          onPress={handlePressMeetingSchedule}
-          image={
-            <Image
-              source={AppImages.list}
-              style={styles.cardImage}
-            />
-          }
+          onPress={() => {}}
+          image={<Image source={AppImages.list} style={styles.cardImage} />}
         />
       </View>
     </View>
@@ -61,7 +53,7 @@ const styles = StyleSheet.create({
     gap: ms(12),
   },
   row: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 8,
   },
   cardImage: {

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -17,7 +17,10 @@ import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
 import { CardShadow } from '@/src/constants/shadows';
-import { TMeetingScheduleStatus } from '@/src/interface/meetingScheduleManagement.interface';
+import {
+  IMeetingScheduleManagement,
+  TMeetingScheduleStatus,
+} from '@/src/interface/meetingScheduleManagement.interface';
 import { RootStackParamList } from '@/src/interface/tab.interface';
 import { Microphone2 } from '@/src/constants/icons';
 import { MemoRecordedAudioCard } from '../components/RecordedAudioCard';
@@ -43,14 +46,61 @@ const STATUS_CONFIG: Record<
   },
 };
 
+type TInfoRow =
+  | { label: string; type: 'text'; value: string; flex?: boolean }
+  | { label: string; type: 'chip'; status: TMeetingScheduleStatus };
+
+const buildInfoRows = (item: IMeetingScheduleManagement): TInfoRow[] => [
+  { label: '상태', type: 'chip', status: item.status },
+  { label: '날짜', type: 'text', value: `${item.date} ${item.time}` },
+  { label: '방문 장소', type: 'text', value: item.visitLocation, flex: true },
+  { label: '고객명', type: 'text', value: item.customerName },
+  { label: '연락처', type: 'text', value: item.phone },
+  { label: '일정명', type: 'text', value: item.scheduleName },
+  { label: '메모', type: 'text', value: item.memo, flex: true },
+];
+
+//---------------------------------------
+const InfoRow: React.FC<{ row: TInfoRow }> = ({ row }) => (
+  <View style={styles.infoRow}>
+    <AppText variant="body6" color={AppColors.gray90} style={styles.label}>
+      {row.label}
+    </AppText>
+
+    {row.type === 'chip' ? (
+      <MemoChip
+        label={row.status}
+        bgColor={STATUS_CONFIG[row.status].bgColor}
+        textColor={STATUS_CONFIG[row.status].textColor}
+        textVariant="detail"
+      />
+    ) : (
+      <AppText
+        variant="body8"
+        color={AppColors.gray90}
+        style={row.flex ? styles.infoValue : undefined}
+      >
+        {row.value}
+      </AppText>
+    )}
+  </View>
+);
+
+const MemoInfoRow = React.memo(InfoRow);
+
+//---------------------------------------
 const MeetingScheduleDetailScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
   const route = useRoute<TRoute>();
   const { item } = route.params;
 
-  const statusConfig = STATUS_CONFIG[item.status];
   const [showRecording, setShowRecording] = useState(false);
-  const [recordedFile, setRecordedFile] = useState<{ path: string; name: string } | null>(null);
+  const [recordedFile, setRecordedFile] = useState<{
+    path: string;
+    name: string;
+  } | null>(null);
+
+  const infoRows = useMemo(() => buildInfoRows(item), [item]);
 
   //---------------------------------------
   const handleOpenRecording = useCallback(() => {
@@ -86,114 +136,9 @@ const MeetingScheduleDetailScreen: React.FC = () => {
         >
           {/* Info Card */}
           <View style={styles.card}>
-            <View style={styles.infoRow}>
-              <AppText
-                variant="body6"
-                color={AppColors.gray90}
-                style={styles.label}
-              >
-                상태
-              </AppText>
-
-              <MemoChip
-                label={item.status}
-                bgColor={statusConfig.bgColor}
-                textColor={statusConfig.textColor}
-                textVariant="detail"
-              />
-            </View>
-
-            <View style={styles.infoRow}>
-              <AppText
-                variant="body6"
-                color={AppColors.gray90}
-                style={styles.label}
-              >
-                날짜
-              </AppText>
-
-              <AppText variant="body8" color={AppColors.gray90}>
-                {item.date} {item.time}
-              </AppText>
-            </View>
-
-            <View style={styles.infoRow}>
-              <AppText
-                variant="body6"
-                color={AppColors.gray90}
-                style={styles.label}
-              >
-                방문 장소
-              </AppText>
-
-              <AppText
-                variant="body8"
-                color={AppColors.gray90}
-                style={styles.infoValue}
-              >
-                {item.visitLocation}
-              </AppText>
-            </View>
-
-            <View style={styles.infoRow}>
-              <AppText
-                variant="body6"
-                color={AppColors.gray90}
-                style={styles.label}
-              >
-                고객명
-              </AppText>
-
-              <AppText variant="body8" color={AppColors.gray90}>
-                {item.customerName}
-              </AppText>
-            </View>
-
-            <View style={styles.infoRow}>
-              <AppText
-                variant="body6"
-                color={AppColors.gray90}
-                style={styles.label}
-              >
-                연락처
-              </AppText>
-
-              <AppText variant="body8" color={AppColors.gray90}>
-                {item.phone}
-              </AppText>
-            </View>
-
-            <View style={styles.infoRow}>
-              <AppText
-                variant="body6"
-                color={AppColors.gray90}
-                style={styles.label}
-              >
-                일정명
-              </AppText>
-
-              <AppText variant="body8" color={AppColors.gray90}>
-                {item.scheduleName}
-              </AppText>
-            </View>
-
-            <View style={styles.infoRow}>
-              <AppText
-                variant="body6"
-                color={AppColors.gray90}
-                style={styles.label}
-              >
-                메모
-              </AppText>
-
-              <AppText
-                variant="body8"
-                color={AppColors.gray90}
-                style={styles.infoValue}
-              >
-                {item.memo}
-              </AppText>
-            </View>
+            {infoRows.map(row => (
+              <MemoInfoRow key={row.label} row={row} />
+            ))}
           </View>
 
           {/* Recording Section */}

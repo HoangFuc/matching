@@ -23,81 +23,79 @@ const UploadFileItem: React.FC<IUploadFileItemProps> = ({
   const isDone = file.status === 'done';
 
   return (
-    <View style={styles.fileItem}>
-      <View style={styles.fileItemContent}>
-        {isUploading && (
-          <>
-            <View style={styles.fileItemHeader}>
-              <AppText
-                variant="body7"
-                color={AppColors.gray80}
-                style={styles.fileName}
-              >
-                파일 업로드 중 {file.progress}%
-              </AppText>
-
-              <View style={styles.fileActions}>
-                <Pressable hitSlop={8} onPress={() => onRetry(file.id)}>
-                  <More
-                    size={`${ms(18)}`}
-                    color={AppColors.gray50}
-                    variant="Linear"
-                  />
-                </Pressable>
-
-                <Pressable
-                  hitSlop={8}
-                  onPress={() => onRemove(file.id)}
-                  style={styles.trashContainer}
-                >
-                  <Trash
-                    size={`${ms(20)}`}
-                    color={AppColors.negative}
-                    variant="Bold"
-                  />
-                </Pressable>
-              </View>
-            </View>
-
-            <View style={styles.progressBar}>
-              <View
-                style={[styles.progressFill, { width: `${file.progress}%` }]}
-              />
-            </View>
-          </>
-        )}
-
-        {isDone && (
+    <View style={styles.fileItemContent}>
+      {isUploading && (
+        <>
           <View style={styles.fileItemHeader}>
-            <View style={styles.fileNameRow}>
-              <AppText
-                variant="body7"
-                color={AppColors.gray80}
-                numberOfLines={1}
-                style={styles.fileName}
-              >
-                {file.name}
-              </AppText>
-
-              <AppText variant="detail" color={AppColors.gray50}>
-                {file.size}
-              </AppText>
-            </View>
-
-            <Pressable
-              hitSlop={8}
-              onPress={() => onRemove(file.id)}
-              style={styles.trashContainer}
+            <AppText
+              variant="body7"
+              color={AppColors.gray80}
+              style={styles.fileName}
             >
-              <Trash
-                size={`${ms(20)}`}
-                color={AppColors.negative}
-                variant="Linear"
-              />
-            </Pressable>
+              파일 업로드 중 {file.progress}%
+            </AppText>
+
+            <View style={styles.fileActions}>
+              <Pressable hitSlop={8} onPress={() => onRetry(file.id)}>
+                <More
+                  size={`${ms(18)}`}
+                  color={AppColors.gray50}
+                  variant="Linear"
+                />
+              </Pressable>
+
+              <Pressable
+                hitSlop={8}
+                onPress={() => onRemove(file.id)}
+                style={styles.trashContainer}
+              >
+                <Trash
+                  size={`${ms(20)}`}
+                  color={AppColors.negative}
+                  variant="Bold"
+                />
+              </Pressable>
+            </View>
           </View>
-        )}
-      </View>
+
+          <View style={styles.progressBar}>
+            <View
+              style={[styles.progressFill, { width: `${file.progress}%` }]}
+            />
+          </View>
+        </>
+      )}
+
+      {isDone && (
+        <View style={styles.fileItemHeader}>
+          <View style={styles.fileNameRow}>
+            <AppText
+              variant="body7"
+              color={AppColors.gray80}
+              numberOfLines={1}
+              style={styles.fileName}
+            >
+              {file.name}
+            </AppText>
+
+            <AppText variant="detail" color={AppColors.gray50}>
+              {file.size}
+            </AppText>
+          </View>
+
+          <Pressable
+            hitSlop={8}
+            onPress={() => onRemove(file.id)}
+            style={styles.trashContainer}
+          >
+            <Trash
+              size={`${ms(20)}`}
+              color={AppColors.negative}
+              variant="Linear"
+            />
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 };
@@ -115,37 +113,40 @@ const FileUploadSection: React.FC<IProps> = ({
   onRemoveFile,
   onRetryFile,
 }) => {
+  const hasFiles = files.length > 0;
+
   return (
     <View style={styles.container}>
-      {/* Drop zone */}
-      <Pressable style={styles.dropZone} onPress={onPickFile}>
-        <CloudPlus
-          size={`${ms(24)}`}
-          color={AppColors.gray40}
-          variant="Linear"
-        />
+      {hasFiles ? (
+        files.map(file => (
+          <UploadFileItem
+            key={file.id}
+            file={file}
+            onRemove={onRemoveFile}
+            onRetry={onRetryFile}
+          />
+        ))
+      ) : (
+        <Pressable style={styles.dropZone} onPress={onPickFile}>
+          <CloudPlus
+            size={`${ms(24)}`}
+            color={AppColors.gray40}
+            variant="Linear"
+          />
 
-        <AppText
-          variant="body8"
-          color={AppColors.gray40}
-          style={styles.formatsText}
-        >
-          m4a, amr, mp3, wav, ogg, flac
-        </AppText>
+          <AppText
+            variant="body8"
+            color={AppColors.gray40}
+            style={styles.formatsText}
+          >
+            m4a, amr, mp3, wav, ogg, flac
+          </AppText>
 
-        <AppText variant="detail" color={AppColors.gray40}>
-          지원 파일 용량 100MB
-        </AppText>
-      </Pressable>
-
-      {files.map(file => (
-        <UploadFileItem
-          key={file.id}
-          file={file}
-          onRemove={onRemoveFile}
-          onRetry={onRetryFile}
-        />
-      ))}
+          <AppText variant="detail" color={AppColors.gray40}>
+            지원 파일 용량 100MB
+          </AppText>
+        </Pressable>
+      )}
     </View>
   );
 };
@@ -184,16 +185,15 @@ const styles = StyleSheet.create({
   formatsText: {
     marginTop: ms(4),
   },
-  fileItem: {
-    borderRadius: ms(8),
-    borderWidth: 1,
-    borderColor: AppColors.gray20,
-    backgroundColor: AppColors.white,
-    paddingHorizontal: ms(12),
-    paddingVertical: ms(10),
-  },
   fileItemContent: {
     gap: ms(8),
+    borderRadius: ms(14),
+    borderWidth: 1,
+    borderColor: AppColors.gray30,
+    backgroundColor: AppColors.white,
+    padding: ms(16),
+    borderStyle: 'dashed',
+    paddingVertical: ms(20),
   },
   fileItemHeader: {
     flexDirection: 'row',

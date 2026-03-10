@@ -114,6 +114,25 @@ const MeetingMinutesDetailScreen: React.FC = () => {
               </AppText>
             </View>
 
+            {!!item.visitLocation && (
+              <View style={styles.infoRow}>
+                <AppText
+                  variant="body7"
+                  color={AppColors.gray60}
+                  style={styles.label}
+                >
+                  방문 장소
+                </AppText>
+                <AppText
+                  variant="body7"
+                  color={AppColors.gray90}
+                  style={styles.infoValue}
+                >
+                  {item.visitLocation}
+                </AppText>
+              </View>
+            )}
+
             <View style={styles.infoRow}>
               <AppText
                 variant="body7"
@@ -126,6 +145,21 @@ const MeetingMinutesDetailScreen: React.FC = () => {
                 {item.customerName}
               </AppText>
             </View>
+
+            {!!item.phone && (
+              <View style={styles.infoRow}>
+                <AppText
+                  variant="body7"
+                  color={AppColors.gray60}
+                  style={styles.label}
+                >
+                  연락처
+                </AppText>
+                <AppText variant="body7" color={AppColors.gray90}>
+                  {item.phone}
+                </AppText>
+              </View>
+            )}
 
             <View style={styles.infoRow}>
               <AppText
@@ -236,6 +270,9 @@ const styles = StyleSheet.create({
   },
   label: {
     width: ms(70),
+  },
+  infoValue: {
+    flex: 1,
   },
   badges: {
     flexDirection: 'row',

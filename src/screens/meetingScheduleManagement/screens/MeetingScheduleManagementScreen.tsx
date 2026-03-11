@@ -1,7 +1,7 @@
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -17,71 +17,26 @@ import {
   SearchNormal1,
   Sort,
 } from '@/src/constants/icons';
+import {
+  MEETING_SCHEDULE_SCOPE_LABEL,
+  MEETING_SCHEDULE_TABS,
+  MeetingScheduleScopeEnum,
+} from '@/src/constants/meetingSchedule';
 import { IMeetingScheduleManagement } from '@/src/interface/meetingScheduleManagement.interface';
 import { RootStackParamList } from '@/src/interface/tab.interface';
+import { useGetMeetingSchedulesQuery } from '@/src/store/api/meetingScheduleManagement.api';
 import { padZero } from '@/src/utils/calendar.helper';
 import { MemoDateRangePickerModal } from '../components/DateRangePickerModal';
 import { MemoMeetingScheduleCard } from '../components/MeetingScheduleCard';
 
 type TNav = NativeStackNavigationProp<RootStackParamList>;
 
-type TTab = '전체' | '나의 일정';
-
-const MOCK_DATA: IMeetingScheduleManagement[] = [
-  {
-    id: '1',
-    customerName: '김민수',
-    phone: '010-9876-5432',
-    status: '미완료',
-    salesPerson: '한지민',
-    date: '2025.12.19',
-    time: '11:00',
-    visitLocation: '인천광역시 연수구 해돋이로 456',
-    scheduleName: '고객 미팅',
-    memo: '분양 1차 설명 및 계약 조건 안내\n고객 요청 사항 정리',
-  },
-  {
-    id: '2',
-    customerName: '김민수',
-    phone: '010-9876-5432',
-    status: '작성완료',
-    salesPerson: '신예린',
-    date: '2025.12.20',
-    time: '14:00',
-    visitLocation: '서울시 강남구 테헤란로 123',
-    scheduleName: '분양 상담',
-    memo: '2차 상담 진행',
-  },
-  {
-    id: '3',
-    customerName: '김민수',
-    phone: '010-9876-5432',
-    status: '미완료',
-    salesPerson: '한지민',
-    date: '2025.12.21',
-    time: '10:00',
-    visitLocation: '경기도 성남시 분당구 판교로 456',
-    scheduleName: '현장 방문',
-    memo: '현장 확인 및 고객 동행',
-  },
-  {
-    id: '4',
-    customerName: '김민수',
-    phone: '010-9876-5432',
-    status: '작성완료',
-    salesPerson: '박지훈',
-    date: '2025.12.22',
-    time: '16:00',
-    visitLocation: '인천광역시 서구 청라대로 789',
-    scheduleName: '계약 미팅',
-    memo: '최종 계약 조건 협의',
-  },
-];
-
 const MeetingScheduleManagementScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
   const now = new Date();
-  const [activeTab, setActiveTab] = React.useState<TTab>('나의 일정');
+  const [activeTab, setActiveTab] = React.useState<MeetingScheduleScopeEnum>(
+    MeetingScheduleScopeEnum.COMPANY,
+  );
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [startDate, setStartDate] = React.useState(
     `${now.getFullYear()}-${padZero(now.getMonth() + 1)}-${padZero(
@@ -92,6 +47,20 @@ const MeetingScheduleManagementScreen: React.FC = () => {
     `${now.getFullYear()}-${padZero(now.getMonth() + 1)}-${padZero(
       now.getDate() + 6,
     )}`,
+  );
+
+  const { data: meetingSchedules = [], refetch } =
+    useGetMeetingSchedulesQuery({
+      startDate,
+      endDate,
+      scope: activeTab,
+    });
+
+  //---------------------------------------
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch]),
   );
 
   //---------------------------------------
@@ -203,31 +172,20 @@ const MeetingScheduleManagementScreen: React.FC = () => {
       <MemoScreenBody>
         {/* Tabs */}
         <View style={styles.tabContainer}>
-          <Pressable
-            style={[styles.tab, activeTab === '전체' && styles.tabActive]}
-            onPress={() => setActiveTab('전체')}
-          >
-            <AppText
-              variant={activeTab === '전체' ? 'body5' : 'body7'}
-              color={activeTab === '전체' ? AppColors.purple : AppColors.gray60}
+          {MEETING_SCHEDULE_TABS.map(tab => (
+            <Pressable
+              key={tab}
+              style={[styles.tab, activeTab === tab && styles.tabActive]}
+              onPress={() => setActiveTab(tab)}
             >
-              전체
-            </AppText>
-          </Pressable>
-
-          <Pressable
-            style={[styles.tab, activeTab === '나의 일정' && styles.tabActive]}
-            onPress={() => setActiveTab('나의 일정')}
-          >
-            <AppText
-              variant={activeTab === '나의 일정' ? 'body5' : 'body7'}
-              color={
-                activeTab === '나의 일정' ? AppColors.purple : AppColors.gray60
-              }
-            >
-              나의 일정
-            </AppText>
-          </Pressable>
+              <AppText
+                variant={activeTab === tab ? 'body5' : 'body7'}
+                color={activeTab === tab ? AppColors.purple : AppColors.gray60}
+              >
+                {MEETING_SCHEDULE_SCOPE_LABEL[tab]}
+              </AppText>
+            </Pressable>
+          ))}
         </View>
 
         {/* Calendar Link */}
@@ -253,7 +211,7 @@ const MeetingScheduleManagementScreen: React.FC = () => {
 
         {/* List */}
         <FlatList
-          data={MOCK_DATA}
+          data={meetingSchedules}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           contentContainerStyle={styles.list}

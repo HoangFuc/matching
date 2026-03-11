@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 
 import { ms } from 'react-native-size-matters/extend';
 import * as Progress from 'react-native-progress';
@@ -7,43 +7,69 @@ import * as Progress from 'react-native-progress';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { CloseCircle } from '@/src/constants/icons';
-import { CardShadow } from '@/src/constants/shadows';
-import { useAppSelector } from '@/src/store/hooks';
-import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
 
-const UploadProgressBar: React.FC = () => {
+export interface IUploadProgressData {
+  status: 'uploading' | 'completed' | 'error' | 'cancelled';
+  percent: number;
+  fileName: string;
+  error?: string;
+}
+
+interface IProps {
+  progress: IUploadProgressData;
+  onCancel: () => void;
+  containerStyle?: ViewStyle;
+  showError?: boolean;
+  showFileName?: boolean;
+}
+
+const UploadProgressBar: React.FC<IProps> = ({
+  progress,
+  onCancel,
+  containerStyle,
+  showError = false,
+  showFileName = false,
+}) => {
   //---------------------------------------
-  const { cancelUpload } = useFileUploadWithProgress();
-
-  //---------------------------------------
-  const progress = useAppSelector(state => state.dataRoom.uploadProgress);
-
-  //---------------------------------------
-  const percent = Math.round(progress?.percent ?? 0);
-
-  //---------------------------------------
-  const isUploading = progress?.status === 'uploading';
-
-  if (!progress) {
-    return null;
-  }
+  const percent = Math.round(progress.percent);
+  const isUploading = progress.status === 'uploading';
+  const isError = progress.status === 'error';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       <View style={styles.content}>
-        <AppText variant="body6" color={AppColors.gray80} style={styles.text}>
-          파일 업로드 중 {percent}%
-        </AppText>
+        {showFileName ? (
+          <AppText
+            variant="body7"
+            color={isError ? AppColors.negative : AppColors.gray90}
+            numberOfLines={1}
+            style={styles.text}
+          >
+            {progress.fileName}
+          </AppText>
+        ) : null}
 
-        <View style={styles.actions}>
-          <Pressable hitSlop={8} onPress={cancelUpload}>
-            <CloseCircle
-              size={`${ms(20)}`}
-              color={AppColors.gray50}
-              variant="Linear"
-            />
-          </Pressable>
-        </View>
+        {showError && isError ? (
+          <AppText variant="body6" color={AppColors.negative}>
+            업로드 실패: {progress.error ?? '알 수 없는 오류'}
+          </AppText>
+        ) : (
+          <AppText variant="body6" color={AppColors.gray80} style={styles.text}>
+            파일 업로드 중 {percent}%
+          </AppText>
+        )}
+
+        {isUploading && (
+          <View style={styles.actions}>
+            <Pressable hitSlop={8} onPress={onCancel}>
+              <CloseCircle
+                size={`${ms(20)}`}
+                color={AppColors.gray50}
+                variant="Linear"
+              />
+            </Pressable>
+          </View>
+        )}
       </View>
 
       {isUploading && (
@@ -66,15 +92,7 @@ export const MemoUploadProgressBar = React.memo(UploadProgressBar);
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: ms(100),
-    backgroundColor: AppColors.white,
-    borderWidth: 1,
-    borderColor: AppColors.gray20,
     overflow: 'hidden',
-    paddingVertical: ms(8),
-    paddingHorizontal: ms(16),
-    marginLeft: ms(16),
-    ...CardShadow,
   },
   content: {
     flexDirection: 'row',

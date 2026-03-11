@@ -9,6 +9,7 @@ import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { CardShadow } from '@/src/constants/shadows';
 import {
   ArrowLeft2,
   Element3,
@@ -29,6 +30,7 @@ import {
 import { MemoNoData } from '../components/NoData';
 import { MemoRenameSheet } from '../components/RenameSheet';
 import { MemoUploadProgressBar } from '../components/UploadProgressBar';
+import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
 import { useFilePicker } from '../hooks/useFilePicker';
 import { useSheetManager } from '../hooks/useSheetManager';
 
@@ -46,6 +48,7 @@ const DataDetailScreen: React.FC = () => {
   const { data: files = [] } = useGetFilesByFolderQuery(folderId);
   const { pickAndUpload } = useFilePicker(folderId);
   const progress = useAppSelector(state => state.dataRoom.uploadProgress);
+  const { cancelUpload } = useFileUploadWithProgress();
 
   //---------------------------------------
   const {
@@ -183,7 +186,11 @@ const DataDetailScreen: React.FC = () => {
         {/* Upload Progress Bar */}
         {progress && (
           <View style={styles.progressOverlay}>
-            <MemoUploadProgressBar />
+            <MemoUploadProgressBar
+              progress={progress}
+              onCancel={cancelUpload}
+              containerStyle={styles.progressBar}
+            />
           </View>
         )}
 
@@ -278,5 +285,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: ms(82),
     zIndex: 10,
+  },
+  progressBar: {
+    borderRadius: ms(100),
+    backgroundColor: AppColors.white,
+    borderWidth: 1,
+    borderColor: AppColors.gray20,
+    paddingVertical: ms(8),
+    paddingHorizontal: ms(16),
+    ...CardShadow,
   },
 });

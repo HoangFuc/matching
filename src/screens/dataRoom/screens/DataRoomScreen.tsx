@@ -15,6 +15,7 @@ import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { CardShadow } from '@/src/constants/shadows';
 import type { DataRoomStackParamList } from '@/src/interface/tab.interface';
 import {
   IFile,
@@ -106,7 +107,7 @@ const DataRoomScreen: React.FC = () => {
   );
 
   //---------------------------------------
-  const { upload } = useFileUploadWithProgress();
+  const { upload, cancelUpload } = useFileUploadWithProgress();
   const progress = useAppSelector(state => state.dataRoom.uploadProgress);
   const isPickingRef = React.useRef(false);
 
@@ -250,7 +251,13 @@ const DataRoomScreen: React.FC = () => {
         />
 
         {/* Upload Progress */}
-        {progress && <MemoUploadProgressBar />}
+        {progress && (
+          <MemoUploadProgressBar
+            progress={progress}
+            onCancel={cancelUpload}
+            containerStyle={styles.progressBar}
+          />
+        )}
 
         {/* FAB + Menu */}
         <MemoFABWithMenu variant="white" onUploadFile={handleUploadFile} />
@@ -342,5 +349,15 @@ const styles = StyleSheet.create({
   },
   fileListContent: {
     gap: ms(12),
+  },
+  progressBar: {
+    borderRadius: ms(100),
+    backgroundColor: AppColors.white,
+    borderWidth: 1,
+    borderColor: AppColors.gray20,
+    paddingVertical: ms(8),
+    paddingHorizontal: ms(16),
+    marginLeft: ms(16),
+    ...CardShadow,
   },
 });

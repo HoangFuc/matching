@@ -17,18 +17,26 @@ interface IProps extends Omit<TextInputProps, 'style'> {
   label: string;
   labelVariant?: TypographyVariant;
   multiline?: boolean;
+  required?: boolean;
 }
 
 const FormInput: React.FC<IProps> = ({
   label,
   labelVariant = 'body7',
   multiline,
+  required,
   ...textInputProps
 }) => {
   return (
     <View>
       <AppText variant={labelVariant} color={AppColors.gray90}>
         {label}
+        {required && (
+          <AppText variant={labelVariant} color={AppColors.negative}>
+            {' '}
+            *
+          </AppText>
+        )}
       </AppText>
 
       <TextInput

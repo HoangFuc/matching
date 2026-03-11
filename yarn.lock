@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@actbase/react-daum-postcode@1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@actbase/react-daum-postcode/-/react-daum-postcode-1.0.4.tgz#fad5c595e35e835f0a7e205be698183420f42e5f"
+  integrity sha512-cTUnwfnKLM9LMh4dBPxbfGeCjpbJQcq/R6oW2aEJO20qz4i8cA7sPf0HkUyYqENfuGFU+vbsSJ8LJwNhTYoFLQ==
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.28.6", "@babel/code-frame@^7.29.0":
   version "7.29.0"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.29.0.tgz#7cd7a59f15b3cc0dcd803038f7792712a7d0b15c"
@@ -4253,7 +4258,7 @@ internal-slot@^1.1.0:
     hasown "^2.0.2"
     side-channel "^1.1.0"
 
-invariant@^2.2.4:
+invariant@2.2.4, invariant@^2.2.4:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/invariant/-/invariant-2.2.4.tgz#610f3c92c9359ce1db616e538008d23ff35158e6"
   integrity sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==
@@ -5053,6 +5058,11 @@ levn@^0.4.1:
   dependencies:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
+
+libphonenumber-js@1.12.34:
+  version "1.12.34"
+  resolved "https://registry.yarnpkg.com/libphonenumber-js/-/libphonenumber-js-1.12.34.tgz#20ed9da39e930e98eff4b6e24a8d8480303658af"
+  integrity sha512-v/Ip8k8eYdp7bINpzqDh46V/PaQ8sK+qi97nMQgjZzFlb166YFqlR/HVI+MzsI9JqcyyVWCOipmmretiaSyQyw==
 
 lighthouse-logger@^1.0.0:
   version "1.4.2"
@@ -6008,6 +6018,11 @@ react-native-blob-util@^0.24.7:
     base-64 "0.1.0"
     glob "13.0.1"
 
+react-native-country-select@0.3.8:
+  version "0.3.8"
+  resolved "https://registry.yarnpkg.com/react-native-country-select/-/react-native-country-select-0.3.8.tgz#af623ca1b26065c7451aaed66b41df54bf7f0927"
+  integrity sha512-tkh6D6DCI1WlGEyl7sCA3qMVnQFUX+WZ4Iodxz5VALo45Tv5vkPuTetLzbVTLlzhXUJLTcrT6jjdGXWNmNCvZw==
+
 react-native-date-picker@^5.0.13:
   version "5.0.13"
   resolved "https://registry.yarnpkg.com/react-native-date-picker/-/react-native-date-picker-5.0.13.tgz#fe05f58652aaeee9e67f73cf7436c32a623ff3a4"
@@ -6043,6 +6058,14 @@ react-native-image-picker@^8.2.1:
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/react-native-image-picker/-/react-native-image-picker-8.2.1.tgz#1ac7826563cbaa5d5298d9f2acc53c69805e5393"
   integrity sha512-FBeGYJGFDjMdGCcyubDJgBAPCQ4L1D3hwLXyUU91jY9ahOZMTbluceVvRmrEKqnDPFJ0gF1NVhJ0nr1nROFLdg==
+
+react-native-international-phone-number@^0.11.6:
+  version "0.11.6"
+  resolved "https://registry.yarnpkg.com/react-native-international-phone-number/-/react-native-international-phone-number-0.11.6.tgz#015384d6f39e7186cfabd4d4eec68011ff428d0f"
+  integrity sha512-tZazMooNwNPqG1A3h8K7ZPLDbTlFoN+BzbuGaW9tjL6Sh92WmEJcFOzzIM8lYjdyh2TZqcaKoo3zAGvYJq7b/w==
+  dependencies:
+    libphonenumber-js "1.12.34"
+    react-native-country-select "0.3.8"
 
 react-native-is-edge-to-edge@1.2.1:
   version "1.2.1"
@@ -6122,6 +6145,14 @@ react-native-toast-message@^2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/react-native-toast-message/-/react-native-toast-message-2.3.3.tgz#e301508d386a9902ff6b4559ecc6674f8cfdf97a"
   integrity sha512-4IIUHwUPvKHu4gjD0Vj2aGQzqPATiblL1ey8tOqsxOWRPGGu52iIbL8M/mCz4uyqecvPdIcMY38AfwRuUADfQQ==
+
+react-native-webview@^13.16.1:
+  version "13.16.1"
+  resolved "https://registry.yarnpkg.com/react-native-webview/-/react-native-webview-13.16.1.tgz#d5a6483fcb823eac704bd2a3d82c263771c6ede3"
+  integrity sha512-If0eHhoEdOYDcHsX+xBFwHMbWBGK1BvGDQDQdVkwtSIXiq1uiqjkpWVP2uQ1as94J0CzvFE9PUNDuhiX0Z6ubw==
+  dependencies:
+    escape-string-regexp "^4.0.0"
+    invariant "2.2.4"
 
 react-native-worklets@0.7.2:
   version "0.7.2"

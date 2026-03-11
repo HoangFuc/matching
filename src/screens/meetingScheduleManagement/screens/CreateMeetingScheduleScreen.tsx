@@ -1,21 +1,25 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import Postcode from '@actbase/react-daum-postcode';
 import { useNavigation } from '@react-navigation/native';
 import dayjs from 'dayjs';
 import { Controller, useForm } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
+import PhoneInput, { ICountry } from 'react-native-international-phone-number';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
+import { MemoBottomSheetModal } from '@/src/component/BottomSheetModal';
 import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
 import { Calendar, Clock } from '@/src/constants/icons';
 import { ICreateMeetingSchedulePayload } from '@/src/interface/meetingScheduleManagement.interface';
+import { useCreateMeetingScheduleMutation } from '@/src/store/api/meetingScheduleManagement.api';
 
 const formatDate = (d: Date) => dayjs(d).format('YYYY.MM.DD');
 const formatTime = (d: Date) => dayjs(d).format('HH:mm');
@@ -26,17 +30,21 @@ const CreateMeetingScheduleScreen: React.FC = () => {
   //---------------------------------------
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [showTimePicker, setShowTimePicker] = React.useState(false);
+  const [showPostcode, setShowPostcode] = React.useState(false);
+  const [selectedCountry, setSelectedCountry] =
+    React.useState<ICountry | null>(null);
 
   //---------------------------------------
   const { control, handleSubmit, watch } =
     useForm<ICreateMeetingSchedulePayload>({
       defaultValues: {
-        date: '',
-        time: '00:00',
-        visitLocation: '',
+        scheduleDate: '',
+        startTime: '09:00',
+        description: '',
+        address: '',
         customerName: '',
-        phone: '',
-        scheduleName: '',
+        customerPhone: '',
+        title: '',
         memo: '',
       },
     });
@@ -46,21 +54,30 @@ const CreateMeetingScheduleScreen: React.FC = () => {
   //---------------------------------------
   const isDisableButton = React.useMemo(() => {
     return (
-      !formValue.date ||
+      !formValue.scheduleDate ||
       !formValue.customerName ||
-      !formValue.phone ||
-      !formValue.scheduleName
+      !formValue.customerPhone ||
+      !formValue.title
     );
   }, [formValue]);
 
   //---------------------------------------
+  const [createMeetingSchedule] = useCreateMeetingScheduleMutation();
+
+  //---------------------------------------
   const onSubmit = React.useCallback(
     async (data: ICreateMeetingSchedulePayload) => {
-      // TODO: call API to create meeting schedule
-      console.log('submit', data);
-      navigation.goBack();
+      try {
+        await createMeetingSchedule({
+          ...data,
+          scheduleDate: data.scheduleDate.replace(/\./g, '-'),
+        }).unwrap();
+        navigation.goBack();
+      } catch (error) {
+        console.error('Failed to create meeting schedule:', error);
+      }
     },
-    [navigation],
+    [createMeetingSchedule, navigation],
   );
 
   return (
@@ -85,7 +102,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
             <View style={styles.dateTimeRow}>
               <Controller
                 control={control}
-                name="date"
+                name="scheduleDate"
                 render={({ field: { value, onChange } }) => (
                   <>
                     <Pressable
@@ -124,7 +141,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
 
               <Controller
                 control={control}
-                name="time"
+                name="startTime"
                 render={({ field: { value, onChange } }) => (
                   <>
                     <Pressable
@@ -160,37 +177,99 @@ const CreateMeetingScheduleScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Visit Location */}
-          <RHFFormInput
-            control={control}
-            name="visitLocation"
-            label="방문 장소"
-            placeholder="장소를 입력하세요"
-          />
+          {/* Address */}
+          <View>
+            <AppText variant="body7" color={AppColors.gray90}>
+              방문 장소{' '}
+              <AppText variant="body7" color={AppColors.negative}>
+                *
+              </AppText>
+            </AppText>
+
+            <Controller
+              control={control}
+              name="address"
+              render={({ field: { value, onChange } }) => (
+                <>
+                  <Pressable
+                    style={styles.dropdownBtn}
+                    onPress={() => setShowPostcode(true)}
+                  >
+                    <AppText
+                      variant="body7"
+                      color={value ? AppColors.gray100 : AppColors.gray40}
+                    >
+                      {value || '방문 장소를 입력하세요'}
+                    </AppText>
+                  </Pressable>
+
+                  <MemoBottomSheetModal
+                    visible={showPostcode}
+                    onClose={() => setShowPostcode(false)}
+                    title="주소 검색"
+                    sheetStyle={styles.postcodeSheet}
+                  >
+                    <Postcode
+                      style={styles.postcode}
+                      jsOptions={{ animation: true }}
+                      onSelected={data => {
+                        onChange(data.address);
+                        setShowPostcode(false);
+                      }}
+                      onError={() => setShowPostcode(false)}
+                    />
+                  </MemoBottomSheetModal>
+                </>
+              )}
+            />
+          </View>
 
           {/* Customer Name */}
           <RHFFormInput
             control={control}
             name="customerName"
-            label="고객명 *"
+            label="고객명"
             placeholder="고객명을 입력하세요"
+            required
           />
 
-          {/* Phone */}
-          <RHFFormInput
-            control={control}
-            name="phone"
-            label="연락처 *"
-            placeholder="연락처를 입력하세요"
-            keyboardType="phone-pad"
-          />
+          {/* Customer Phone */}
+          <View>
+            <AppText variant="body7" color={AppColors.gray90}>
+              연락처{' '}
+              <AppText variant="body7" color={AppColors.negative}>
+                *
+              </AppText>
+            </AppText>
 
-          {/* Schedule Name */}
+            <Controller
+              control={control}
+              name="customerPhone"
+              render={({ field: { value, onChange } }) => (
+                <PhoneInput
+                  value={value}
+                  onChangePhoneNumber={onChange}
+                  selectedCountry={selectedCountry}
+                  onChangeSelectedCountry={setSelectedCountry}
+                  defaultCountry="KR"
+                  placeholder="연락처를 입력하세요"
+                  phoneInputStyles={{
+                    container: styles.phoneContainer,
+                    input: styles.phoneInput,
+                    flagContainer: styles.phoneFlagContainer,
+                  }}
+                />
+              )}
+            />
+          </View>
+
+          {/* Title */}
           <RHFFormInput
             control={control}
-            name="scheduleName"
-            label="일정명 *"
+            name="title"
+            label="일정명"
             placeholder="일정명을 입력하세요"
+            required
           />
 
           {/* Memo */}
@@ -258,5 +337,25 @@ const styles = StyleSheet.create({
   submitBtn: {
     width: ms(163),
     paddingVertical: ms(8),
+  },
+  postcodeSheet: {
+    height: '80%',
+  },
+  postcode: {
+    flex: 1,
+  },
+  phoneContainer: {
+    backgroundColor: AppColors.gray10,
+    borderWidth: 0,
+    borderRadius: ms(8),
+  },
+  phoneInput: {
+    fontSize: 14,
+    color: AppColors.gray100,
+  },
+  phoneFlagContainer: {
+    backgroundColor: AppColors.gray10,
+    borderTopLeftRadius: ms(8),
+    borderBottomLeftRadius: ms(8),
   },
 });

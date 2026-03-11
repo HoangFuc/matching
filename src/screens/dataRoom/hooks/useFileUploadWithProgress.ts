@@ -1,14 +1,15 @@
 import React from 'react';
 
 import ReactNativeBlobUtil from 'react-native-blob-util';
-import EventSource from 'react-native-sse';
 
 import {
+  createUploadProgressHook,
+  type IUploadProgress,
+} from '@/src/hooks/useUploadWithProgress';
+import {
   dataRoomApi,
-  useCancelUploadMutation,
   useInitUploadMutation,
 } from '@/src/store/api/dataRoom.api';
-import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
 import {
   clearUploadProgress,
   setUploadProgress,
@@ -17,127 +18,37 @@ import {
 import { API_BASE_URL, TOKEN } from '@env';
 import type { TDataRoomTabType } from '../constants';
 
-export type { IUploadProgress } from '@/src/store/slices/dataRoomSlice';
+export type { IUploadProgress };
 
-// Module-level refs so all hook instances share the same references
-let sharedEventSource: InstanceType<typeof EventSource> | null = null;
-let sharedUploadTask: ReturnType<typeof ReactNativeBlobUtil.fetch> | null =
-  null;
-let isCancelling = false;
-let lastDispatchTime = 0;
-const THROTTLE_MS = 300;
+const useDataRoomUploadProgress = createUploadProgressHook({
+  progressSelector: state => state.dataRoom.uploadProgress,
+  setProgress: setUploadProgress,
+  updateProgress: updateUploadProgress,
+  clearProgress: clearUploadProgress,
+  basePath: 'data-room/uploads',
+  onCompleted: dispatch => {
+    dispatch(dataRoomApi.util.invalidateTags(['Folders', 'Files']));
+    setTimeout(() => {
+      dispatch(clearUploadProgress());
+    }, 1500);
+  },
+});
 
 export const useFileUploadWithProgress = () => {
   //---------------------------------------
-  const dispatch = useAppDispatch();
-  const progress = useAppSelector(state => state.dataRoom.uploadProgress);
+  const {
+    progress,
+    initProgress,
+    updateProgressState,
+    listenProgress,
+    setUploadTask,
+    handleUploadError,
+    cancelUpload,
+    dismiss,
+  } = useDataRoomUploadProgress();
 
   //---------------------------------------
   const [initUpload] = useInitUploadMutation();
-  const [cancelUploadApi] = useCancelUploadMutation();
-
-  //---------------------------------------
-  const closeEventSource = React.useCallback(() => {
-    if (sharedEventSource) {
-      sharedEventSource.close();
-      sharedEventSource = null;
-    }
-  }, []);
-
-  //---------------------------------------
-  const listenProgress = React.useCallback(
-    (uploadId: string) => {
-      closeEventSource();
-
-      const url = `${API_BASE_URL}/data-room/uploads/${uploadId}/progress`;
-
-      const es = new EventSource<'message' | 'progress'>(url, {
-        headers: {
-          Authorization: `Bearer ${TOKEN}`,
-        },
-      });
-
-      sharedEventSource = es;
-
-      const handleEventData = (eventData: string | null) => {
-        if (!eventData) {
-          return;
-        }
-        if (!sharedEventSource) {
-          return;
-        }
-
-        try {
-          const parsed = JSON.parse(eventData);
-          // Handle both wrapped { data: {...} } and flat { status, percent, ... }
-          const dataProcess = parsed.data ?? parsed;
-
-          const isFinished =
-            dataProcess.status === 'completed' ||
-            dataProcess.status === 'error';
-
-          // Throttle intermediate progress updates to keep JS thread responsive
-          const now = Date.now();
-          if (!isFinished && now - lastDispatchTime < THROTTLE_MS) {
-            return;
-          }
-          lastDispatchTime = now;
-
-          dispatch(
-            setUploadProgress({
-              uploadId: dataProcess.uploadId ?? uploadId,
-              status: dataProcess.status,
-              percent: dataProcess.percent ?? 0,
-              fileName: dataProcess.fileName ?? '',
-              error: dataProcess.error,
-            }),
-          );
-
-          if (isFinished) {
-            es.close();
-            sharedEventSource = null;
-
-            if (dataProcess.status === 'completed') {
-              dispatch(dataRoomApi.util.invalidateTags(['Folders', 'Files']));
-              setTimeout(() => {
-                dispatch(clearUploadProgress());
-              }, 1500);
-            }
-          }
-        } catch (e) {
-          console.error(
-            '[SSE] Failed to parse event data:',
-            e,
-            'raw:',
-            eventData,
-          );
-        }
-      };
-
-      es.addEventListener('open', () => {
-        console.log('[SSE] Connected to progress stream:', uploadId);
-      });
-
-      es.addEventListener('message', event => {
-        console.log('[SSE] message event:', event.data);
-        handleEventData(event.data);
-      });
-      es.addEventListener('progress', event => {
-        console.log('[SSE] progress event:', event.data);
-        handleEventData(event.data);
-      });
-
-      es.addEventListener('error', event => {
-        console.error('[SSE] Error:', event);
-        dispatch(
-          updateUploadProgress({ status: 'error', error: 'Connection lost' }),
-        );
-        es.close();
-        sharedEventSource = null;
-      });
-    },
-    [closeEventSource, dispatch],
-  );
 
   //---------------------------------------
   const uploadInFolder = React.useCallback(
@@ -146,22 +57,13 @@ export const useFileUploadWithProgress = () => {
       files: { uri: string; name: string; type: string }[],
     ) => {
       try {
-        isCancelling = false;
-
-        dispatch(
-          setUploadProgress({
-            uploadId: '',
-            status: 'uploading',
-            percent: 0,
-            fileName: files[0]?.name ?? '',
-          }),
-        );
+        initProgress(files[0]?.name ?? '');
 
         // Phase 1: init upload with folderId
         const { uploadId } = await initUpload({ folderId }).unwrap();
 
         // Save uploadId to Redux immediately
-        dispatch(updateUploadProgress({ uploadId }));
+        updateProgressState({ uploadId });
 
         // Phase 2: listen for progress BEFORE starting upload
         listenProgress(uploadId);
@@ -177,7 +79,7 @@ export const useFileUploadWithProgress = () => {
           },
         ];
 
-        sharedUploadTask = ReactNativeBlobUtil.fetch(
+        const task = ReactNativeBlobUtil.fetch(
           'POST',
           `${API_BASE_URL}/data-room/uploads/${uploadId}`,
           {
@@ -187,19 +89,15 @@ export const useFileUploadWithProgress = () => {
           uploadData,
         );
 
-        await sharedUploadTask;
-        sharedUploadTask = null;
+        setUploadTask(task);
+        await task;
+        setUploadTask(null);
       } catch (err) {
-        sharedUploadTask = null;
-        if (!isCancelling) {
-          dispatch(
-            updateUploadProgress({ status: 'error', error: 'Upload failed' }),
-          );
-        }
+        handleUploadError();
         throw err;
       }
     },
-    [dispatch, initUpload, listenProgress],
+    [initProgress, initUpload, updateProgressState, listenProgress, setUploadTask, handleUploadError],
   );
 
   //---------------------------------------
@@ -209,22 +107,13 @@ export const useFileUploadWithProgress = () => {
       dataRoomType: TDataRoomTabType,
     ) => {
       try {
-        isCancelling = false;
-
-        dispatch(
-          setUploadProgress({
-            uploadId: '',
-            status: 'uploading',
-            percent: 0,
-            fileName: files[0]?.name ?? '',
-          }),
-        );
+        initProgress(files[0]?.name ?? '');
 
         // Phase 1: init upload with type
         const { uploadId } = await initUpload({ type: dataRoomType }).unwrap();
 
         // Save uploadId to Redux immediately
-        dispatch(updateUploadProgress({ uploadId }));
+        updateProgressState({ uploadId });
 
         // Phase 2: listen for progress BEFORE starting upload
         listenProgress(uploadId);
@@ -240,7 +129,7 @@ export const useFileUploadWithProgress = () => {
           },
         ];
 
-        sharedUploadTask = ReactNativeBlobUtil.fetch(
+        const task = ReactNativeBlobUtil.fetch(
           'POST',
           `${API_BASE_URL}/data-room/uploads/${uploadId}`,
           {
@@ -250,72 +139,18 @@ export const useFileUploadWithProgress = () => {
           uploadData,
         );
 
-        await sharedUploadTask;
-        sharedUploadTask = null;
+        setUploadTask(task);
+        await task;
+        setUploadTask(null);
       } catch (err) {
-        sharedUploadTask = null;
-        if (!isCancelling) {
-          dispatch(
-            updateUploadProgress({ status: 'error', error: 'Upload failed' }),
-          );
-        }
+        handleUploadError();
         throw err;
       }
     },
-    [dispatch, initUpload, listenProgress],
+    [initProgress, initUpload, updateProgressState, listenProgress, setUploadTask, handleUploadError],
   );
 
   //---------------------------------------
-  const cancelUpload = React.useCallback(async () => {
-    if (isCancelling) {
-      return;
-    }
-    isCancelling = true;
-
-    const uploadId = progress?.uploadId;
-
-    // 1. Close SSE connection
-    closeEventSource();
-
-    // 2. Abort the client-side upload
-    if (sharedUploadTask) {
-      sharedUploadTask.cancel();
-      sharedUploadTask = null;
-    }
-
-    // 3. Cancel on server
-    if (uploadId) {
-      try {
-        await cancelUploadApi(uploadId).unwrap();
-      } catch (e) {
-        console.warn('[Cancel] Server cancel failed:', e);
-      }
-    }
-
-    // 4. Notify cancelled → clear Redux state
-    dispatch(
-      setUploadProgress({
-        uploadId: uploadId ?? '',
-        status: 'cancelled',
-        percent: 0,
-        fileName: progress?.fileName ?? '',
-      }),
-    );
-    dispatch(clearUploadProgress());
-  }, [
-    progress?.uploadId,
-    progress?.fileName,
-    closeEventSource,
-    dispatch,
-    cancelUploadApi,
-  ]);
-
-  //---------------------------------------
-  const dismiss = React.useCallback(() => {
-    closeEventSource();
-    dispatch(clearUploadProgress());
-  }, [closeEventSource, dispatch]);
-
   return {
     progress,
     uploadInFolder,

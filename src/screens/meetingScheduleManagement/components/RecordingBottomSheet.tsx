@@ -19,7 +19,7 @@ import { AppColors } from '@/src/constants/colors';
 interface IProps {
   visible: boolean;
   onClose: () => void;
-  onRecordingComplete: (filePath: string) => void;
+  onRecordingComplete: (filePath: string, waveformData: number[]) => void;
 }
 
 const WAVEFORM_BAR_COUNT = 40;
@@ -35,6 +35,7 @@ const RecordingBottomSheet: React.FC<IProps> = ({
     Array(WAVEFORM_BAR_COUNT).fill(0),
   );
   const filePathRef = useRef<string>('');
+  const allMeteringRef = useRef<number[]>([]);
 
   //---------------------------------------
   const { startRecorder, pauseRecorder, resumeRecorder, stopRecorder, state } =
@@ -47,6 +48,7 @@ const RecordingBottomSheet: React.FC<IProps> = ({
             Math.min(1, (e.currentMetering + 60) / 60),
           );
           setMeteringLevels(prev => [...prev.slice(1), normalized]);
+          allMeteringRef.current.push(normalized);
         }
       },
     });
@@ -99,6 +101,7 @@ const RecordingBottomSheet: React.FC<IProps> = ({
 
       setMeteringLevels(Array(WAVEFORM_BAR_COUNT).fill(0));
       setIsPaused(false);
+      allMeteringRef.current = [];
 
       const path = await startRecorder(undefined, undefined, true);
       filePathRef.current = path;
@@ -110,14 +113,17 @@ const RecordingBottomSheet: React.FC<IProps> = ({
   //---------------------------------------
   const handleStopRecording = useCallback(async () => {
     try {
+      if (isPaused) {
+        await resumeRecorder();
+      }
       const result = await stopRecorder();
       setIsPaused(false);
       setMeteringLevels(Array(WAVEFORM_BAR_COUNT).fill(0));
-      onRecordingComplete(result);
+      onRecordingComplete(result, allMeteringRef.current);
     } catch {
       Toast.show({ type: 'error', text1: '녹음 중지에 실패했습니다' });
     }
-  }, [stopRecorder, onRecordingComplete]);
+  }, [isPaused, resumeRecorder, stopRecorder, onRecordingComplete]);
 
   //---------------------------------------
   const handleTogglePause = useCallback(async () => {
@@ -168,7 +174,7 @@ const RecordingBottomSheet: React.FC<IProps> = ({
               style={[
                 styles.waveformBar,
                 {
-                  height: Math.max(ms(4), level * ms(40)),
+                  height: Math.max(ms(2), level * ms(20)),
                 },
               ]}
             />
@@ -188,10 +194,7 @@ const RecordingBottomSheet: React.FC<IProps> = ({
 
               <TouchableOpacity
                 onPress={handleTogglePause}
-                style={[
-                  styles.playTriangle,
-                  isPaused && styles.playTrianglePaused,
-                ]}
+                style={isPaused ? styles.playTriangle : styles.recordButton}
               />
 
               <View style={styles.controlSpacer}>
@@ -237,14 +240,15 @@ const styles = StyleSheet.create({
   waveformContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    height: ms(16),
-    gap: ms(2),
+    justifyContent: 'space-between',
+    height: ms(28),
+    width: '100%',
   },
   waveformBar: {
-    width: ms(3),
+    flex: 1,
+    marginHorizontal: ms(1),
     borderRadius: ms(2),
-    backgroundColor: AppColors.gray80,
+    backgroundColor: AppColors.gray40,
   },
   controlsRow: {
     flexDirection: 'row',
@@ -287,8 +291,5 @@ const styles = StyleSheet.create({
     borderLeftColor: AppColors.negative,
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
-  },
-  playTrianglePaused: {
-    borderLeftColor: AppColors.gray80,
   },
 });

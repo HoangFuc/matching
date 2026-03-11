@@ -7,6 +7,7 @@ import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { MemoChip } from '@/src/component/Chip';
 import { AppColors } from '@/src/constants/colors';
+import { MEETING_SCHEDULE_STATUS_LABEL } from '@/src/constants/meetingSchedule';
 import {
   IMeetingScheduleManagement,
   TMeetingScheduleStatus,
@@ -21,20 +22,28 @@ const STATUS_CONFIG: Record<
   TMeetingScheduleStatus,
   { bgColor: string; textColor: string; borderColor: string }
 > = {
-  미완료: {
+  incomplete: {
     bgColor: AppColors.lightCream,
     textColor: AppColors.amber,
     borderColor: AppColors.amber,
   },
-  작성완료: {
+  completed: {
     bgColor: AppColors.lightBlue,
     textColor: AppColors.strongBlue,
     borderColor: AppColors.strongBlue,
   },
 };
 
+const DEFAULT_STATUS_CONFIG = {
+  bgColor: AppColors.lightCream,
+  textColor: AppColors.amber,
+  borderColor: AppColors.amber,
+};
+
 const MeetingScheduleCard: React.FC<IProps> = ({ item, onPress }) => {
-  const statusConfig = STATUS_CONFIG[item.status];
+  const statusConfig =
+    STATUS_CONFIG[item.status as TMeetingScheduleStatus] ??
+    DEFAULT_STATUS_CONFIG;
 
   return (
     <MemoBaseCard style={[styles.card]} onPress={onPress}>
@@ -44,7 +53,7 @@ const MeetingScheduleCard: React.FC<IProps> = ({ item, onPress }) => {
         </AppText>
 
         <MemoChip
-          label={item.status}
+          label={MEETING_SCHEDULE_STATUS_LABEL[item.status] ?? item.status}
           bgColor={statusConfig.bgColor}
           textColor={statusConfig.textColor}
           textVariant="detail"
@@ -53,13 +62,13 @@ const MeetingScheduleCard: React.FC<IProps> = ({ item, onPress }) => {
 
       <View style={styles.row}>
         <AppText variant="body6" color={AppColors.gray90}>
-          {item.phone}
+          {item.customerPhone}
         </AppText>
 
         <AppText variant="body8" color={AppColors.black}>
           영업 담당자:{' '}
           <AppText variant="body6" color={AppColors.black}>
-            {item.salesPerson}
+            {item.creator.fullName}
           </AppText>
         </AppText>
       </View>

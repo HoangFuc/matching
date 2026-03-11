@@ -18,6 +18,7 @@ import { meetingScheduleManagementApi } from './api/meetingScheduleManagement.ap
 import { scheduleApi } from './api/schedule.api';
 import { toastMiddleware } from './middleware/toastMiddleware';
 import dataRoomReducer from './slices/dataRoomSlice';
+import meetingScheduleReducer from './slices/meetingScheduleSlice';
 import scheduleReducer from './slices/scheduleSlice';
 
 const persistConfig = {
@@ -28,6 +29,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   dataRoom: dataRoomReducer,
+  meetingSchedule: meetingScheduleReducer,
   schedule: scheduleReducer,
   [scheduleApi.reducerPath]: scheduleApi.reducer,
   [checkinApi.reducerPath]: checkinApi.reducer,

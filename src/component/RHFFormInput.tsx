@@ -1,7 +1,13 @@
 import React from 'react';
 import { TextInputProps } from 'react-native';
 
-import { Control, Controller, FieldPath, FieldValues } from 'react-hook-form';
+import {
+  Control,
+  Controller,
+  FieldPath,
+  FieldValues,
+  RegisterOptions,
+} from 'react-hook-form';
 
 import { MemoFormInput } from './FormInput';
 import { TypographyVariant } from '../constants/typography';
@@ -13,19 +19,29 @@ interface IProps<T extends FieldValues>
   label: string;
   labelVariant?: TypographyVariant;
   multiline?: boolean;
+  required?: boolean;
+  rules?: RegisterOptions<T, FieldPath<T>>;
 }
 
 const RHFFormInputInner = <T extends FieldValues>({
   control,
   name,
+  rules,
+  required,
   ...rest
 }: IProps<T>) => {
   return (
     <Controller
       control={control}
       name={name}
+      rules={rules}
       render={({ field: { value, onChange } }) => (
-        <MemoFormInput value={value} onChangeText={onChange} {...rest} />
+        <MemoFormInput
+          value={value}
+          onChangeText={onChange}
+          required={required}
+          {...rest}
+        />
       )}
     />
   );

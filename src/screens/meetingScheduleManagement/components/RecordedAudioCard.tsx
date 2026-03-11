@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useSoundWithStates } from 'react-native-nitro-sound';
@@ -18,13 +18,34 @@ import {
 interface IProps {
   filePath: string;
   fileName: string;
+  waveformData?: number[];
 }
 
-const WAVEFORM_BARS = [
-  0.3, 0.5, 0.7, 0.4, 0.8, 0.6, 0.9, 0.5, 0.3, 0.7, 0.8, 0.4, 0.6, 0.9, 0.5,
-  0.7, 0.4, 0.8, 0.3, 0.6, 0.7, 0.5, 0.9, 0.4, 0.8, 0.6, 0.3, 0.7, 0.5, 0.8,
-];
+const WAVEFORM_BAR_COUNT = 30;
 const SEEK_OFFSET_MS = 10_000;
+
+const downsampleWaveform = (data: number[], barCount: number): number[] => {
+  if (data.length === 0) {
+    return Array(barCount).fill(0.1);
+  }
+  if (data.length <= barCount) {
+    const padded = [...data];
+    while (padded.length < barCount) {
+      padded.push(0.1);
+    }
+    return padded;
+  }
+  const chunkSize = data.length / barCount;
+  const result: number[] = [];
+  for (let i = 0; i < barCount; i++) {
+    const start = Math.floor(i * chunkSize);
+    const end = Math.floor((i + 1) * chunkSize);
+    const chunk = data.slice(start, end);
+    const avg = chunk.reduce((sum, v) => sum + v, 0) / chunk.length;
+    result.push(avg);
+  }
+  return result;
+};
 
 const formatTime = (_ms: number) => {
   const totalSec = Math.floor(_ms / 1000);
@@ -33,7 +54,11 @@ const formatTime = (_ms: number) => {
   return `${min}:${sec.toString().padStart(2, '0')}`;
 };
 
-const RecordedAudioCard: React.FC<IProps> = ({ filePath, fileName }) => {
+const RecordedAudioCard: React.FC<IProps> = ({ filePath, fileName, waveformData }) => {
+  const waveformBars = React.useMemo(
+    () => downsampleWaveform(waveformData ?? [], WAVEFORM_BAR_COUNT),
+    [waveformData],
+  );
   const {
     startPlayer,
     pausePlayer,
@@ -44,6 +69,20 @@ const RecordedAudioCard: React.FC<IProps> = ({ filePath, fileName }) => {
   } = useSoundWithStates();
 
   const { isPlaying, playback } = state;
+  const [hasEnded, setHasEnded] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  //---------------------------------------
+  // Detect playback end
+  useEffect(() => {
+    if (
+      !isPlaying &&
+      playback.duration > 0 &&
+      playback.position >= playback.duration
+    ) {
+      setHasEnded(true);
+    }
+  }, [isPlaying, playback.position, playback.duration]);
 
   //---------------------------------------
   useEffect(() => {
@@ -57,9 +96,13 @@ const RecordedAudioCard: React.FC<IProps> = ({ filePath, fileName }) => {
     try {
       if (isPlaying) {
         await pausePlayer();
-      } else if (playback.position > 0) {
+      } else if (hasEnded) {
+        setHasEnded(false);
+        await startPlayer(filePath);
+      } else if (hasStarted) {
         await resumePlayer();
       } else {
+        setHasStarted(true);
         await startPlayer(filePath);
       }
     } catch {
@@ -67,7 +110,8 @@ const RecordedAudioCard: React.FC<IProps> = ({ filePath, fileName }) => {
     }
   }, [
     isPlaying,
-    playback.position,
+    hasEnded,
+    hasStarted,
     pausePlayer,
     resumePlayer,
     startPlayer,
@@ -106,15 +150,27 @@ const RecordedAudioCard: React.FC<IProps> = ({ filePath, fileName }) => {
 
       {/* Waveform */}
       <View style={styles.waveformContainer}>
-        {WAVEFORM_BARS.map((level, index) => (
-          <View
-            key={index}
-            style={[
-              styles.waveformBar,
-              { height: Math.max(ms(2), level * ms(20)) },
-            ]}
-          />
-        ))}
+        {waveformBars.map((level, index) => {
+          const progress =
+            playback.duration > 0
+              ? playback.position / playback.duration
+              : 0;
+          const isPlayed = index / waveformBars.length < progress;
+          return (
+            <View
+              key={index}
+              style={[
+                styles.waveformBar,
+                {
+                  height: Math.max(ms(2), level * ms(20)),
+                  backgroundColor: isPlayed
+                    ? AppColors.gray80
+                    : AppColors.gray40,
+                },
+              ]}
+            />
+          );
+        })}
       </View>
 
       {/* Controls + Time row */}

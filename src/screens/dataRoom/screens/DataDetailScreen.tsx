@@ -1,12 +1,6 @@
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
-import {
-  errorCodes,
-  isErrorWithCode,
-  pick,
-  types,
-} from '@react-native-documents/picker';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -26,8 +20,6 @@ import { IFile, useGetFilesByFolderQuery } from '@/src/store/api/dataRoom.api';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
 import { toggleViewMode } from '@/src/store/slices/dataRoomSlice';
 import { MemoFABWithMenu } from '../components/FABWithMenu';
-import { MemoUploadProgressBar } from '../components/UploadProgressBar';
-import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
 import {
   MemoFileActionSheet,
   MemoFileGridItem,
@@ -36,6 +28,9 @@ import {
 } from '../components/file';
 import { MemoNoData } from '../components/NoData';
 import { MemoRenameSheet } from '../components/RenameSheet';
+import { MemoUploadProgressBar } from '../components/UploadProgressBar';
+import { useFilePicker } from '../hooks/useFilePicker';
+import { useSheetManager } from '../hooks/useSheetManager';
 
 type TNav = NativeStackNavigationProp<DataRoomStackParamList, 'DataRoomDetail'>;
 type TRoute = RouteProp<DataRoomStackParamList, 'DataRoomDetail'>;
@@ -49,13 +44,21 @@ const DataDetailScreen: React.FC = () => {
   //---------------------------------------
   const { folderId, folderName } = route.params;
   const { data: files = [] } = useGetFilesByFolderQuery(folderId);
-  const { progress, uploadInFolder, dismiss } = useFileUploadWithProgress();
+  const { pickAndUpload } = useFilePicker(folderId);
+  const progress = useAppSelector(state => state.dataRoom.uploadProgress);
 
   //---------------------------------------
-  const [actionSheetVisible, setActionSheetVisible] = React.useState(false);
-  const [moveSheetVisible, setMoveSheetVisible] = React.useState(false);
-  const [renameSheetVisible, setRenameSheetVisible] = React.useState(false);
-  const [selectedFile, setSelectedFile] = React.useState<IFile | null>(null);
+  const {
+    selectedItem: selectedFile,
+    actionSheetVisible,
+    moveSheetVisible,
+    renameSheetVisible,
+    openActionSheet,
+    closeActionSheet,
+    closeMoveSheet,
+    closeRenameSheet,
+    handleAction: handleFileAction,
+  } = useSheetManager<IFile>();
 
   //---------------------------------------
   const handlePressBack = React.useCallback(() => {
@@ -73,67 +76,19 @@ const DataDetailScreen: React.FC = () => {
   }, [dispatch]);
 
   //---------------------------------------
-  const handleUploadFile = React.useCallback(async () => {
-    try {
-      const result = await pick({
-        type: [types.allFiles],
-        allowMultiSelection: true,
-      });
-
-      const pickedFiles = result.map(file => ({
-        uri: file.uri,
-        name: file.name ?? 'file',
-        type: file.type ?? 'application/octet-stream',
-      }));
-
-      await uploadInFolder(folderId, pickedFiles);
-    } catch (err) {
-      if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
-        console.error('Upload error:', err);
-      }
-    }
-  }, [folderId, uploadInFolder]);
-
-  //---------------------------------------
-  const handlePressMore = React.useCallback((file: IFile) => {
-    setSelectedFile(file);
-    setActionSheetVisible(true);
-  }, []);
-
-  //---------------------------------------
-  const handleFileAction = React.useCallback(
-    (action: 'share' | 'move' | 'rename' | 'info') => {
-      if (!selectedFile) {
-        return;
-      }
-      switch (action) {
-        case 'move':
-          setMoveSheetVisible(true);
-          break;
-        case 'rename':
-          setRenameSheetVisible(true);
-          break;
-        default:
-          break;
-      }
-    },
-    [selectedFile],
-  );
-
-  //---------------------------------------
   const renderListItem = React.useCallback(
     ({ item }: { item: IFile }) => (
-      <MemoFileListItem item={item} onPressMore={handlePressMore} />
+      <MemoFileListItem item={item} onPressMore={openActionSheet} />
     ),
-    [handlePressMore],
+    [openActionSheet],
   );
 
   //---------------------------------------
   const renderGridItem = React.useCallback(
     ({ item }: { item: IFile }) => (
-      <MemoFileGridItem item={item} onPressMore={handlePressMore} />
+      <MemoFileGridItem item={item} onPressMore={openActionSheet} />
     ),
-    [handlePressMore],
+    [openActionSheet],
   );
 
   //---------------------------------------
@@ -228,18 +183,14 @@ const DataDetailScreen: React.FC = () => {
         {/* Upload Progress Bar */}
         {progress && (
           <View style={styles.progressOverlay}>
-            <MemoUploadProgressBar
-              progress={progress}
-              onDismiss={dismiss}
-              onAddFile={handleUploadFile}
-            />
+            <MemoUploadProgressBar />
           </View>
         )}
 
         {/* FAB + Menu */}
         <MemoFABWithMenu
           variant="white"
-          onUploadFile={handleUploadFile}
+          onUploadFile={pickAndUpload}
           showCreateFolder={false}
         />
       </View>
@@ -247,7 +198,7 @@ const DataDetailScreen: React.FC = () => {
       {/* File Action Sheet */}
       <MemoFileActionSheet
         visible={actionSheetVisible}
-        onClose={() => setActionSheetVisible(false)}
+        onClose={closeActionSheet}
         fileName={selectedFile?.originalName || ''}
         onAction={handleFileAction}
       />
@@ -256,18 +207,17 @@ const DataDetailScreen: React.FC = () => {
       {selectedFile && (
         <MemoMoveFileSheet
           visible={moveSheetVisible}
-          onClose={() => setMoveSheetVisible(false)}
+          onClose={closeMoveSheet}
           fileId={selectedFile.id}
           currentFolderId={folderId}
         />
       )}
 
-
       {/* Rename Sheet */}
       {selectedFile && (
         <MemoRenameSheet
           visible={renameSheetVisible}
-          onClose={() => setRenameSheetVisible(false)}
+          onClose={closeRenameSheet}
           itemId={selectedFile.id}
           currentName={selectedFile.originalName}
           kind="file"

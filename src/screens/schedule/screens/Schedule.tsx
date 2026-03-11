@@ -38,14 +38,9 @@ const Schedule: React.FC = () => {
   const [filterVisible, setFilterVisible] = React.useState(false);
   const [selectedFilterTypes, setSelectedFilterTypes] = React.useState<
     TScheduleType[]
-  >(['계약 일정']);
+  >([]);
 
   //---------------------------------------
-  React.useEffect(() => {
-    if (filterTypes && filterTypes.length > 0) {
-      setSelectedFilterTypes(filterTypes);
-    }
-  }, [filterTypes]);
   const [detailData, setDetailData] = React.useState<TDetailData>();
 
   //---------------------------------------
@@ -71,6 +66,13 @@ const Schedule: React.FC = () => {
     setDetailData(undefined);
   }, []);
 
+  //---------------------------------------
+  React.useEffect(() => {
+    if (filterTypes && filterTypes.length > 0) {
+      setSelectedFilterTypes(filterTypes);
+    }
+  }, [filterTypes]);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <MemoScheduleHeader
@@ -87,7 +89,11 @@ const Schedule: React.FC = () => {
         />
       ) : (
         <View style={styles.content}>
-          <MemoScheduleCalendar mode={mode} selectedFilterTypes={selectedFilterTypes} onDayPress={handleDayPress} />
+          <MemoScheduleCalendar
+            mode={mode}
+            selectedFilterTypes={selectedFilterTypes}
+            onDayPress={handleDayPress}
+          />
         </View>
       )}
 

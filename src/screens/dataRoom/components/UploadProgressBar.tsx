@@ -2,22 +2,31 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ms } from 'react-native-size-matters/extend';
+import * as Progress from 'react-native-progress';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { CloseCircle } from '@/src/constants/icons';
 import { CardShadow } from '@/src/constants/shadows';
-import type { IUploadProgress } from '../hooks/useFileUploadWithProgress';
+import { useAppSelector } from '@/src/store/hooks';
+import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
 
-interface IProps {
-  progress: IUploadProgress;
-  onDismiss: () => void;
-  onAddFile?: () => void;
-}
+const UploadProgressBar: React.FC = () => {
+  //---------------------------------------
+  const { cancelUpload } = useFileUploadWithProgress();
 
-const UploadProgressBar: React.FC<IProps> = ({ progress, onDismiss }) => {
-  const isUploading = progress.status === 'uploading';
-  const percent = Math.round(progress.percent);
+  //---------------------------------------
+  const progress = useAppSelector(state => state.dataRoom.uploadProgress);
+
+  //---------------------------------------
+  const percent = Math.round(progress?.percent ?? 0);
+
+  //---------------------------------------
+  const isUploading = progress?.status === 'uploading';
+
+  if (!progress) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
@@ -27,7 +36,7 @@ const UploadProgressBar: React.FC<IProps> = ({ progress, onDismiss }) => {
         </AppText>
 
         <View style={styles.actions}>
-          <Pressable hitSlop={8} onPress={onDismiss}>
+          <Pressable hitSlop={8} onPress={cancelUpload}>
             <CloseCircle
               size={`${ms(20)}`}
               color={AppColors.gray50}
@@ -38,9 +47,16 @@ const UploadProgressBar: React.FC<IProps> = ({ progress, onDismiss }) => {
       </View>
 
       {isUploading && (
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${percent}%` }]} />
-        </View>
+        <Progress.Bar
+          progress={percent / 100}
+          width={null}
+          height={ms(3)}
+          color={AppColors.purple}
+          unfilledColor={AppColors.gray20}
+          borderWidth={0}
+          borderRadius={ms(2)}
+          animated
+        />
       )}
     </View>
   );
@@ -73,14 +89,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: ms(8),
-  },
-  progressBar: {
-    height: ms(3),
-    backgroundColor: AppColors.gray20,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: AppColors.purple,
-    borderRadius: ms(2),
   },
 });

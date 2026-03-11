@@ -1,3 +1,5 @@
+import ReactNativeBlobUtil from 'react-native-blob-util';
+
 import { TDataRoomTabType } from '@/src/screens/dataRoom/constants';
 import { API_BASE_URL, TOKEN } from '@env';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
@@ -38,18 +40,18 @@ export interface ISearchResponse {
   files: IFile[];
 }
 
-export interface IUploadFileInFolderPayload {
-  folderId: string;
-  files: { uri: string; name: string; type: string }[];
+export interface IInitUploadPayload {
+  folderId?: string;
+  type?: TDataRoomTabType;
+}
+
+export interface IInitUploadResponse {
+  uploadId: string;
 }
 
 export interface IUploadFilePayload {
-  files: { uri: string; name: string; type: string }[];
-  dataRoomType: TDataRoomTabType;
-}
-
-export interface IUploadResponse {
   uploadId: string;
+  file: { uri: string; name: string; type: string };
 }
 
 export interface IMoveFilePayload {
@@ -139,80 +141,53 @@ export const dataRoomApi = createApi({
       }),
       invalidatesTags: ['Files'],
     }),
-    uploadFileInFolder: builder.mutation<
-      IUploadResponse,
-      IUploadFileInFolderPayload
-    >({
-      queryFn: async ({ folderId, files }) => {
-        try {
-          const formData = new FormData();
-          files.forEach(file => {
-            formData.append('file', {
-              uri: file.uri,
-              type: file.type || 'application/octet-stream',
-              name: file.name || 'file',
-            } as any);
-          });
-
-          const response = await fetch(
-            `${API_BASE_URL}/data-room/folders/${folderId}/files`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${TOKEN}`,
-              },
-              body: formData,
-            },
-          );
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            return { error: { status: response.status, data: errorData } };
-          }
-
-          const data = await response.json();
-          return { data: data?.data as IUploadResponse };
-        } catch (err) {
-          return { error: { status: 'FETCH_ERROR', error: String(err) } };
-        }
-      },
-      invalidatesTags: (_r, _e, { folderId }) => [
-        { type: 'Files', id: folderId },
-      ],
+    initUpload: builder.mutation<IInitUploadResponse, IInitUploadPayload>({
+      query: body => ({
+        url: '/uploads/init',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: any) => response?.data ?? response,
     }),
-    uploadFile: builder.mutation<IUploadResponse, IUploadFilePayload>({
-      queryFn: async ({ files, dataRoomType }) => {
-        try {
-          const formData = new FormData();
-          files.forEach(file => {
-            formData.append('file', {
-              uri: file.uri,
-              type: file.type || 'application/octet-stream',
-              name: file.name || 'file',
-            } as any);
-          });
-          formData.append('type', dataRoomType);
+    uploadFileById: builder.mutation<null, IUploadFilePayload>({
+      queryFn: ({ uploadId, file }) => {
+        const uploadData = [
+          {
+            name: 'file',
+            filename: file.name || 'file',
+            type: file.type || 'application/octet-stream',
+            data: ReactNativeBlobUtil.wrap(file.uri.replace('file://', '')),
+          },
+        ];
 
-          const response = await fetch(`${API_BASE_URL}/data-room/files`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${TOKEN}`,
-            },
-            body: formData,
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            return { error: { status: response.status, data: errorData } };
-          }
-
-          const data = await response.json();
-          return { data: data?.data as IUploadResponse };
-        } catch (err) {
-          return { error: { status: 'FETCH_ERROR', error: String(err) } };
-        }
+        return ReactNativeBlobUtil.fetch(
+          'POST',
+          `${API_BASE_URL}/data-room/uploads/${uploadId}`,
+          {
+            Authorization: `Bearer ${TOKEN}`,
+            'Content-Type': 'multipart/form-data',
+          },
+          uploadData,
+        )
+          .then(response => {
+            const status = response.info().status;
+            if (status < 200 || status >= 300) {
+              const errorData = response.json();
+              return { error: { status, data: errorData } };
+            }
+            return { data: null };
+          })
+          .catch(err => ({
+            error: { status: 'FETCH_ERROR', error: String(err) },
+          }));
       },
-      invalidatesTags: ['Folders'],
+      invalidatesTags: ['Folders', 'Files'],
+    }),
+    cancelUpload: builder.mutation<void, string>({
+      query: uploadId => ({
+        url: `/uploads/${uploadId}`,
+        method: 'DELETE',
+      }),
     }),
     deleteFolder: builder.mutation<void, string>({
       query: folderId => ({
@@ -232,7 +207,8 @@ export const {
   useMoveFileMutation,
   useRenameItemMutation,
   useDeleteFileMutation,
-  useUploadFileInFolderMutation,
-  useUploadFileMutation,
+  useInitUploadMutation,
+  useUploadFileByIdMutation,
+  useCancelUploadMutation,
   useDeleteFolderMutation,
 } = dataRoomApi;

@@ -1,13 +1,13 @@
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
+import { ArrowLeft2, SearchNormal1 } from '@/src/constants/icons';
 import {
   errorCodes,
   isErrorWithCode,
   pick,
   types,
 } from '@react-native-documents/picker';
-import { ArrowLeft2, SearchNormal1 } from '@/src/constants/icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +21,7 @@ import {
   IFolder,
   useGetFoldersQuery,
 } from '@/src/store/api/dataRoom.api';
+import { useAppSelector } from '@/src/store/hooks';
 import { MemoFABWithMenu } from '../components/FABWithMenu';
 import { MemoFileGridItem } from '../components/file';
 import type { TFolderAction } from '../components/folder';
@@ -105,7 +106,8 @@ const DataRoomScreen: React.FC = () => {
   );
 
   //---------------------------------------
-  const { progress, upload, dismiss } = useFileUploadWithProgress();
+  const { upload } = useFileUploadWithProgress();
+  const progress = useAppSelector(state => state.dataRoom.uploadProgress);
   const isPickingRef = React.useRef(false);
 
   //---------------------------------------
@@ -248,9 +250,7 @@ const DataRoomScreen: React.FC = () => {
         />
 
         {/* Upload Progress */}
-        {progress && (
-          <MemoUploadProgressBar progress={progress} onDismiss={dismiss} />
-        )}
+        {progress && <MemoUploadProgressBar />}
 
         {/* FAB + Menu */}
         <MemoFABWithMenu variant="white" onUploadFile={handleUploadFile} />

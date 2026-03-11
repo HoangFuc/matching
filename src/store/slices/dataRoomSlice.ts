@@ -1,10 +1,19 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 
+export interface IUploadProgress {
+  uploadId: string;
+  status: 'uploading' | 'completed' | 'error' | 'cancelled';
+  percent: number;
+  fileName: string;
+  error?: string;
+}
+
 interface IDataRoomState {
   selectedFolderId: string | null;
   selectedFolderName: string | null;
   viewMode: 'list' | 'grid';
   searchKeyword: string;
+  uploadProgress: IUploadProgress | null;
 }
 
 const initialState: IDataRoomState = {
@@ -12,6 +21,7 @@ const initialState: IDataRoomState = {
   selectedFolderName: null,
   viewMode: 'list',
   searchKeyword: '',
+  uploadProgress: null,
 };
 
 const dataRoomSlice = createSlice({
@@ -38,6 +48,20 @@ const dataRoomSlice = createSlice({
     setSearchKeyword(state, action: PayloadAction<string>) {
       state.searchKeyword = action.payload;
     },
+    setUploadProgress(state, action: PayloadAction<IUploadProgress>) {
+      state.uploadProgress = action.payload;
+    },
+    updateUploadProgress(
+      state,
+      action: PayloadAction<Partial<IUploadProgress>>,
+    ) {
+      if (state.uploadProgress) {
+        Object.assign(state.uploadProgress, action.payload);
+      }
+    },
+    clearUploadProgress(state) {
+      state.uploadProgress = null;
+    },
     resetDataRoom() {
       return initialState;
     },
@@ -50,6 +74,9 @@ export const {
   toggleViewMode,
   setViewMode,
   setSearchKeyword,
+  setUploadProgress,
+  updateUploadProgress,
+  clearUploadProgress,
   resetDataRoom,
 } = dataRoomSlice.actions;
 

@@ -24,7 +24,7 @@ export type RootStackParamList = {
 export type MeetingMinutesStackParamList = {
   MeetingMinutesMain: undefined;
   CreateMeetingMinutes: undefined;
-  MeetingMinutesDetail: { item: TMeetingMinutes };
+  MeetingMinutesDetail: { id: string };
   EditMeetingMinutes: { item: TMeetingMinutes };
 };
 

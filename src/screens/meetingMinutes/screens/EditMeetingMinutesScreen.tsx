@@ -1,6 +1,7 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import DatePicker from 'react-native-date-picker';
 import {
   errorCodes,
   isErrorWithCode,
@@ -20,12 +21,24 @@ import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
 import { ArrowDown2, Calendar } from '@/src/constants/icons';
 import {
-  TMeetingType,
+  TMeetingTypeLabel,
+  TRecording,
   TUploadFile,
 } from '@/src/interface/meetingMinutes.interface';
+import {
+  MEETING_TYPE_KEY,
+  MEETING_TYPE_LABEL,
+} from '@/src/constants/meetingMinutes';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
+import { MemoFileInfoCard } from '@/src/component/FileInfoCard';
 import { MemoFileUploadSection } from '../components/FileUploadSection';
 import { MemoMeetingTypePicker } from '../components/MeetingTypePicker';
+import {
+  useDeleteRecordingMutation,
+  useUpdateMeetingLogMutation,
+} from '@/src/store/api/meetingLog.api';
+import { useMeetingLogUploadWithProgress } from '../hooks/useMeetingLogUploadWithProgress';
+import { useAppSelector } from '@/src/store/hooks';
 
 type TRoute = NativeStackScreenProps<
   MeetingMinutesStackParamList,
@@ -37,36 +50,69 @@ const EditMeetingMinutesScreen: React.FC = () => {
   const route = useRoute<TRoute>();
   const { item } = route.params;
 
-  const [meetingType, setMeetingType] = useState<TMeetingType>(item.type);
-  const [showTypePicker, setShowTypePicker] = useState(false);
-  const [date, setDate] = useState(item.date);
-  const [visitLocation, setVisitLocation] = useState(item.visitLocation);
-  const [customerName, setCustomerName] = useState(item.customerName);
-  const [phone, setPhone] = useState(item.phone);
-  const [content, setContent] = useState(item.content);
-  const [uploadFiles, setUploadFiles] = useState<TUploadFile[]>(() => {
-    if (item.recordingFile) {
-      return [
-        {
-          id: 'existing-1',
-          name: item.recordingFile.name,
-          size: item.recordingFile.size,
-          progress: 100,
-          status: 'done',
-        },
-      ];
-    }
-    return [];
-  });
-  const isPickingRef = useRef(false);
+  const [meetingType, setMeetingType] = React.useState<TMeetingTypeLabel>(
+    MEETING_TYPE_LABEL[item.meetingType],
+  );
+  const [showTypePicker, setShowTypePicker] = React.useState(false);
+  const [date, setDate] = React.useState(
+    item.meetingDate ? new Date(item.meetingDate) : new Date(),
+  );
+  const [showDatePicker, setShowDatePicker] = React.useState(false);
+  const [visitLocation, setVisitLocation] = React.useState(item.address);
+  const [customerName, setCustomerName] = React.useState(item.customerName);
+  const [phone, setPhone] = React.useState(item.customerPhone);
+  const [content, setContent] = React.useState(item.consultationContent);
+  const [uploadFiles, setUploadFiles] = React.useState<TUploadFile[]>([]);
+  const [recordings, setRecordings] = React.useState<TRecording[]>(
+    item.recordings ?? [],
+  );
+  const [savedUploadId, setSavedUploadId] = React.useState<string | null>(null);
+  const isPickingRef = React.useRef(false);
 
-  const formatFileSize = useCallback((bytes: number) => {
+  //---------------------------------------
+  const [updateMeetingLog] = useUpdateMeetingLogMutation();
+  const [deleteRecording] = useDeleteRecordingMutation();
+  const { uploadFileWithUploadId, cancelUpload } =
+    useMeetingLogUploadWithProgress();
+  const progress = useAppSelector(
+    state => state.meetingMinutes.meetingLogUploadProgress,
+  );
+
+  //---------------------------------------
+  const formattedDate = React.useMemo(() => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}.${m}.${d}`;
+  }, [date]);
+
+  //---------------------------------------
+  const formatFileSize = React.useCallback((bytes: number) => {
     if (bytes < 1024) return `${bytes}B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
   }, []);
 
-  const handlePickFile = useCallback(async () => {
+  //---------------------------------------
+  const handleRemoveRecording = React.useCallback(
+    async (recordingId: string) => {
+      try {
+        const result = await deleteRecording(item.id).unwrap();
+        const uploadId = result?.uploadId;
+        if (uploadId) {
+          setSavedUploadId(uploadId);
+        }
+        setRecordings(prev => prev.filter(r => r.id !== recordingId));
+      } catch (err) {
+        console.error('[EditMeetingMinutes] Delete recording error:', err);
+        Alert.alert('', '녹음파일 삭제에 실패했습니다.');
+      }
+    },
+    [deleteRecording, item.id],
+  );
+
+  //---------------------------------------
+  const handlePickFile = React.useCallback(async () => {
     if (isPickingRef.current) return;
     isPickingRef.current = true;
     try {
@@ -89,12 +135,36 @@ const EditMeetingMinutesScreen: React.FC = () => {
         id: `${Date.now()}`,
         name: file.name ?? 'unknown',
         size: formatFileSize(fileSizeBytes),
-        progress: 100,
-        status: 'done',
+        progress: 0,
+        status: 'uploading',
+        uri: file.uri,
+        type: file.type ?? 'audio/m4a',
       };
 
       setUploadFiles(prev => [...prev, newFile]);
-      // TODO: call API to upload file
+
+      const filePayload = {
+        uri: file.uri,
+        name: file.name ?? 'recording',
+        type: file.type ?? 'audio/m4a',
+      };
+
+      if (savedUploadId) {
+        uploadFileWithUploadId(savedUploadId, filePayload);
+      } else {
+        try {
+          const res = await deleteRecording(item.id).unwrap();
+          const uploadId = res?.uploadId;
+          if (uploadId) {
+            setSavedUploadId(uploadId);
+            uploadFileWithUploadId(uploadId, filePayload);
+          }
+        } catch (err) {
+          console.error('[EditMeetingMinutes] Get uploadId error:', err);
+          setUploadFiles(prev => prev.filter(f => f.id !== newFile.id));
+          Alert.alert('', '파일 업로드 준비에 실패했습니다.');
+        }
+      }
     } catch (err) {
       if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
         console.error('DocumentPicker error:', err);
@@ -102,17 +172,27 @@ const EditMeetingMinutesScreen: React.FC = () => {
     } finally {
       isPickingRef.current = false;
     }
-  }, [formatFileSize]);
+  }, [
+    formatFileSize,
+    savedUploadId,
+    uploadFileWithUploadId,
+    deleteRecording,
+    item.id,
+  ]);
 
-  const handleRemoveFile = useCallback((id: string) => {
-    setUploadFiles(prev => prev.filter(f => f.id !== id));
-  }, []);
+  //---------------------------------------
+  const handleRemoveFile = React.useCallback(
+    (id: string) => {
+      setUploadFiles(prev => prev.filter(f => f.id !== id));
+      if (progress) {
+        cancelUpload();
+      }
+    },
+    [progress, cancelUpload],
+  );
 
-  const handleRetryFile = useCallback((_id: string) => {
-    // TODO: retry upload
-  }, []);
-
-  const handleSubmit = useCallback(() => {
+  //---------------------------------------
+  const handleSubmit = React.useCallback(async () => {
     if (!customerName.trim()) {
       Alert.alert('', '고객명을 입력해주세요.');
       return;
@@ -121,9 +201,47 @@ const EditMeetingMinutesScreen: React.FC = () => {
       Alert.alert('', '상담내용을 입력해주세요.');
       return;
     }
-    // TODO: call API to update meeting minutes
-    navigation.goBack();
-  }, [customerName, content, navigation]);
+
+    try {
+      const meetingDateStr = date.toISOString().split('T')[0];
+      await updateMeetingLog({
+        id: item.id,
+        meetingType: MEETING_TYPE_KEY[meetingType],
+        meetingDate: meetingDateStr,
+        customerName: customerName.trim(),
+        customerPhone: phone,
+        address: visitLocation,
+        consultationContent: content.trim(),
+      }).unwrap();
+
+      navigation.goBack();
+    } catch (err) {
+      console.error('[EditMeetingMinutes] Update error:', err);
+      Alert.alert('', '수정에 실패했습니다.');
+    }
+  }, [
+    customerName,
+    content,
+    date,
+    meetingType,
+    phone,
+    visitLocation,
+    item.id,
+    updateMeetingLog,
+    navigation,
+  ]);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    if (!progress) return;
+    setUploadFiles(prev =>
+      prev.map(f => ({
+        ...f,
+        progress: progress.percent,
+        status: progress.status === 'completed' ? 'done' : f.status,
+      })),
+    );
+  }, [progress]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -167,9 +285,12 @@ const EditMeetingMinutesScreen: React.FC = () => {
               날짜
             </AppText>
 
-            <Pressable style={styles.dropdownBtn}>
-              <AppText variant="body8" color={AppColors.gray90}>
-                {date}
+            <Pressable
+              style={styles.dropdownBtn}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <AppText variant="body7" color={AppColors.gray100}>
+                {formattedDate}
               </AppText>
 
               <Calendar
@@ -178,6 +299,18 @@ const EditMeetingMinutesScreen: React.FC = () => {
                 variant="Linear"
               />
             </Pressable>
+
+            <DatePicker
+              modal
+              open={showDatePicker}
+              date={date}
+              mode="date"
+              onConfirm={selectedDate => {
+                setShowDatePicker(false);
+                setDate(selectedDate);
+              }}
+              onCancel={() => setShowDatePicker(false)}
+            />
           </View>
 
           <MemoFormInput
@@ -214,12 +347,22 @@ const EditMeetingMinutesScreen: React.FC = () => {
               녹음파일
             </AppText>
 
-            <MemoFileUploadSection
-              files={uploadFiles}
-              onPickFile={handlePickFile}
-              onRemoveFile={handleRemoveFile}
-              onRetryFile={handleRetryFile}
-            />
+            {recordings.length > 0 ? (
+              recordings.map(rec => (
+                <MemoFileInfoCard
+                  key={rec.id}
+                  fileName={rec.fileName}
+                  fileSize={rec.fileSize}
+                  onRemove={() => handleRemoveRecording(rec.id)}
+                />
+              ))
+            ) : (
+              <MemoFileUploadSection
+                files={uploadFiles}
+                onPickFile={handlePickFile}
+                onRemoveFile={handleRemoveFile}
+              />
+            )}
           </View>
         </ScrollView>
 

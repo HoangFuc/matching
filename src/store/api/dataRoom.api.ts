@@ -1,7 +1,7 @@
-import ReactNativeBlobUtil from 'react-native-blob-util';
-
+import { prepareUploadData, fetchUpload } from '@/src/services/uploadService';
 import { TDataRoomTabType } from '@/src/screens/dataRoom/constants';
-import { API_BASE_URL, TOKEN } from '@env';
+import { API_BASE_URL } from '@env';
+import { getToken } from '@/src/services/tokenService';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export interface IFolder {
   id: string;
@@ -70,9 +70,7 @@ export const dataRoomApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}/data-room`,
     prepareHeaders: async headers => {
-      // const auth = await _retrieveData('auth');
-      // const token = JSON.parse(auth || '{}')?.accessToken;
-      const token = TOKEN;
+      const token = await getToken();
 
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
@@ -150,36 +148,26 @@ export const dataRoomApi = createApi({
       transformResponse: (response: any) => response?.data ?? response,
     }),
     uploadFileById: builder.mutation<null, IUploadFilePayload>({
-      queryFn: ({ uploadId, file }) => {
-        const uploadData = [
-          {
-            name: 'file',
-            filename: file.name || 'file',
-            type: file.type || 'application/octet-stream',
-            data: ReactNativeBlobUtil.wrap(file.uri.replace('file://', '')),
-          },
-        ];
-
-        return ReactNativeBlobUtil.fetch(
-          'POST',
-          `${API_BASE_URL}/data-room/uploads/${uploadId}`,
-          {
-            Authorization: `Bearer ${TOKEN}`,
-            'Content-Type': 'multipart/form-data',
-          },
-          uploadData,
-        )
-          .then(response => {
-            const status = response.info().status;
-            if (status < 200 || status >= 300) {
-              const errorData = response.json();
-              return { error: { status, data: errorData } };
-            }
-            return { data: null };
-          })
-          .catch(err => ({
+      async queryFn({ uploadId, file }) {
+        try {
+          const token = await getToken();
+          const uploadData = await prepareUploadData(file, 'stream');
+          const response = await fetchUpload(
+            `data-room/uploads/${uploadId}`,
+            uploadData,
+            token,
+          );
+          const status = response.info().status;
+          if (status < 200 || status >= 300) {
+            const errorData = response.json();
+            return { error: { status, data: errorData } };
+          }
+          return { data: null };
+        } catch (err) {
+          return {
             error: { status: 'FETCH_ERROR', error: String(err) },
-          }));
+          };
+        }
       },
       invalidatesTags: ['Folders', 'Files'],
     }),

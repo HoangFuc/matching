@@ -1,5 +1,6 @@
 import { ISchedule, ISchedulePayload } from '@/src/screens/schedule/type';
-import { API_BASE_URL, TOKEN } from '@env';
+import { API_BASE_URL } from '@env';
+import { getToken } from '@/src/services/tokenService';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const scheduleApi = createApi({
@@ -7,9 +8,7 @@ export const scheduleApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}`,
     prepareHeaders: async headers => {
-      // const auth = await _retrieveData('auth');
-      const token = TOKEN;
-      // const token = JSON.parse(auth || '{}')?.accessToken;
+      const token = await getToken();
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }

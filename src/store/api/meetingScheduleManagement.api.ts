@@ -3,7 +3,8 @@ import {
   ICreateMeetingSchedulePayload,
   IMeetingScheduleManagement,
 } from '@/src/interface/meetingScheduleManagement.interface';
-import { API_BASE_URL, TOKEN } from '@env';
+import { API_BASE_URL } from '@env';
+import { getToken } from '@/src/services/tokenService';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export interface ICreateMeetingLogPayload {
@@ -20,7 +21,7 @@ export const meetingScheduleManagementApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}`,
     prepareHeaders: async headers => {
-      const token = TOKEN;
+      const token = await getToken();
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }

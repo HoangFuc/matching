@@ -1,3 +1,5 @@
+import { TRecording } from './meetingMinutes.interface';
+
 export type TMeetingScheduleStatus = 'incomplete' | 'completed';
 
 export interface IMeetingScheduleManagement {
@@ -16,6 +18,7 @@ export interface IMeetingScheduleManagement {
   content?: string;
   meetingLog: {
     content?: string;
+    recordings?: TRecording[];
   };
 }
 

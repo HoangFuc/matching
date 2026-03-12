@@ -10,16 +10,19 @@ import { AppColors } from '@/src/constants/colors';
 import {
   MEETING_BADGE_CONFIG,
   MEETING_TYPE_CONFIG,
+  MEETING_TYPE_LABEL,
 } from '@/src/constants/meetingMinutes';
 import { TMeetingMinutes } from '@/src/interface/meetingMinutes.interface';
 
 interface IProps {
   item: TMeetingMinutes;
+  hasRecording?: boolean;
   onPress?: () => void;
 }
 
-const MeetingCard: React.FC<IProps> = ({ item, onPress }) => {
-  const typeConfig = MEETING_TYPE_CONFIG[item.type];
+const MeetingCard: React.FC<IProps> = ({ item, hasRecording = false, onPress }) => {
+  const typeLabel = MEETING_TYPE_LABEL[item.meetingType];
+  const typeConfig = MEETING_TYPE_CONFIG[typeLabel];
   const badgeConfig = MEETING_BADGE_CONFIG['녹취미팅'];
 
   return (
@@ -28,12 +31,12 @@ const MeetingCard: React.FC<IProps> = ({ item, onPress }) => {
         <View style={styles.leftContent}>
           <View style={styles.badges}>
             <MemoChip
-              label={item.type}
+              label={typeLabel}
               bgColor={typeConfig.bgColor}
               textColor={typeConfig.textColor}
               textVariant="detail"
             />
-            {item.isRecorded && (
+            {hasRecording && (
               <MemoChip
                 label="분석정보"
                 bgColor={badgeConfig.bgColor}
@@ -44,29 +47,41 @@ const MeetingCard: React.FC<IProps> = ({ item, onPress }) => {
           </View>
 
           <AppText variant="body6" color={AppColors.gray90} numberOfLines={1}>
-            {item.title}
+            {item.consultationContent}
           </AppText>
 
           <AppText variant="body8" color={AppColors.gray90}>
-            {item.customerName}
+            {item.customerName} 고객
           </AppText>
         </View>
 
         <View style={styles.actionButtons}>
-          <Pressable style={styles.actionAnalysis}>
+          <Pressable
+            style={[
+              styles.actionAnalysis,
+              !hasRecording && styles.analysisDisabled,
+            ]}
+            disabled={!hasRecording}
+          >
             <AppText
               variant="body7"
-              color={AppColors.purple}
+              color={hasRecording ? AppColors.purple : AppColors.gray40}
               style={styles.text}
             >
               분석정보
             </AppText>
           </Pressable>
 
-          <Pressable style={[styles.actionTrend]}>
+          <Pressable
+            style={[
+              styles.actionTrend,
+              !hasRecording && styles.trendDisabled,
+            ]}
+            disabled={!hasRecording}
+          >
             <AppText
               variant="body7"
-              color={AppColors.purple}
+              color={hasRecording ? AppColors.purple : AppColors.gray40}
               style={styles.text}
             >
               성향
@@ -91,7 +106,7 @@ const styles = StyleSheet.create({
   },
   leftContent: {
     flex: 1,
-    gap: ms(6),
+    gap: ms(4),
   },
   badges: {
     flexDirection: 'row',
@@ -116,6 +131,15 @@ const styles = StyleSheet.create({
     paddingVertical: ms(4),
     gap: ms(10),
     backgroundColor: AppColors.white,
+  },
+  trendDisabled: {
+    color: AppColors.gray40,
+    borderColor: AppColors.gray20,
+    backgroundColor: AppColors.gray20,
+  },
+  analysisDisabled: {
+    color: AppColors.gray40,
+    backgroundColor: AppColors.gray20,
   },
   text: {
     textAlign: 'center',

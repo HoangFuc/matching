@@ -4,98 +4,61 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoFileInfoCard } from '@/src/component/FileInfoCard';
 import { AppColors } from '@/src/constants/colors';
-import { CloudPlus, More, Trash } from '@/src/constants/icons';
+import { CloudPlus, Trash } from '@/src/constants/icons';
 import { TUploadFile } from '@/src/interface/meetingMinutes.interface';
 
 interface IUploadFileItemProps {
   file: TUploadFile;
   onRemove: (id: string) => void;
-  onRetry: (id: string) => void;
 }
 
 const UploadFileItem: React.FC<IUploadFileItemProps> = ({
   file,
   onRemove,
-  onRetry,
 }) => {
-  const isUploading = file.status === 'uploading';
   const isDone = file.status === 'done';
+
+  if (isDone) {
+    return (
+      <MemoFileInfoCard
+        fileName={file.name}
+        fileSize={file.size}
+        onRemove={() => onRemove(file.id)}
+      />
+    );
+  }
 
   return (
     <View style={styles.fileItemContent}>
-      {isUploading && (
-        <>
-          <View style={styles.fileItemHeader}>
-            <AppText
-              variant="body7"
-              color={AppColors.gray80}
-              style={styles.fileName}
-            >
-              파일 업로드 중 {file.progress}%
-            </AppText>
+      <View style={styles.fileItemHeader}>
+        <AppText
+          variant="body7"
+          color={AppColors.gray80}
+          style={styles.fileName}
+        >
+          파일 업로드 중 {file.progress}%
+        </AppText>
 
-            <View style={styles.fileActions}>
-              <Pressable hitSlop={8} onPress={() => onRetry(file.id)}>
-                <More
-                  size={`${ms(18)}`}
-                  color={AppColors.gray50}
-                  variant="Linear"
-                />
-              </Pressable>
+        <Pressable
+          hitSlop={8}
+          onPress={() => onRemove(file.id)}
+          style={styles.trashContainer}
+        >
+          <Trash
+            size={`${ms(20)}`}
+            color={AppColors.negative}
+            variant="Bold"
+          />
+        </Pressable>
+      </View>
 
-              <Pressable
-                hitSlop={8}
-                onPress={() => onRemove(file.id)}
-                style={styles.trashContainer}
-              >
-                <Trash
-                  size={`${ms(20)}`}
-                  color={AppColors.negative}
-                  variant="Bold"
-                />
-              </Pressable>
-            </View>
-          </View>
-
-          <View style={styles.progressBar}>
-            <View
-              style={[styles.progressFill, { width: `${file.progress}%` }]}
-            />
-          </View>
-        </>
-      )}
-
-      {isDone && (
-        <View style={styles.fileItemHeader}>
-          <View style={styles.fileNameRow}>
-            <AppText
-              variant="body7"
-              color={AppColors.gray80}
-              numberOfLines={1}
-              style={styles.fileName}
-            >
-              {file.name}
-            </AppText>
-
-            <AppText variant="detail" color={AppColors.gray50}>
-              {file.size}
-            </AppText>
-          </View>
-
-          <Pressable
-            hitSlop={8}
-            onPress={() => onRemove(file.id)}
-            style={styles.trashContainer}
-          >
-            <Trash
-              size={`${ms(20)}`}
-              color={AppColors.negative}
-              variant="Linear"
-            />
-          </Pressable>
-        </View>
-      )}
+      <View style={styles.progressBar}>
+        <View
+          style={[styles.progressFill, { width: `${file.progress}%` }]}
+        />
+      </View>
     </View>
   );
 };
@@ -104,14 +67,12 @@ interface IProps {
   files: TUploadFile[];
   onPickFile: () => void;
   onRemoveFile: (id: string) => void;
-  onRetryFile: (id: string) => void;
 }
 
 const FileUploadSection: React.FC<IProps> = ({
   files,
   onPickFile,
   onRemoveFile,
-  onRetryFile,
 }) => {
   const hasFiles = files.length > 0;
 
@@ -123,7 +84,6 @@ const FileUploadSection: React.FC<IProps> = ({
             key={file.id}
             file={file}
             onRemove={onRemoveFile}
-            onRetry={onRetryFile}
           />
         ))
       ) : (
@@ -208,11 +168,7 @@ const styles = StyleSheet.create({
   fileName: {
     flex: 1,
   },
-  fileActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: ms(8),
-  },
+
   progressBar: {
     height: ms(4),
     borderRadius: ms(2),

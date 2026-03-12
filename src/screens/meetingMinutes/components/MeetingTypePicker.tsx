@@ -7,13 +7,13 @@ import { AppText } from '@/src/component/AppText';
 import { MemoBottomSheetModal } from '@/src/component/BottomSheetModal';
 import { AppColors } from '@/src/constants/colors';
 import { MEETING_TYPE_CONFIG } from '@/src/constants/meetingMinutes';
-import { TMeetingType } from '@/src/interface/meetingMinutes.interface';
+import { TMeetingTypeLabel } from '@/src/interface/meetingMinutes.interface';
 
-const MEETING_TYPES = Object.keys(MEETING_TYPE_CONFIG) as TMeetingType[];
+const MEETING_TYPES = Object.keys(MEETING_TYPE_CONFIG) as TMeetingTypeLabel[];
 
 interface IProps {
   visible: boolean;
-  onSelect: (type: TMeetingType) => void;
+  onSelect: (type: TMeetingTypeLabel) => void;
   onClose: () => void;
 }
 

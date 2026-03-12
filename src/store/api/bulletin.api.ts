@@ -1,4 +1,5 @@
-import { API_BASE_URL, TOKEN } from '@env';
+import { API_BASE_URL } from '@env';
+import { getToken } from '@/src/services/tokenService';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import {
@@ -20,7 +21,7 @@ export const bulletinApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}/bulletins`,
     prepareHeaders: async headers => {
-      const token = TOKEN;
+      const token = await getToken();
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
@@ -148,10 +149,11 @@ export const bulletinApi = createApi({
             }
           }
 
+          const token = await getToken();
           const res = await fetch(`${API_BASE_URL}/bulletins`, {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${TOKEN}`,
+              Authorization: `Bearer ${token}`,
             },
             body: formData,
           });

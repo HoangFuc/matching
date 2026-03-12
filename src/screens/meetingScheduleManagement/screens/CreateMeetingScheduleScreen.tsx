@@ -31,8 +31,9 @@ const CreateMeetingScheduleScreen: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [showTimePicker, setShowTimePicker] = React.useState(false);
   const [showPostcode, setShowPostcode] = React.useState(false);
-  const [selectedCountry, setSelectedCountry] =
-    React.useState<ICountry | null>(null);
+  const [selectedCountry, setSelectedCountry] = React.useState<ICountry | null>(
+    null,
+  );
 
   //---------------------------------------
   const { control, handleSubmit, watch } =

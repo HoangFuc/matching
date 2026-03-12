@@ -1,7 +1,13 @@
 import React from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -13,87 +19,78 @@ import { AppColors } from '@/src/constants/colors';
 import { Add, ArrowDown2, Calendar } from '@/src/constants/icons';
 import { TMeetingMinutes } from '@/src/interface/meetingMinutes.interface';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
+import { MemoDateRangePickerModal } from '@/src/screens/meetingScheduleManagement/components/DateRangePickerModal';
+import { useGetMeetingLogsQuery } from '@/src/store/api/meetingLog.api';
+import { padZero } from '@/src/utils/calendar.helper';
 import { MemoMeetingCard } from '../components/MeetingCard';
-
-const MOCK_DATA: TMeetingMinutes[] = [
-  {
-    id: '1',
-    type: '오프라인',
-    isRecorded: true,
-    title: '청라 3차 하이배크디움',
-    customerName: '박세준 고객',
-    date: '2026.02.02',
-    visitLocation: '인천광역시 연수구 해돌이로 456',
-    phone: '010-9876-5432',
-    content: '검단 4차 힐스테이트',
-    recordingFile: {
-      name: 'Meeting record.wav',
-      size: '1.2MB',
-      duration: '10:23',
-    },
-  },
-  {
-    id: '2',
-    type: '유선',
-    isRecorded: true,
-    title: '영종 스카이시티 자이',
-    customerName: '최수정 고객',
-    date: '2026.02.03',
-    visitLocation: '',
-    phone: '010-1234-5678',
-    content: '영종 스카이시티 자이 상담',
-    recordingFile: {
-      name: 'Meeting record2.wav',
-      size: '2.1MB',
-      duration: '15:30',
-    },
-  },
-  {
-    id: '3',
-    type: '오프라인',
-    isRecorded: false,
-    title: '가정 푸르지티 SK리더스뷰',
-    customerName: '정민혁 고객',
-    date: '2026.02.04',
-    visitLocation: '서울시 강남구 테헤란로 123',
-    phone: '010-5555-6666',
-    content: '가정 푸르지티 SK리더스뷰 상담',
-  },
-  {
-    id: '4',
-    type: '유선',
-    isRecorded: false,
-    title: '송도 센트럴파크 푸르치오',
-    customerName: '김민지 고객',
-    date: '2026.02.05',
-    visitLocation: '',
-    phone: '010-7777-8888',
-    content: '송도 센트럴파크 푸르치오 상담',
-  },
-  {
-    id: '5',
-    type: '유선',
-    isRecorded: false,
-    title: '주안 더샵 아르테',
-    customerName: '강애린 고객',
-    date: '2026.02.06',
-    visitLocation: '',
-    phone: '010-3333-4444',
-    content: '주안 더샵 아르테 상담',
-  },
-];
 
 type TNav = NativeStackNavigationProp<MeetingMinutesStackParamList>;
 
+const LIMIT = 20;
+
 const MeetingMinutesScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
+  const now = new Date();
+  const [page, setPage] = React.useState(1);
+  const [showDatePicker, setShowDatePicker] = React.useState(false);
+  const [startDate, setStartDate] = React.useState(
+    `${now.getFullYear()}-${padZero(now.getMonth() + 1)}-${padZero(
+      now.getDate(),
+    )}`,
+  );
+  const [endDate, setEndDate] = React.useState(
+    `${now.getFullYear()}-${padZero(now.getMonth() + 1)}-${padZero(
+      now.getDate() + 6,
+    )}`,
+  );
+
+  //---------------------------------------
+  useFocusEffect(
+    React.useCallback(() => {
+      setPage(1);
+    }, []),
+  );
+
+  //---------------------------------------
+  const { data, isLoading, isFetching, refetch } = useGetMeetingLogsQuery({
+    page,
+    limit: LIMIT,
+    sortOrder: 'desc',
+    startDate,
+    endDate,
+  });
+
+  const meetingLogs = data?.data ?? [];
+  const hasMore = page < (data?.meta?.totalPages ?? 0);
+  console.log('[MeetingLogs meta]', data?.meta);
+  console.log('[MeetingLogs first item]', JSON.stringify(data?.data?.[0], null, 2));
+
+  //---------------------------------------
+  const formatDisplayDate = React.useCallback((dateStr: string) => {
+    return dateStr.replace(/-/g, '.');
+  }, []);
+
+  //---------------------------------------
+  const handleDateConfirm = React.useCallback((start: string, end: string) => {
+    setStartDate(start);
+    setEndDate(end);
+  }, []);
+
+  //---------------------------------------
+  const handleLoadMore = React.useCallback(() => {
+    console.log('[LoadMore]', { hasMore, isFetching, isLoading, page });
+    if (hasMore && !isFetching && !isLoading) {
+      setPage(prev => prev + 1);
+    }
+  }, [hasMore, isFetching, isLoading, page]);
 
   //---------------------------------------
   const renderItem = React.useCallback(
     ({ item }: { item: TMeetingMinutes }) => (
       <MemoMeetingCard
         item={item}
-        onPress={() => navigation.navigate('MeetingMinutesDetail', { item })}
+        hasRecording={item.hasRecording}
+        onPress={() => navigation.navigate('MeetingMinutesDetail', { id: item.id })}
       />
     ),
     [navigation],
@@ -104,6 +101,14 @@ const MeetingMinutesScreen: React.FC = () => {
     (item: TMeetingMinutes) => item.id,
     [],
   );
+
+  //---------------------------------------
+  const renderFooter = React.useCallback(() => {
+    if (!isFetching || isLoading) return null;
+    return (
+      <ActivityIndicator style={styles.footerLoader} color={AppColors.purple} />
+    );
+  }, [isFetching, isLoading]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -132,9 +137,12 @@ const MeetingMinutesScreen: React.FC = () => {
           />
         </Pressable>
 
-        <Pressable style={styles.dateRangeChip}>
+        <Pressable
+          style={styles.dateRangeChip}
+          onPress={() => setShowDatePicker(true)}
+        >
           <AppText variant="body8" color={AppColors.gray90}>
-            2026.02.02 - 2026.02.08
+            {formatDisplayDate(startDate)} - {formatDisplayDate(endDate)}
           </AppText>
 
           <Calendar
@@ -146,14 +154,34 @@ const MeetingMinutesScreen: React.FC = () => {
       </View>
 
       <MemoScreenBody>
-        <FlatList
-          data={MOCK_DATA}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
+        {isLoading ? (
+          <ActivityIndicator
+            style={styles.centerLoader}
+            color={AppColors.purple}
+          />
+        ) : (
+          <FlatList
+            data={meetingLogs}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
+            onRefresh={refetch}
+            refreshing={isLoading}
+          />
+        )}
       </MemoScreenBody>
+
+      <MemoDateRangePickerModal
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onConfirm={handleDateConfirm}
+        initialStartDate={startDate}
+        initialEndDate={endDate}
+      />
     </SafeAreaView>
   );
 };
@@ -195,5 +223,13 @@ const styles = StyleSheet.create({
   list: {
     padding: ms(16),
     gap: ms(12),
+  },
+  centerLoader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerLoader: {
+    paddingVertical: ms(16),
   },
 });

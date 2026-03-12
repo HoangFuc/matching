@@ -1,11 +1,11 @@
 import React from 'react';
 
-import ReactNativeBlobUtil from 'react-native-blob-util';
-
 import {
   createUploadProgressHook,
   type IUploadProgress,
 } from '@/src/hooks/useUploadWithProgress';
+import { prepareUploadData, fetchUpload } from '@/src/services/uploadService';
+import { getToken } from '@/src/services/tokenService';
 import {
   dataRoomApi,
   useInitUploadMutation,
@@ -15,7 +15,6 @@ import {
   setUploadProgress,
   updateUploadProgress,
 } from '@/src/store/slices/dataRoomSlice';
-import { API_BASE_URL, TOKEN } from '@env';
 import type { TDataRoomTabType } from '../constants';
 
 export type { IUploadProgress };
@@ -70,23 +69,12 @@ export const useFileUploadWithProgress = () => {
 
         // Phase 3: stream file to server
         const file = files[0];
-        const uploadData = [
-          {
-            name: 'file',
-            filename: file.name || 'file',
-            type: file.type || 'application/octet-stream',
-            data: ReactNativeBlobUtil.wrap(file.uri.replace('file://', '')),
-          },
-        ];
-
-        const task = ReactNativeBlobUtil.fetch(
-          'POST',
-          `${API_BASE_URL}/data-room/uploads/${uploadId}`,
-          {
-            Authorization: `Bearer ${TOKEN}`,
-            'Content-Type': 'multipart/form-data',
-          },
+        const token = await getToken();
+        const uploadData = await prepareUploadData(file, 'stream');
+        const task = fetchUpload(
+          `data-room/uploads/${uploadId}`,
           uploadData,
+          token,
         );
 
         setUploadTask(task);
@@ -120,23 +108,12 @@ export const useFileUploadWithProgress = () => {
 
         // Phase 3: stream file to server
         const file = files[0];
-        const uploadData = [
-          {
-            name: 'file',
-            filename: file.name || 'file',
-            type: file.type || 'application/octet-stream',
-            data: ReactNativeBlobUtil.wrap(file.uri.replace('file://', '')),
-          },
-        ];
-
-        const task = ReactNativeBlobUtil.fetch(
-          'POST',
-          `${API_BASE_URL}/data-room/uploads/${uploadId}`,
-          {
-            Authorization: `Bearer ${TOKEN}`,
-            'Content-Type': 'multipart/form-data',
-          },
+        const token = await getToken();
+        const uploadData = await prepareUploadData(file, 'stream');
+        const task = fetchUpload(
+          `data-room/uploads/${uploadId}`,
           uploadData,
+          token,
         );
 
         setUploadTask(task);

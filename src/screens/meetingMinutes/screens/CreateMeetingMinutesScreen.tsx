@@ -1,5 +1,6 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import DatePicker from 'react-native-date-picker';
 
 import {
   errorCodes,
@@ -12,6 +13,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
+import { MemoAddressPickerInput } from '@/src/component/AddressPickerInput';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { MemoFormInput } from '@/src/component/FormInput';
@@ -20,37 +22,70 @@ import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
 import { ArrowDown2, Calendar } from '@/src/constants/icons';
 import {
-  TMeetingType,
+  TMeetingTypeKey,
+  TMeetingTypeLabel,
   TUploadFile,
 } from '@/src/interface/meetingMinutes.interface';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
 import { MemoFileUploadSection } from '../components/FileUploadSection';
 import { MemoMeetingTypePicker } from '../components/MeetingTypePicker';
+import { useMeetingLogUploadWithProgress } from '../hooks/useMeetingLogUploadWithProgress';
 
 type TNav = NativeStackNavigationProp<MeetingMinutesStackParamList>;
+
+const LABEL_TO_KEY: Record<TMeetingTypeLabel, TMeetingTypeKey> = {
+  오프라인: 'offline',
+  유선: 'recording',
+};
 
 const CreateMeetingMinutesScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
 
   //---------------------------------------
-  const [meetingType, setMeetingType] = useState<TMeetingType>('오프라인');
-  const [showTypePicker, setShowTypePicker] = useState(false);
-  const [date, setDate] = useState('2025.12.13');
-  const [visitLocation, setVisitLocation] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [content, setContent] = useState('');
-  const [uploadFiles, setUploadFiles] = useState<TUploadFile[]>([]);
-  const isPickingRef = useRef(false);
+  const { uploadMeetingLog } = useMeetingLogUploadWithProgress();
 
   //---------------------------------------
-  const formatFileSize = useCallback((bytes: number) => {
+  const [meetingType, setMeetingType] =
+    React.useState<TMeetingTypeLabel>('오프라인');
+  const [showTypePicker, setShowTypePicker] = React.useState(false);
+  const [date, setDate] = React.useState(new Date());
+  const [showDatePicker, setShowDatePicker] = React.useState(false);
+  const [address, setAddress] = React.useState('');
+  const [customerName, setCustomerName] = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [content, setContent] = React.useState('');
+  const [uploadFiles, setUploadFiles] = React.useState<TUploadFile[]>([]);
+  const isPickingRef = React.useRef(false);
+
+  //---------------------------------------
+  const formattedDate = React.useMemo(() => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}.${m}.${d}`;
+  }, [date]);
+
+  //---------------------------------------
+  const isFormValid = React.useMemo(
+    () =>
+      !!meetingType &&
+      !!address.trim() &&
+      !!customerName.trim() &&
+      !!phone.trim() &&
+      !!content.trim() &&
+      uploadFiles.some(f => f.status === 'done'),
+    [meetingType, address, customerName, phone, content, uploadFiles],
+  );
+
+  //---------------------------------------
+  const formatFileSize = React.useCallback((bytes: number) => {
     if (bytes < 1024) return `${bytes}B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
   }, []);
 
-  const handlePickFile = useCallback(async () => {
+  //---------------------------------------
+  const handlePickFile = React.useCallback(async () => {
     if (isPickingRef.current) return;
     isPickingRef.current = true;
     try {
@@ -75,10 +110,11 @@ const CreateMeetingMinutesScreen: React.FC = () => {
         size: formatFileSize(fileSizeBytes),
         progress: 100,
         status: 'done',
+        uri: file.uri,
+        type: file.type ?? 'audio/m4a',
       };
 
       setUploadFiles(prev => [...prev, newFile]);
-      // TODO: call API to upload file
     } catch (err) {
       if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
         console.error('DocumentPicker error:', err);
@@ -89,17 +125,12 @@ const CreateMeetingMinutesScreen: React.FC = () => {
   }, [formatFileSize]);
 
   //---------------------------------------
-  const handleRemoveFile = useCallback((id: string) => {
+  const handleRemoveFile = React.useCallback((id: string) => {
     setUploadFiles(prev => prev.filter(f => f.id !== id));
   }, []);
 
   //---------------------------------------
-  const handleRetryFile = useCallback((id: string) => {
-    // TODO: retry upload
-  }, []);
-
-  //---------------------------------------
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = React.useCallback(async () => {
     if (!customerName.trim()) {
       Alert.alert('', '고객명을 입력해주세요.');
       return;
@@ -110,24 +141,47 @@ const CreateMeetingMinutesScreen: React.FC = () => {
     }
 
     const firstFile = uploadFiles.find(f => f.status === 'done');
-    // TODO: call API to create meeting minutes
-    navigation.navigate('MeetingMinutesDetail', {
-      item: {
-        id: `${Date.now()}`,
-        type: meetingType,
-        isRecorded: !!firstFile,
-        title: content.trim(),
-        customerName: customerName.trim(),
-        date,
-        visitLocation: visitLocation.trim(),
-        phone: phone.trim(),
-        content: content.trim(),
-        recordingFile: firstFile
-          ? { name: firstFile.name, size: firstFile.size, duration: '10:23' }
-          : undefined,
-      },
-    });
-  }, [customerName, content, navigation, meetingType, date, visitLocation, phone, uploadFiles]);
+    if (!firstFile?.uri) {
+      Alert.alert('', '녹음파일을 업로드해주세요.');
+      return;
+    }
+
+    const meetingDate = `${date.getFullYear()}-${String(
+      date.getMonth() + 1,
+    ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    const formPayload = {
+      meetingType: LABEL_TO_KEY[meetingType],
+      meetingDate,
+      customerName: customerName.trim(),
+      customerPhone: phone.trim(),
+      address: address.trim(),
+      consultationContent: content.trim(),
+    };
+
+    try {
+      const result = await uploadMeetingLog(formPayload, {
+        uri: firstFile.uri,
+        name: firstFile.name,
+        type: firstFile.type || 'audio/m4a',
+      });
+
+      navigation.replace('MeetingMinutesDetail', { id: result.id });
+    } catch (err) {
+      console.error('[CreateMeetingMinutes] Submit error:', err);
+      Alert.alert('', '등록에 실패했습니다. 다시 시도해주세요.');
+    }
+  }, [
+    customerName,
+    content,
+    uploadFiles,
+    date,
+    uploadMeetingLog,
+    meetingType,
+    phone,
+    address,
+    navigation,
+  ]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -142,6 +196,10 @@ const CreateMeetingMinutesScreen: React.FC = () => {
           <View>
             <AppText variant="body7" color={AppColors.gray90}>
               미팅종류
+              <AppText variant="body7" color={AppColors.negative}>
+                {' '}
+                *
+              </AppText>
             </AppText>
 
             <Pressable
@@ -151,6 +209,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
               <AppText variant="body7" color={AppColors.gray90}>
                 {meetingType}
               </AppText>
+
               <ArrowDown2
                 size={`${ms(16)}`}
                 color={AppColors.gray60}
@@ -168,31 +227,56 @@ const CreateMeetingMinutesScreen: React.FC = () => {
           <View>
             <AppText variant="body7" color={AppColors.gray90}>
               날짜
-            </AppText>
-            <Pressable style={styles.dropdownBtn}>
-              <AppText variant="body7" color={AppColors.gray100}>
-                {date}
+              <AppText variant="body7" color={AppColors.negative}>
+                {' '}
+                *
               </AppText>
+            </AppText>
+            <Pressable
+              style={styles.dropdownBtn}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <AppText variant="body7" color={AppColors.gray100}>
+                {formattedDate}
+              </AppText>
+
               <Calendar
                 size={`${ms(16)}`}
                 color={AppColors.gray60}
                 variant="Linear"
               />
             </Pressable>
+
+            <DatePicker
+              modal
+              open={showDatePicker}
+              date={date}
+              mode="date"
+              onConfirm={selectedDate => {
+                setShowDatePicker(false);
+                setDate(selectedDate);
+              }}
+              onCancel={() => setShowDatePicker(false)}
+            />
           </View>
 
-          <MemoFormInput
-            label="방문 장소"
-            placeholder="방문 장소를 입력해주세요"
-            value={visitLocation}
-            onChangeText={setVisitLocation}
-          />
+          <View>
+            <AppText variant="body7" color={AppColors.gray90}>
+              방문 장소{' '}
+              <AppText variant="body7" color={AppColors.negative}>
+                *
+              </AppText>
+            </AppText>
+
+            <MemoAddressPickerInput value={address} onChange={setAddress} />
+          </View>
 
           <MemoFormInput
             label="고객명"
             placeholder="고객명을 입력해주세요"
             value={customerName}
             onChangeText={setCustomerName}
+            required
           />
 
           <MemoFormInput
@@ -200,6 +284,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
             placeholder="연락처를 입력해주세요"
             value={phone}
             onChangeText={setPhone}
+            required
           />
 
           <MemoFormInput
@@ -208,6 +293,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
             value={content}
             onChangeText={setContent}
             multiline
+            required
           />
 
           <View style={styles.uploadSection}>
@@ -219,7 +305,6 @@ const CreateMeetingMinutesScreen: React.FC = () => {
               files={uploadFiles}
               onPickFile={handlePickFile}
               onRemoveFile={handleRemoveFile}
-              onRetryFile={handleRetryFile}
             />
           </View>
         </ScrollView>
@@ -230,6 +315,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
             onPress={handleSubmit}
             variant="primary"
             style={styles.submitBtn}
+            disabled={!isFormValid}
           />
         </View>
       </MemoScreenBody>

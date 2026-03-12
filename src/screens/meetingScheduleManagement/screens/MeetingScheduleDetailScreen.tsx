@@ -12,7 +12,8 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
-import { MemoChip } from '@/src/component/Chip';
+import { MemoDetailInfoRow, TDetailInfoRow } from '@/src/component/DetailInfoRow';
+import { MemoRecordedAudioCard } from '@/src/component/RecordedAudioCard';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
@@ -26,11 +27,9 @@ import {
 import { RootStackParamList } from '@/src/interface/tab.interface';
 import { useGetMeetingScheduleDetailQuery } from '@/src/store/api/meetingScheduleManagement.api';
 import dayjs from 'dayjs';
-import { MemoRecordedAudioCard } from '../components/RecordedAudioCard';
 import { MemoRecordingBottomSheet } from '../components/RecordingBottomSheet';
 import { MemoUploadProgressBar } from '@/src/screens/dataRoom/components/UploadProgressBar';
 import { useAppSelector } from '@/src/store/hooks';
-import { useBase64AudioFile } from '../hooks/useBase64AudioFile';
 import { useRecordingUploadWithProgress } from '../hooks/useRecordingUploadWithProgress';
 
 type TRoute = NativeStackScreenProps<
@@ -58,55 +57,35 @@ const DEFAULT_STATUS_CONFIG = {
   textColor: AppColors.amber,
 };
 
-type TInfoRow =
-  | { label: string; type: 'text'; value: string; flex?: boolean }
-  | { label: string; type: 'chip'; status: TMeetingScheduleStatus };
-
-const buildInfoRows = (item: IMeetingScheduleManagement): TInfoRow[] => [
-  { label: '상태', type: 'chip', status: item.status },
-  {
-    label: '날짜',
-    type: 'text',
-    value: `${dayjs(item.scheduleDate).format('YYYY.MM.DD')} ${dayjs(
-      item.startTime,
-    ).format('HH:mm')}`,
-  },
-  { label: '방문 장소', type: 'text', value: item.address, flex: true },
-  { label: '고객명', type: 'text', value: item.customerName },
-  { label: '연락처', type: 'text', value: item.customerPhone },
-  { label: '일정명', type: 'text', value: item.title },
-  { label: '메모', type: 'text', value: item.memo, flex: true },
-];
-
 //---------------------------------------
-const InfoRow: React.FC<{ row: TInfoRow }> = ({ row }) => (
-  <View style={styles.infoRow}>
-    <AppText variant="body6" color={AppColors.gray90} style={styles.label}>
-      {row.label}
-    </AppText>
-
-    {row.type === 'chip' ? (
-      <MemoChip
-        label={MEETING_SCHEDULE_STATUS_LABEL[row.status] ?? row.status}
-        bgColor={(STATUS_CONFIG[row.status] ?? DEFAULT_STATUS_CONFIG).bgColor}
-        textColor={
-          (STATUS_CONFIG[row.status] ?? DEFAULT_STATUS_CONFIG).textColor
-        }
-        textVariant="detail"
-      />
-    ) : (
-      <AppText
-        variant="body8"
-        color={AppColors.gray90}
-        style={row.flex ? styles.infoValue : undefined}
-      >
-        {row.value}
-      </AppText>
-    )}
-  </View>
-);
-
-const MemoInfoRow = React.memo(InfoRow);
+const buildInfoRows = (item: IMeetingScheduleManagement): TDetailInfoRow[] => {
+  const statusConfig = STATUS_CONFIG[item.status] ?? DEFAULT_STATUS_CONFIG;
+  return [
+    {
+      label: '상태',
+      type: 'chip',
+      chips: [
+        {
+          label: MEETING_SCHEDULE_STATUS_LABEL[item.status] ?? item.status,
+          bgColor: statusConfig.bgColor,
+          textColor: statusConfig.textColor,
+        },
+      ],
+    },
+    {
+      label: '날짜',
+      type: 'text',
+      value: `${dayjs(item.scheduleDate).format('YYYY.MM.DD')} ${dayjs(
+        item.startTime,
+      ).format('HH:mm')}`,
+    },
+    { label: '방문 장소', type: 'text', value: item.address, flex: true },
+    { label: '고객명', type: 'text', value: item.customerName },
+    { label: '연락처', type: 'text', value: item.customerPhone },
+    { label: '일정명', type: 'text', value: item.title },
+    { label: '메모', type: 'text', value: item.memo, flex: true },
+  ];
+};
 
 //---------------------------------------
 const MeetingScheduleDetailScreen: React.FC = () => {
@@ -127,8 +106,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   const displayItem = detailData ?? item;
   const isCompleted = displayItem.status === 'completed';
 
-  const { filePath: serverAudioPath, isLoading: isAudioLoading } =
-    useBase64AudioFile(displayItem.meetingLog?.content, displayItem.id);
+  const serverRecording = displayItem.meetingLog?.recordings?.[0];
 
   const [showRecording, setShowRecording] = React.useState(false);
   const [recordedFile, setRecordedFile] = React.useState<{
@@ -219,22 +197,16 @@ const MeetingScheduleDetailScreen: React.FC = () => {
           {/* Info Card */}
           <View style={styles.card}>
             {infoRows.map(row => (
-              <MemoInfoRow key={row.label} row={row} />
+              <MemoDetailInfoRow key={row.label} row={row} />
             ))}
           </View>
 
           {/* Recording Section */}
-          {isCompleted && serverAudioPath ? (
+          {isCompleted && serverRecording ? (
             <MemoRecordedAudioCard
-              filePath={serverAudioPath}
-              fileName={`meeting_audio_${displayItem.id}.m4a`}
+              filePath={serverRecording.playUrl}
+              fileName={serverRecording.fileName}
             />
-          ) : isCompleted && isAudioLoading ? (
-            <MemoBaseCard style={styles.recordSection}>
-              <AppText variant="body7" color={AppColors.gray50}>
-                오디오 로딩 중...
-              </AppText>
-            </MemoBaseCard>
           ) : uploadProgress ? (
             <MemoUploadProgressBar
               progress={uploadProgress}
@@ -316,16 +288,6 @@ const styles = StyleSheet.create({
     padding: ms(16),
     gap: ms(16),
     ...CardShadow,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  label: {
-    width: ms(70),
-  },
-  infoValue: {
-    flex: 1,
   },
   uploadCard: {
     padding: ms(16),

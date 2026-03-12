@@ -5,7 +5,8 @@ import EventSource from 'react-native-sse';
 
 import type { AppDispatch, RootState } from '@/src/store/index';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
-import { API_BASE_URL, TOKEN } from '@env';
+import { API_BASE_URL } from '@env';
+import { getToken } from '@/src/services/tokenService';
 import type {
   ActionCreatorWithoutPayload,
   ActionCreatorWithPayload,
@@ -58,14 +59,15 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
 
     //---------------------------------------
     const listenProgress = React.useCallback(
-      (uploadId: string) => {
+      async (uploadId: string) => {
         closeEventSource();
 
         const url = `${API_BASE_URL}/${config.basePath}/${uploadId}/progress`;
+        const token = await getToken();
 
         const es = new EventSource<'message' | 'progress'>(url, {
           headers: {
-            Authorization: `Bearer ${TOKEN}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -219,9 +221,10 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
       // 3. Cancel on server
       if (uploadId) {
         try {
+          const token = await getToken();
           await fetch(`${API_BASE_URL}/${config.basePath}/${uploadId}`, {
             method: 'DELETE',
-            headers: { Authorization: `Bearer ${TOKEN}` },
+            headers: { Authorization: `Bearer ${token}` },
           });
         } catch (e) {
           console.warn('[Cancel] Server cancel failed:', e);

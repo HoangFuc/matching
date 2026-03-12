@@ -1,8 +1,8 @@
 import React from 'react';
 
-import ReactNativeBlobUtil from 'react-native-blob-util';
-
 import { createUploadProgressHook } from '@/src/hooks/useUploadWithProgress';
+import { prepareUploadData, fetchUpload } from '@/src/services/uploadService';
+import { getToken } from '@/src/services/tokenService';
 import {
   meetingScheduleManagementApi,
   useCreateMeetingLogMutation,
@@ -12,7 +12,6 @@ import {
   setRecordingUploadProgress,
   updateRecordingUploadProgress,
 } from '@/src/store/slices/meetingScheduleSlice';
-import { API_BASE_URL, TOKEN } from '@env';
 
 const useMeetingUploadProgress = createUploadProgressHook({
   progressSelector: state => state.meetingSchedule.recordingUploadProgress,
@@ -74,32 +73,13 @@ export const useRecordingUploadWithProgress = () => {
         listenProgress(uploadId);
 
         // Phase 3: upload file as multipart
-        const cleanPath = file.uri.replace('file://', '');
-        const base64Data = await ReactNativeBlobUtil.fs.readFile(
-          cleanPath,
-          'base64',
-        );
-
-        const uploadData = [
-          {
-            name: 'file',
-            filename: file.name || 'recording',
-            type: file.type || 'audio/m4a',
-            data: base64Data,
-          },
-        ];
-
-        const task = ReactNativeBlobUtil.fetch(
-          'POST',
-          `${API_BASE_URL}/meeting-logs/uploads/${uploadId}`,
-          {
-            Authorization: `Bearer ${TOKEN}`,
-            'Content-Type': 'multipart/form-data',
-          },
+        const token = await getToken();
+        const uploadData = await prepareUploadData(file, 'base64');
+        const task = fetchUpload(
+          `meeting-logs/uploads/${uploadId}`,
           uploadData,
+          token,
         );
-
-        console.log('======================task', task);
 
         setUploadTask(task);
 

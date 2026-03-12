@@ -4,8 +4,6 @@ import {
   createUploadProgressHook,
   type IUploadProgress,
 } from '@/src/hooks/useUploadWithProgress';
-import { prepareUploadData, fetchUpload } from '@/src/services/uploadService';
-import { getToken } from '@/src/services/tokenService';
 import {
   dataRoomApi,
   useInitUploadMutation,
@@ -25,6 +23,7 @@ const useDataRoomUploadProgress = createUploadProgressHook({
   updateProgress: updateUploadProgress,
   clearProgress: clearUploadProgress,
   basePath: 'data-room/uploads',
+  encoding: 'stream',
   onCompleted: dispatch => {
     dispatch(dataRoomApi.util.invalidateTags(['Folders', 'Files']));
     setTimeout(() => {
@@ -38,9 +37,7 @@ export const useFileUploadWithProgress = () => {
   const {
     progress,
     initProgress,
-    updateProgressState,
-    listenProgress,
-    setUploadTask,
+    performUpload,
     handleUploadError,
     cancelUpload,
     dismiss,
@@ -57,35 +54,14 @@ export const useFileUploadWithProgress = () => {
     ) => {
       try {
         initProgress(files[0]?.name ?? '');
-
-        // Phase 1: init upload with folderId
         const { uploadId } = await initUpload({ folderId }).unwrap();
-
-        // Save uploadId to Redux immediately
-        updateProgressState({ uploadId });
-
-        // Phase 2: listen for progress BEFORE starting upload
-        listenProgress(uploadId);
-
-        // Phase 3: stream file to server
-        const file = files[0];
-        const token = await getToken();
-        const uploadData = await prepareUploadData(file, 'stream');
-        const task = fetchUpload(
-          `data-room/uploads/${uploadId}`,
-          uploadData,
-          token,
-        );
-
-        setUploadTask(task);
-        await task;
-        setUploadTask(null);
+        await performUpload(uploadId, files[0]);
       } catch (err) {
         handleUploadError();
         throw err;
       }
     },
-    [initProgress, initUpload, updateProgressState, listenProgress, setUploadTask, handleUploadError],
+    [initProgress, initUpload, performUpload, handleUploadError],
   );
 
   //---------------------------------------
@@ -96,35 +72,14 @@ export const useFileUploadWithProgress = () => {
     ) => {
       try {
         initProgress(files[0]?.name ?? '');
-
-        // Phase 1: init upload with type
         const { uploadId } = await initUpload({ type: dataRoomType }).unwrap();
-
-        // Save uploadId to Redux immediately
-        updateProgressState({ uploadId });
-
-        // Phase 2: listen for progress BEFORE starting upload
-        listenProgress(uploadId);
-
-        // Phase 3: stream file to server
-        const file = files[0];
-        const token = await getToken();
-        const uploadData = await prepareUploadData(file, 'stream');
-        const task = fetchUpload(
-          `data-room/uploads/${uploadId}`,
-          uploadData,
-          token,
-        );
-
-        setUploadTask(task);
-        await task;
-        setUploadTask(null);
+        await performUpload(uploadId, files[0]);
       } catch (err) {
         handleUploadError();
         throw err;
       }
     },
-    [initProgress, initUpload, updateProgressState, listenProgress, setUploadTask, handleUploadError],
+    [initProgress, initUpload, performUpload, handleUploadError],
   );
 
   //---------------------------------------

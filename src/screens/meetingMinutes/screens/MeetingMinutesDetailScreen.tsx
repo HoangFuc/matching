@@ -46,6 +46,7 @@ import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
 import { MemoUploadProgressBar } from '@/src/screens/dataRoom/components/UploadProgressBar';
 import { useGetMeetingLogDetailQuery } from '@/src/store/api/meetingLog.api';
 import { useAppSelector } from '@/src/store/hooks';
+import { formatFileSize } from '@/src/utils/format';
 import { MemoFileUploadSection } from '../components/FileUploadSection';
 import { useMeetingLogUploadWithProgress } from '../hooks/useMeetingLogUploadWithProgress';
 
@@ -155,13 +156,6 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   const [uploadFiles, setUploadFiles] = React.useState<TUploadFile[]>([]);
 
   //---------------------------------------
-  const formatFileSize = React.useCallback((bytes: number) => {
-    if (bytes < 1024) return `${bytes}B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
-  }, []);
-
-  //---------------------------------------
   const handlePickFile = React.useCallback(async () => {
     if (isPickingRef.current || !item) return;
     isPickingRef.current = true;
@@ -207,7 +201,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
     } finally {
       isPickingRef.current = false;
     }
-  }, [item, formatFileSize, uploadRecordingToExisting]);
+  }, [item, uploadRecordingToExisting]);
 
   //---------------------------------------
   const handleRemoveFile = React.useCallback((fileId: string) => {

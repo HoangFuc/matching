@@ -1,30 +1,23 @@
 import React from 'react';
 import {
   ActivityIndicator,
-  Dimensions,
-  FlatList,
   Image,
   KeyboardAvoidingView,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  TextInput,
   View,
 } from 'react-native';
 
 import { RouteProp, useRoute } from '@react-navigation/native';
 import dayjs from 'dayjs';
-import { XMarkIcon } from 'react-native-heroicons/solid';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
-import { Send } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
 import { RootStackParamList } from '@/src/interface/tab.interface';
 import {
@@ -32,7 +25,9 @@ import {
   useGetBulletinDetailQuery,
   useGetCommentsQuery,
 } from '@/src/store/api/bulletin.api';
+import { MemoCommentInput } from './CommentInput';
 import { MemoCommentItem } from './CommentItem';
+import { MemoImageCarousel } from './ImageCarousel';
 import { MemoPostStats } from './PostStats';
 
 const BulletinDetail: React.FC = () => {
@@ -45,7 +40,6 @@ const BulletinDetail: React.FC = () => {
 
   //---------------------------------------
   const [createComment] = useCreateCommentMutation();
-  const [commentText, setCommentText] = React.useState('');
 
   //---------------------------------------
   const totalCommentCount = React.useMemo(() => {
@@ -63,18 +57,6 @@ const BulletinDetail: React.FC = () => {
     commentId: string;
     authorName: string;
   } | null>(null);
-  const inputRef = React.useRef<TextInput>(null);
-  const [activeImageIndex, setActiveImageIndex] = React.useState(0);
-  const imageWidth = Dimensions.get('window').width - ms(32);
-
-  //---------------------------------------
-  const handleImageScroll = React.useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const index = Math.round(e.nativeEvent.contentOffset.x / imageWidth);
-      setActiveImageIndex(index);
-    },
-    [imageWidth],
-  );
 
   //---------------------------------------
   const avatarSource = post?.author.avatarUrl
@@ -85,7 +67,6 @@ const BulletinDetail: React.FC = () => {
   const handleReply = React.useCallback(
     (commentId: string, authorName: string) => {
       setReplyTo({ commentId, authorName });
-      inputRef.current?.focus();
     },
     [],
   );
@@ -96,16 +77,17 @@ const BulletinDetail: React.FC = () => {
   }, []);
 
   //---------------------------------------
-  const handleSend = React.useCallback(() => {
-    if (!commentText.trim()) return;
-    createComment({
-      postId,
-      content: commentText.trim(),
-      ...(replyTo && { parentId: replyTo.commentId }),
-    });
-    setCommentText('');
-    setReplyTo(null);
-  }, [commentText, createComment, postId, replyTo]);
+  const handleSend = React.useCallback(
+    (text: string, parentId?: string) => {
+      createComment({
+        postId,
+        content: text,
+        ...(parentId && { parentId }),
+      });
+      setReplyTo(null);
+    },
+    [createComment, postId],
+  );
 
   //---------------------------------------
   if (isLoading || !post) {
@@ -151,37 +133,7 @@ const BulletinDetail: React.FC = () => {
             </AppText>
 
             {post.images && post.images.length > 0 && (
-              <View>
-                <FlatList
-                  data={post.images}
-                  keyExtractor={img => `${img.id}-${img.postId}`}
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  onScroll={handleImageScroll}
-                  scrollEventThrottle={16}
-                  renderItem={({ item }) => (
-                    <Image
-                      source={{ uri: item.presignedUrl }}
-                      style={[styles.postImage, { width: imageWidth }]}
-                      resizeMode="cover"
-                    />
-                  )}
-                />
-                {post.images.length > 1 && (
-                  <View style={styles.dotContainer}>
-                    {post.images.map((img, index) => (
-                      <View
-                        key={`dot-${img.id}`}
-                        style={[
-                          styles.dot,
-                          index === activeImageIndex && styles.dotActive,
-                        ]}
-                      />
-                    ))}
-                  </View>
-                )}
-              </View>
+              <MemoImageCarousel images={post.images} />
             )}
 
             <AppText variant="detail" color={AppColors.gray80}>
@@ -220,41 +172,11 @@ const BulletinDetail: React.FC = () => {
         </ScrollView>
 
         {/* Comment input */}
-        <SafeAreaView style={styles.safeAreaBottom} edges={['bottom']}>
-          {replyTo && (
-            <View style={styles.replyIndicator}>
-              <AppText variant="body8" color={AppColors.gray80}>
-                {replyTo.authorName}에게 답글 남기는 중
-              </AppText>
-              <Pressable onPress={handleCancelReply} hitSlop={8}>
-                <XMarkIcon color={AppColors.gray80} size={ms(16)} />
-              </Pressable>
-            </View>
-          )}
-
-          <View style={styles.inputContainer}>
-            <TextInput
-              ref={inputRef}
-              style={styles.input}
-              placeholder="내용을 입력해주세요"
-              placeholderTextColor={AppColors.gray40}
-              value={commentText}
-              onChangeText={setCommentText}
-              multiline
-            />
-
-            <Pressable style={styles.sendButton} onPress={handleSend}>
-              <Send
-                size={`${ms(20)}`}
-                color={AppColors.gray90}
-                variant="Linear"
-                style={{
-                  borderRadius: ms(1.5),
-                }}
-              />
-            </Pressable>
-          </View>
-        </SafeAreaView>
+        <MemoCommentInput
+          replyTo={replyTo}
+          onCancelReply={handleCancelReply}
+          onSend={handleSend}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -266,9 +188,6 @@ const styles = StyleSheet.create({
   safeAreaTop: {
     flex: 1,
     backgroundColor: AppColors.purple,
-  },
-  safeAreaBottom: {
-    backgroundColor: AppColors.white,
   },
   flex: {
     flex: 1,
@@ -304,26 +223,6 @@ const styles = StyleSheet.create({
     gap: ms(12),
     paddingBottom: ms(12),
   },
-  postImage: {
-    height: ms(343),
-    borderRadius: ms(8),
-  },
-  dotContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: ms(6),
-    marginTop: ms(10),
-  },
-  dot: {
-    width: ms(8),
-    height: ms(8),
-    borderRadius: ms(4),
-    backgroundColor: AppColors.gray30,
-  },
-  dotActive: {
-    backgroundColor: AppColors.purple,
-  },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -334,38 +233,5 @@ const styles = StyleSheet.create({
   },
   commentsSection: {
     paddingTop: ms(4),
-  },
-  replyIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: ms(16),
-    paddingVertical: ms(8),
-    backgroundColor: AppColors.gray10,
-    borderTopWidth: 1,
-    borderTopColor: AppColors.gray20,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: ms(8),
-    paddingHorizontal: ms(16),
-    paddingVertical: ms(8),
-    backgroundColor: AppColors.white,
-    borderTopWidth: 1,
-    borderTopColor: AppColors.gray20,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: AppColors.gray10,
-    borderRadius: ms(20),
-    paddingHorizontal: ms(16),
-    paddingVertical: ms(8),
-    fontSize: 14,
-    color: AppColors.gray100,
-    maxHeight: ms(80),
-  },
-  sendButton: {
-    padding: ms(4),
   },
 });

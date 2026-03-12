@@ -7,13 +7,14 @@ import {
   View,
 } from 'react-native';
 
-import { ArrowDown2, Calendar, Clock } from '@/src/constants/icons';
+import { Calendar, Clock } from '@/src/constants/icons';
 import dayjs from 'dayjs';
 import { Control, Controller } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
 import { ms } from 'react-native-size-matters';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoDropdownButton } from '@/src/component/DropdownButton';
 import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { AppColors } from '@/src/constants/colors';
 import { FontWeight } from '@/src/constants/typography';
@@ -56,20 +57,13 @@ const FormCreateSchedule: React.FC<IProps> = ({
             일정 종류
           </AppText>
 
-          <Pressable
-            style={styles.selectBox}
+          <MemoDropdownButton
+            label={scheduleType}
+            textVariant="body8"
+            textColor={AppColors.gray80}
             onPress={() => setShowTypePicker(true)}
-          >
-            <AppText variant="body8" color={AppColors.gray80}>
-              {scheduleType}
-            </AppText>
-
-            <ArrowDown2
-              size={`${ms(16)}`}
-              color={AppColors.gray90}
-              variant="Linear"
-            />
-          </Pressable>
+            style={styles.selectBox}
+          />
         </View>
 
         {/* Date & Time */}
@@ -248,14 +242,9 @@ const styles = StyleSheet.create({
     borderBottomColor: AppColors.gray20,
   },
   selectBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: ms(8),
-    backgroundColor: AppColors.gray10,
-    paddingHorizontal: ms(16),
     paddingVertical: ms(8),
     height: ms(36),
+    marginTop: 0,
   },
   input: {
     borderRadius: ms(8),

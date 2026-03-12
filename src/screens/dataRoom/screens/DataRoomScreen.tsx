@@ -25,7 +25,6 @@ import {
 import { useAppSelector } from '@/src/store/hooks';
 import { MemoFABWithMenu } from '../components/FABWithMenu';
 import { MemoFileGridItem } from '../components/file';
-import type { TFolderAction } from '../components/folder';
 import {
   MemoFolderActionSheet,
   MemoFolderCard,
@@ -40,6 +39,7 @@ import {
   type TDataRoomTabType,
 } from '../constants';
 import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
+import { useSheetManager } from '../hooks/useSheetManager';
 
 type TNav = NativeStackNavigationProp<DataRoomStackParamList, 'DataRoomMain'>;
 
@@ -52,12 +52,17 @@ const DataRoomScreen: React.FC = () => {
   const files = data?.files ?? [];
 
   //---------------------------------------
-  const [actionSheetVisible, setActionSheetVisible] = React.useState(false);
-  const [moveSheetVisible, setMoveSheetVisible] = React.useState(false);
-  const [renameSheetVisible, setRenameSheetVisible] = React.useState(false);
-  const [selectedFolder, setSelectedFolder] = React.useState<IFolder | null>(
-    null,
-  );
+  const {
+    selectedItem: selectedFolder,
+    actionSheetVisible,
+    moveSheetVisible,
+    renameSheetVisible,
+    openActionSheet: handlePressMore,
+    closeActionSheet,
+    closeMoveSheet,
+    closeRenameSheet,
+    handleAction: handleFolderAction,
+  } = useSheetManager<IFolder>();
 
   //---------------------------------------
   const handlePressSearch = React.useCallback(() => {
@@ -78,32 +83,6 @@ const DataRoomScreen: React.FC = () => {
       });
     },
     [navigation],
-  );
-
-  //---------------------------------------
-  const handlePressMore = React.useCallback((folder: IFolder) => {
-    setSelectedFolder(folder);
-    setActionSheetVisible(true);
-  }, []);
-
-  //---------------------------------------
-  const handleFolderAction = React.useCallback(
-    (action: TFolderAction) => {
-      if (!selectedFolder) {
-        return;
-      }
-      switch (action) {
-        case 'move':
-          setMoveSheetVisible(true);
-          break;
-        case 'rename':
-          setRenameSheetVisible(true);
-          break;
-        default:
-          break;
-      }
-    },
-    [selectedFolder],
   );
 
   //---------------------------------------
@@ -266,7 +245,7 @@ const DataRoomScreen: React.FC = () => {
       {/* Folder Action Sheet */}
       <MemoFolderActionSheet
         visible={actionSheetVisible}
-        onClose={() => setActionSheetVisible(false)}
+        onClose={closeActionSheet}
         folderName={selectedFolder?.name || ''}
         onAction={handleFolderAction}
       />
@@ -275,7 +254,7 @@ const DataRoomScreen: React.FC = () => {
       {selectedFolder && (
         <MemoMoveFolderSheet
           visible={moveSheetVisible}
-          onClose={() => setMoveSheetVisible(false)}
+          onClose={closeMoveSheet}
           folderId={selectedFolder.id}
           currentType={selectedFolder.type}
         />
@@ -285,7 +264,7 @@ const DataRoomScreen: React.FC = () => {
       {selectedFolder && (
         <MemoRenameSheet
           visible={renameSheetVisible}
-          onClose={() => setRenameSheetVisible(false)}
+          onClose={closeRenameSheet}
           itemId={selectedFolder.id}
           currentName={selectedFolder.name}
           kind="folder"

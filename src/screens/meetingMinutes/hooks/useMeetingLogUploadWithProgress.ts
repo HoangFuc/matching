@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { createUploadProgressHook } from '@/src/hooks/useUploadWithProgress';
-import { prepareUploadData, fetchUpload } from '@/src/services/uploadService';
 import { API_BASE_URL } from '@env';
 import { getToken } from '@/src/services/tokenService';
 import {
@@ -21,6 +20,7 @@ const useMeetingLogProgress = createUploadProgressHook({
   updateProgress: updateMeetingLogUploadProgress,
   clearProgress: clearMeetingLogUploadProgress,
   basePath: 'meeting-logs/uploads',
+  encoding: 'base64',
   onCompleted: dispatch => {
     dispatch(
       meetingLogApi.util.invalidateTags(['MeetingLogList', 'MeetingLogDetail']),
@@ -33,9 +33,7 @@ export const useMeetingLogUploadWithProgress = () => {
   const {
     progress,
     initProgress,
-    updateProgressState,
-    listenProgress,
-    setUploadTask,
+    performUpload,
     handleUploadError,
     cancelUpload,
     dismiss,
@@ -43,37 +41,6 @@ export const useMeetingLogUploadWithProgress = () => {
 
   //---------------------------------------
   const [createMeetingLog] = useCreateMeetingLogMutation();
-
-  //---------------------------------------
-  const uploadFileToServer = React.useCallback(
-    (uploadId: string, file: { uri: string; name: string; type: string }) => {
-      const doUpload = async () => {
-        const token = await getToken();
-        const uploadData = await prepareUploadData(file, 'base64');
-        const task = fetchUpload(
-          `meeting-logs/uploads/${uploadId}`,
-          uploadData,
-          token,
-        );
-
-        setUploadTask(task);
-
-        task
-          .then(() => {
-            setUploadTask(null);
-          })
-          .catch((uploadErr: unknown) => {
-            console.error('[MeetingLog Upload] File upload error:', uploadErr);
-            handleUploadError(
-              uploadErr instanceof Error ? uploadErr.message : 'Upload failed',
-            );
-          });
-      };
-
-      doUpload();
-    },
-    [setUploadTask, handleUploadError],
-  );
 
   //---------------------------------------
   const uploadRecordingToExisting = React.useCallback(
@@ -84,7 +51,6 @@ export const useMeetingLogUploadWithProgress = () => {
       try {
         initProgress(file.name);
 
-        // Phase 1: POST /meeting-logs/:id/recordings → returns uploadId
         const token = await getToken();
         const response = await fetch(
           `${API_BASE_URL}/meeting-logs/${meetingLogId}/recordings`,
@@ -108,27 +74,14 @@ export const useMeetingLogUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        // Save uploadId to Redux
-        updateProgressState({ uploadId });
-
-        // Phase 2: listen for progress BEFORE starting upload
-        listenProgress(uploadId);
-
-        // Phase 3: upload file
-        uploadFileToServer(uploadId, file);
+        await performUpload(uploadId, file);
       } catch (err) {
         console.error('[MeetingLog Upload] Error:', err);
         handleUploadError(err instanceof Error ? err.message : 'Upload failed');
         throw err;
       }
     },
-    [
-      initProgress,
-      updateProgressState,
-      listenProgress,
-      uploadFileToServer,
-      handleUploadError,
-    ],
+    [initProgress, performUpload, handleUploadError],
   );
 
   //---------------------------------------
@@ -147,7 +100,6 @@ export const useMeetingLogUploadWithProgress = () => {
       try {
         initProgress(file.name);
 
-        // Phase 1: POST /meeting-logs with form data → returns uploadId
         const result = await createMeetingLog(formData).unwrap();
 
         console.log('======================result', result);
@@ -158,14 +110,7 @@ export const useMeetingLogUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        // Save uploadId to Redux
-        updateProgressState({ uploadId });
-
-        // Phase 2: listen for progress BEFORE starting upload
-        listenProgress(uploadId);
-
-        // Phase 3: upload file
-        uploadFileToServer(uploadId, file);
+        await performUpload(uploadId, file);
 
         return result;
       } catch (err) {
@@ -174,25 +119,16 @@ export const useMeetingLogUploadWithProgress = () => {
         throw err;
       }
     },
-    [
-      initProgress,
-      createMeetingLog,
-      updateProgressState,
-      listenProgress,
-      uploadFileToServer,
-      handleUploadError,
-    ],
+    [initProgress, createMeetingLog, performUpload, handleUploadError],
   );
 
   //---------------------------------------
   const uploadFileWithUploadId = React.useCallback(
     (uploadId: string, file: { uri: string; name: string; type: string }) => {
       initProgress(file.name);
-      updateProgressState({ uploadId });
-      listenProgress(uploadId);
-      uploadFileToServer(uploadId, file);
+      performUpload(uploadId, file).catch(() => {});
     },
-    [initProgress, updateProgressState, listenProgress, uploadFileToServer],
+    [initProgress, performUpload],
   );
 
   //---------------------------------------

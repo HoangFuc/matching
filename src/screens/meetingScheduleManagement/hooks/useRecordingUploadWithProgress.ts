@@ -1,8 +1,6 @@
 import React from 'react';
 
 import { createUploadProgressHook } from '@/src/hooks/useUploadWithProgress';
-import { prepareUploadData, fetchUpload } from '@/src/services/uploadService';
-import { getToken } from '@/src/services/tokenService';
 import {
   meetingScheduleManagementApi,
   useCreateMeetingLogMutation,
@@ -19,6 +17,7 @@ const useMeetingUploadProgress = createUploadProgressHook({
   updateProgress: updateRecordingUploadProgress,
   clearProgress: clearRecordingUploadProgress,
   basePath: 'meeting-logs/uploads',
+  encoding: 'base64',
   onCompleted: dispatch => {
     dispatch(
       meetingScheduleManagementApi.util.invalidateTags([
@@ -33,9 +32,7 @@ export const useRecordingUploadWithProgress = () => {
   const {
     progress,
     initProgress,
-    updateProgressState,
-    listenProgress,
-    setUploadTask,
+    performUpload,
     handleUploadError,
     cancelUpload,
     dismiss,
@@ -54,7 +51,6 @@ export const useRecordingUploadWithProgress = () => {
       try {
         initProgress(file.name);
 
-        // Phase 1: POST meeting-log with memo content → returns uploadId
         const result = await createMeetingLog({
           scheduleId,
           content: memo,
@@ -66,39 +62,14 @@ export const useRecordingUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        // Save uploadId to Redux
-        updateProgressState({ uploadId });
-
-        // Phase 2: listen for progress BEFORE starting upload
-        listenProgress(uploadId);
-
-        // Phase 3: upload file as multipart
-        const token = await getToken();
-        const uploadData = await prepareUploadData(file, 'base64');
-        const task = fetchUpload(
-          `meeting-logs/uploads/${uploadId}`,
-          uploadData,
-          token,
-        );
-
-        setUploadTask(task);
-
-        await task;
-        setUploadTask(null);
+        await performUpload(uploadId, file);
       } catch (err) {
         console.error('[Upload] Error:', err);
         handleUploadError(err instanceof Error ? err.message : 'Upload failed');
         throw err;
       }
     },
-    [
-      initProgress,
-      createMeetingLog,
-      updateProgressState,
-      listenProgress,
-      setUploadTask,
-      handleUploadError,
-    ],
+    [initProgress, createMeetingLog, performUpload, handleUploadError],
   );
 
   //---------------------------------------

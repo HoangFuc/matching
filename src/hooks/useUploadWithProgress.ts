@@ -5,6 +5,7 @@ import EventSource from 'react-native-sse';
 
 import type { AppDispatch, RootState } from '@/src/store/index';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
+import { prepareUploadData, fetchUpload } from '@/src/services/uploadService';
 import { API_BASE_URL } from '@env';
 import { getToken } from '@/src/services/tokenService';
 import type {
@@ -31,6 +32,8 @@ interface UploadProgressConfig {
   clearProgress: ActionCreatorWithoutPayload;
   /** Base path for SSE and cancel endpoints (e.g., 'data-room/uploads') */
   basePath: string;
+  /** Encoding mode for file upload ('base64' or 'stream') */
+  encoding?: 'base64' | 'stream';
   /** Called when upload completes successfully */
   onCompleted?: (dispatch: AppDispatch) => void;
 }
@@ -249,6 +252,45 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
       dispatch(config.clearProgress());
     }, [closeEventSource, dispatch]);
 
+    //---------------------------------------
+    const performUpload = React.useCallback(
+      async (
+        uploadId: string,
+        file: { uri: string; name: string; type: string },
+      ) => {
+        updateProgressState({ uploadId });
+        listenProgress(uploadId);
+
+        const token = await getToken();
+        const encoding = config.encoding ?? 'stream';
+        const uploadData = await prepareUploadData(file, encoding);
+        const task = fetchUpload(
+          `${config.basePath}/${uploadId}`,
+          uploadData,
+          token,
+        );
+
+        setUploadTask(task);
+
+        try {
+          await task;
+          setUploadTask(null);
+        } catch (uploadErr) {
+          console.error(`[Upload] File upload error:`, uploadErr);
+          handleUploadError(
+            uploadErr instanceof Error ? uploadErr.message : 'Upload failed',
+          );
+          throw uploadErr;
+        }
+      },
+      [
+        updateProgressState,
+        listenProgress,
+        setUploadTask,
+        handleUploadError,
+      ],
+    );
+
     return {
       progress,
       initProgress,
@@ -258,6 +300,7 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
       handleUploadError,
       cancelUpload,
       dismiss,
+      performUpload,
     };
   };
 }

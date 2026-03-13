@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import Postcode from '@actbase/react-daum-postcode';
 import { useNavigation } from '@react-navigation/native';
@@ -64,11 +64,16 @@ const CreateMeetingScheduleScreen: React.FC = () => {
   //---------------------------------------
   const onSubmit = React.useCallback(
     async (data: ICreateMeetingSchedulePayload) => {
+      const phone = stripDashes(data.customerPhone);
+      if (!phone.startsWith('010') || phone.length < 10) {
+        Alert.alert('알림', '연락처는 010으로 시작해야 합니다.');
+        return;
+      }
       try {
         await createMeetingSchedule({
           ...data,
           scheduleDate: data.scheduleDate.replace(/\./g, '-'),
-          customerPhone: stripDashes(data.customerPhone),
+          customerPhone: phone,
         }).unwrap();
         navigation.goBack();
       } catch (error) {

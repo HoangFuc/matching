@@ -64,8 +64,13 @@ export const useRecordingUploadWithProgress = () => {
         }
 
         const extraFields = durationSeconds != null
-          ? { durationSeconds: String(durationSeconds) }
+          ? { duration: String(durationSeconds) }
           : undefined;
+
+        console.log('[Upload] uploadId:', uploadId);
+        console.log('[Upload] file:', file);
+        console.log('[Upload] durationSeconds:', durationSeconds);
+        console.log('[Upload] extraFields:', extraFields);
 
         await performUpload(uploadId, file, extraFields);
       } catch (err) {

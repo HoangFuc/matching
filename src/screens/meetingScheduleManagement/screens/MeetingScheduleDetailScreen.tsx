@@ -1,5 +1,11 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import {
+  PermissionsAndroid,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { useNavigation, useRoute } from '@react-navigation/native';
 import {
@@ -8,11 +14,15 @@ import {
 } from '@react-navigation/native-stack';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
+import Toast from 'react-native-toast-message';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
-import { MemoDetailInfoRow, TDetailInfoRow } from '@/src/component/DetailInfoRow';
+import {
+  MemoDetailInfoRow,
+  TDetailInfoRow,
+} from '@/src/component/DetailInfoRow';
 import { MemoRecordedAudioCard } from '@/src/component/RecordedAudioCard';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
@@ -122,9 +132,41 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   );
 
   //---------------------------------------
-  const handleOpenRecording = React.useCallback(() => {
-    setShowRecording(true);
+  const requestPermissions = React.useCallback(async (): Promise<boolean> => {
+    if (Platform.OS === 'ios') {
+      return true;
+    }
+
+    const micPermission = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+    );
+
+    if (micPermission !== PermissionsAndroid.RESULTS.GRANTED) {
+      Toast.show({ type: 'error', text1: '마이크 권한이 필요합니다' });
+      return false;
+    }
+
+    if (Number(Platform.Version) < 33) {
+      const storagePermission = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      );
+      if (storagePermission !== PermissionsAndroid.RESULTS.GRANTED) {
+        Toast.show({ type: 'error', text1: '저장소 권한이 필요합니다' });
+        return false;
+      }
+    }
+
+    return true;
   }, []);
+
+  //---------------------------------------
+  const handleOpenRecording = React.useCallback(async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) {
+      return;
+    }
+    setShowRecording(true);
+  }, [requestPermissions]);
 
   //---------------------------------------
   const handleCloseRecording = React.useCallback(() => {
@@ -134,9 +176,15 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   //---------------------------------------
   const handleRecordingComplete = React.useCallback(
     (filePath: string, waveformData: number[], durationMs: number) => {
+      console.log('======================durration', durationMs);
       setShowRecording(false);
       const fileName = filePath.split('/').pop() ?? 'recording.m4a';
-      setRecordedFile({ path: filePath, name: fileName, waveformData, durationMs });
+      setRecordedFile({
+        path: filePath,
+        name: fileName,
+        waveformData,
+        durationMs,
+      });
     },
     [],
   );
@@ -164,6 +212,8 @@ const MeetingScheduleDetailScreen: React.FC = () => {
     const memo = displayItem.memo ?? '';
 
     const durationSeconds = Math.round(recordedFile.durationMs / 1000);
+    console.log('[handleComplete] recordedFile:', recordedFile);
+    console.log('[handleComplete] durationMs:', recordedFile.durationMs, '-> durationSeconds:', durationSeconds);
 
     try {
       await uploadRecording(
@@ -197,6 +247,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           {/* Info Card */}
           <View style={styles.card}>
@@ -210,6 +261,11 @@ const MeetingScheduleDetailScreen: React.FC = () => {
             <MemoRecordedAudioCard
               filePath={serverRecording.playUrl}
               fileName={serverRecording.fileName}
+              durationMs={
+                serverRecording.durationSeconds
+                  ? serverRecording.durationSeconds * 1000
+                  : undefined
+              }
             />
           ) : uploadProgress ? (
             <MemoUploadProgressBar
@@ -222,6 +278,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
               filePath={recordedFile.path}
               fileName={recordedFile.name}
               waveformData={recordedFile.waveformData}
+              durationMs={recordedFile.durationMs}
             />
           ) : (
             <MemoBaseCard style={styles.recordSection}>
@@ -260,7 +317,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
         )}
       </MemoScreenBody>
 
-      {!isCompleted && (
+      {!isCompleted && showRecording && (
         <MemoRecordingBottomSheet
           visible={showRecording}
           onClose={handleCloseRecording}

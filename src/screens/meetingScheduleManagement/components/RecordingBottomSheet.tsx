@@ -1,14 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  PermissionsAndroid,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { Stop } from 'iconsax-react-nativejs';
-import { useSoundRecorderWithStates } from 'react-native-nitro-sound';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
 
@@ -27,37 +21,23 @@ interface IProps {
 }
 
 const WAVEFORM_BAR_COUNT = 40;
-const SUBSCRIPTION_DURATION_SEC = 0.1; // 100ms
+
+const recorderPlayer = AudioRecorderPlayer;
 
 const RecordingBottomSheet: React.FC<IProps> = ({
   visible,
   onClose,
   onRecordingComplete,
 }) => {
+  const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(0);
   const [meteringLevels, setMeteringLevels] = useState<number[]>(
     Array(WAVEFORM_BAR_COUNT).fill(0),
   );
   const filePathRef = useRef<string>('');
   const allMeteringRef = useRef<number[]>([]);
-
-  //---------------------------------------
-  const { startRecorder, pauseRecorder, resumeRecorder, stopRecorder, state } =
-    useSoundRecorderWithStates({
-      subscriptionDuration: SUBSCRIPTION_DURATION_SEC,
-      onRecord: e => {
-        if (e.currentMetering !== undefined) {
-          const normalized = Math.max(
-            0,
-            Math.min(1, (e.currentMetering + 60) / 60),
-          );
-          setMeteringLevels(prev => [...prev.slice(1), normalized]);
-          allMeteringRef.current.push(normalized);
-        }
-      },
-    });
-
-  const { isRecording, currentPosition } = state;
+  const isRecordingRef = useRef(false);
 
   //---------------------------------------
   const formatTime = useCallback((_ms: number) => {
@@ -68,101 +48,98 @@ const RecordingBottomSheet: React.FC<IProps> = ({
   }, []);
 
   //---------------------------------------
-  const requestPermissions = useCallback(async (): Promise<boolean> => {
-    if (Platform.OS === 'ios') {
-      return true;
-    }
-
-    const micPermission = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-    );
-
-    if (micPermission !== PermissionsAndroid.RESULTS.GRANTED) {
-      Toast.show({ type: 'error', text1: '마이크 권한이 필요합니다' });
-      return false;
-    }
-
-    if (Number(Platform.Version) < 33) {
-      const storagePermission = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-      );
-      if (storagePermission !== PermissionsAndroid.RESULTS.GRANTED) {
-        Toast.show({ type: 'error', text1: '저장소 권한이 필요합니다' });
-        return false;
-      }
-    }
-
-    return true;
-  }, []);
-
-  //---------------------------------------
   const handleStartRecording = useCallback(async () => {
     try {
-      const hasPermission = await requestPermissions();
-      if (!hasPermission) {
-        return;
-      }
-
       setMeteringLevels(Array(WAVEFORM_BAR_COUNT).fill(0));
       setIsPaused(false);
+      setCurrentPosition(0);
       allMeteringRef.current = [];
 
-      const path = await startRecorder(undefined, undefined, true);
+      const path = await recorderPlayer.startRecorder(undefined, undefined, true);
       filePathRef.current = path;
+      isRecordingRef.current = true;
+      setIsRecording(true);
+
+      recorderPlayer.addRecordBackListener(e => {
+        setCurrentPosition(e.currentPosition);
+        if (e.currentMetering !== undefined && e.currentMetering !== null) {
+          const normalized = Math.max(
+            0,
+            Math.min(1, (e.currentMetering + 60) / 60),
+          );
+          setMeteringLevels(prev => [...prev.slice(1), normalized]);
+          allMeteringRef.current.push(normalized);
+        }
+      });
     } catch {
       Toast.show({ type: 'error', text1: '녹음을 시작할 수 없습니다' });
     }
-  }, [requestPermissions, startRecorder]);
+  }, []);
 
   //---------------------------------------
   const handleStopRecording = useCallback(async () => {
     try {
       if (isPaused) {
-        await resumeRecorder();
+        await recorderPlayer.resumeRecorder();
       }
+
       const durationMs = currentPosition;
-      await stopRecorder();
+      await recorderPlayer.stopRecorder();
+      recorderPlayer.removeRecordBackListener();
+      isRecordingRef.current = false;
+      setIsRecording(false);
       setIsPaused(false);
       setMeteringLevels(Array(WAVEFORM_BAR_COUNT).fill(0));
-      onRecordingComplete(filePathRef.current, allMeteringRef.current, durationMs);
+      onRecordingComplete(
+        filePathRef.current,
+        allMeteringRef.current,
+        durationMs,
+      );
     } catch {
       Toast.show({ type: 'error', text1: '녹음 중지에 실패했습니다' });
     }
-  }, [isPaused, currentPosition, resumeRecorder, stopRecorder, onRecordingComplete]);
+  }, [isPaused, currentPosition, onRecordingComplete]);
 
   //---------------------------------------
   const handleTogglePause = useCallback(async () => {
     try {
       if (isPaused) {
-        await resumeRecorder();
+        await recorderPlayer.resumeRecorder();
         setIsPaused(false);
       } else {
-        await pauseRecorder();
+        await recorderPlayer.pauseRecorder();
         setIsPaused(true);
       }
     } catch {
       Toast.show({ type: 'error', text1: '녹음 일시정지에 실패했습니다' });
     }
-  }, [isPaused, pauseRecorder, resumeRecorder]);
+  }, [isPaused]);
 
   //---------------------------------------
   const handleClose = useCallback(async () => {
-    if (isRecording) {
+    if (isRecordingRef.current) {
       try {
-        await stopRecorder();
+        await recorderPlayer.stopRecorder();
+        recorderPlayer.removeRecordBackListener();
+        isRecordingRef.current = false;
       } catch {}
     }
+    setIsRecording(false);
     setIsPaused(false);
+    setCurrentPosition(0);
     setMeteringLevels(Array(WAVEFORM_BAR_COUNT).fill(0));
     onClose();
-  }, [isRecording, stopRecorder, onClose]);
+  }, [onClose]);
 
   //---------------------------------------
   useEffect(() => {
-    if (!visible && isRecording) {
-      stopRecorder().catch(() => {});
+    if (!visible && isRecordingRef.current) {
+      recorderPlayer.stopRecorder().catch(() => {});
+      recorderPlayer.removeRecordBackListener();
+      isRecordingRef.current = false;
+      setIsRecording(false);
     }
-  }, [visible, isRecording, stopRecorder]);
+  }, [visible]);
 
   return (
     <MemoBottomSheetModal

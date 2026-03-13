@@ -11,7 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoAddressPickerInput } from '@/src/component/AddressPickerInput';
@@ -179,7 +179,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="미팅록 작성" />
 
       <MemoScreenBody>
@@ -326,7 +326,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
           />
         </View>
       </MemoScreenBody>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

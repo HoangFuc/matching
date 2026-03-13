@@ -6,7 +6,7 @@ import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -186,7 +186,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   }, [isUploadCompleted, dismissUpload, navigation]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="예약 상세" />
 
       <MemoScreenBody>
@@ -263,7 +263,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
           onRecordingComplete={handleRecordingComplete}
         />
       )}
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

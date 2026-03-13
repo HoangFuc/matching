@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -33,11 +33,11 @@ const Checkin: React.FC<IProps> = props => {
   //---------------------------------------
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+      <AppSafeAreaView style={styles.safeAreaTop}>
         <View style={styles.center}>
           <ActivityIndicator size="large" color={AppColors.purple} />
         </View>
-      </SafeAreaView>
+      </AppSafeAreaView>
     );
   }
 
@@ -49,7 +49,7 @@ const Checkin: React.FC<IProps> = props => {
         onPress={() =>
           navigation.navigate('Schedule', {
             screen: 'ScheduleMain',
-            params: { mode: 'attendance' },
+            params: { mode: 'attendance', hideTabBar: true },
           })
         }
       >
@@ -142,6 +142,7 @@ const styles = StyleSheet.create({
     borderRadius: ms(8),
     padding: ms(12),
     gap: ms(4),
+    width: '100%',
   },
   safeAreaTop: {
     flex: 1,

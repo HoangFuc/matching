@@ -13,7 +13,7 @@ export const getCalendarDays = (year: number, month: number): TDayCell[] => {
   for (let i = firstDay - 1; i >= 0; i--) {
     cells.push({
       date: daysInPrevMonth - i,
-      month: month - 1,
+      month: month === 0 ? 11 : month - 1,
       year: month === 0 ? year - 1 : year,
       isCurrentMonth: false,
     });
@@ -29,7 +29,7 @@ export const getCalendarDays = (year: number, month: number): TDayCell[] => {
   for (let d = 1; d <= remaining; d++) {
     cells.push({
       date: d,
-      month: month + 1,
+      month: month === 11 ? 0 : month + 1,
       year: month === 11 ? year + 1 : year,
       isCurrentMonth: false,
     });

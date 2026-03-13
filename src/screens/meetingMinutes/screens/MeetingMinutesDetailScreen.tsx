@@ -19,7 +19,7 @@ import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -211,7 +211,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   //---------------------------------------
   if (isLoading || !item) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <AppSafeAreaView style={styles.safeArea}>
         <MemoScreenHeader title="미팅록 세부 정보" />
         <MemoScreenBody>
           <ActivityIndicator
@@ -219,12 +219,12 @@ const MeetingMinutesDetailScreen: React.FC = () => {
             color={AppColors.purple}
           />
         </MemoScreenBody>
-      </SafeAreaView>
+      </AppSafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="미팅록 세부 정보" />
 
       <MemoScreenBody>
@@ -293,7 +293,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
           )}
         </ScrollView>
       </MemoScreenBody>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

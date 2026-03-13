@@ -12,7 +12,7 @@ import {
 
 import { RouteProp, useRoute } from '@react-navigation/native';
 import dayjs from 'dayjs';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -92,17 +92,17 @@ const BulletinDetail: React.FC = () => {
   //---------------------------------------
   if (isLoading || !post) {
     return (
-      <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+      <AppSafeAreaView style={styles.safeAreaTop}>
         <MemoScreenHeader title="게시글 상세" />
         <View style={styles.center}>
           <ActivityIndicator size="large" color={AppColors.purple} />
         </View>
-      </SafeAreaView>
+      </AppSafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+    <AppSafeAreaView style={styles.safeAreaTop}>
       <MemoScreenHeader title="게시글 상세" />
 
       <KeyboardAvoidingView
@@ -178,7 +178,7 @@ const BulletinDetail: React.FC = () => {
           onSend={handleSend}
         />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

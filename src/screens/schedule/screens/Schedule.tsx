@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import {
   useFocusEffect,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 
 import { AppColors } from '@/src/constants/colors';
 import { TScheduleEvent } from '@/src/interface/schedule.interface';
@@ -22,16 +23,33 @@ const Schedule: React.FC = () => {
   const route = useRoute<TScheduleRoute>();
   const navigation = useNavigation<ScheduleNavigationProp>();
   const mode = route.params?.mode ?? 'schedule';
+  const hideTabBar = route.params?.hideTabBar;
 
   const filterTypes = route.params?.filterTypes;
 
   //---------------------------------------
   useFocusEffect(
     React.useCallback(() => {
+      if (hideTabBar) {
+        navigation.getParent()?.setOptions({
+          tabBarStyle: {
+            ...styles.tabBar,
+            opacity: 0,
+          },
+        });
+      }
+
       return () => {
-        navigation.setParams({ mode: undefined, filterTypes: undefined });
+        navigation.getParent()?.setOptions({
+          tabBarStyle: { ...styles.tabBar, opacity: 1 },
+        });
+        navigation.setParams({
+          mode: undefined,
+          filterTypes: undefined,
+          hideTabBar: undefined,
+        });
       };
-    }, [navigation]),
+    }, [navigation, hideTabBar]),
   );
 
   //---------------------------------------
@@ -68,17 +86,18 @@ const Schedule: React.FC = () => {
 
   //---------------------------------------
   React.useEffect(() => {
-    if (filterTypes && filterTypes.length > 0) {
+    if (filterTypes) {
       setSelectedFilterTypes(filterTypes);
     }
   }, [filterTypes]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoScheduleHeader
         onPressFilter={handleOpenFilter}
         mode={mode}
         detailData={detailData}
+        isFilterActive={selectedFilterTypes.length > 0}
       />
 
       {detailData ? (
@@ -103,7 +122,7 @@ const Schedule: React.FC = () => {
         onApply={setSelectedFilterTypes}
         onClose={handleCloseFilter}
       />
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 
@@ -116,5 +135,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  tabBar: {
+    height: ms(92),
+    borderTopLeftRadius: ms(20),
+    borderTopRightRadius: ms(20),
   },
 });

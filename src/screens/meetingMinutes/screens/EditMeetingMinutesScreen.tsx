@@ -11,7 +11,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -234,7 +234,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
   }, [progress]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="미팅록 수정" />
 
       <MemoScreenBody>
@@ -370,7 +370,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
           />
         </View>
       </MemoScreenBody>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

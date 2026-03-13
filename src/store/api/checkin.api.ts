@@ -31,6 +31,10 @@ export const checkinApi = createApi({
     >({
       query: ({ startDate, endDate }) =>
         `/attendance/my?startDate=${startDate}&endDate=${endDate}`,
+      transformResponse: (response: { data: IMyAttendanceResponse }) => ({
+        records: response.data.records,
+        summary: response.data.summary,
+      }),
       providesTags: ['Attendance'],
     }),
     //---------------------------------------
@@ -43,7 +47,7 @@ export const checkinApi = createApi({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Attendance'],
+      invalidatesTags: (_result, error) => (error ? [] : ['Attendance']),
     }),
   }),
 });

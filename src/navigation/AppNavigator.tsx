@@ -1,8 +1,8 @@
-import React, { useCallback } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { CommonActions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
@@ -32,6 +32,8 @@ import {
   DocumentText,
   Home2,
 } from '../constants/icons';
+import { OverlayProvider, useOverlay } from '../providers/OverlayProvider';
+import { MemoQuickActionFAB } from '../screens/dashboard/component/calendarAction/QuickActionModal';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -57,8 +59,27 @@ const TabBarLabel: React.FC<{
   </AppText>
 );
 
+const FullScreenOverlay: React.FC = () => {
+  const { overlayVisible, setOverlayVisible } = useOverlay();
+
+  if (!overlayVisible) {
+    return null;
+  }
+
+  return (
+    <Pressable
+      style={styles.overlay}
+      onPress={() => setOverlayVisible(false)}
+    />
+  );
+};
+
 const MainTabs: React.FC = () => {
-  const getTabBarIcon = useCallback(
+  const [activeTab, setActiveTab] = React.useState('Home');
+
+  //---------------------------------------
+
+  const getTabBarIcon = React.useCallback(
     (routeName: string, color: AppColor | string, focused: boolean) => {
       const size = ms(24);
       const variant = focused ? 'Bold' : 'Linear';
@@ -81,37 +102,78 @@ const MainTabs: React.FC = () => {
     [],
   );
 
-  const getTabBarLabel = useCallback(
+  //---------------------------------------
+
+  const getTabBarLabel = React.useCallback(
     (routeName: string, color: string, focused: boolean) => (
       <TabBarLabel routeName={routeName} color={color} focused={focused} />
     ),
     [],
   );
 
+  //---------------------------------------
+
+  const handleTabChange = React.useCallback(
+    (e: { data: { state: { routes: { name: string }[]; index: number } } }) => {
+      const { routes, index } = e.data.state;
+      setActiveTab(routes[index].name);
+    },
+    [],
+  );
+
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarIcon: ({ color, focused }) =>
-          getTabBarIcon(route.name, color, focused),
-        tabBarLabel: ({ color, focused }) =>
-          getTabBarLabel(route.name, color, focused),
-        tabBarActiveTintColor: AppColors.purple,
-        tabBarInactiveTintColor: AppColors.gray50,
-        tabBarStyle: styles.tabBar,
-        tabBarItemStyle: styles.tabBarItem,
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeStack} />
+    <OverlayProvider>
+      <View style={styles.tabNavigatorContainer}>
+        <Tab.Navigator
+          screenListeners={({ navigation, route }) => ({
+            state: handleTabChange,
+            blur: () => {
+              const state = navigation.getState();
+              const tabRoute = state.routes.find(
+                (r: { name: string }) => r.name === route.name,
+              );
+              if (tabRoute?.state && tabRoute.state.routes.length > 1) {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    ...state,
+                    routes: state.routes.map(
+                      (r: { name: string }) =>
+                        r.name === route.name
+                          ? { ...r, state: undefined }
+                          : r,
+                    ),
+                  }),
+                );
+              }
+            },
+          })}
+          screenOptions={({ route }) => ({
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) =>
+              getTabBarIcon(route.name, color, focused),
+            tabBarLabel: ({ color, focused }) =>
+              getTabBarLabel(route.name, color, focused),
+            tabBarActiveTintColor: AppColors.purple,
+            tabBarInactiveTintColor: AppColors.gray50,
+            tabBarStyle: styles.tabBar,
+            tabBarItemStyle: styles.tabBarItem,
+          })}
+        >
+          <Tab.Screen name="Home" component={HomeStack} />
 
-      <Tab.Screen name="Schedule" component={ScheduleStack} />
+          <Tab.Screen name="Schedule" component={ScheduleStack} />
 
-      <Tab.Screen name="MeetingMinutes" component={MeetingMinutesStack} />
+          <Tab.Screen name="MeetingMinutes" component={MeetingMinutesStack} />
 
-      <Tab.Screen name="Contract" component={ContractScreen} />
+          <Tab.Screen name="Contract" component={ContractScreen} />
 
-      <Tab.Screen name="Draft" component={DraftScreen} />
-    </Tab.Navigator>
+          <Tab.Screen name="Draft" component={DraftScreen} />
+        </Tab.Navigator>
+      </View>
+
+      <FullScreenOverlay />
+      {activeTab === 'Home' && <MemoQuickActionFAB />}
+    </OverlayProvider>
   );
 };
 
@@ -157,6 +219,11 @@ const AppNavigator: React.FC = () => {
 export default AppNavigator;
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    zIndex: 1,
+  },
   placeholder: {
     flex: 1,
     backgroundColor: AppColors.white,
@@ -165,6 +232,11 @@ const styles = StyleSheet.create({
     height: ms(92),
     borderTopLeftRadius: ms(20),
     borderTopRightRadius: ms(20),
+    backgroundColor: AppColors.white,
+  },
+  tabNavigatorContainer: {
+    flex: 1,
+    backgroundColor: AppColors.white,
   },
   tabBarItem: {
     alignItems: 'center',

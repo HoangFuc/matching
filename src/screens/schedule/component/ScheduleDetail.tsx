@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 
 import { AppColors } from '@/src/constants/colors';
 import { TScheduleEvent } from '@/src/interface/schedule.interface';
@@ -28,11 +28,11 @@ const ScheduleDetail: React.FC = () => {
   }, [navigation]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoScheduleHeader onPressFilter={() => {}} mode="detail" />
 
       <MemoEventCardContent handlePressBack={handlePressBack} dateKey={dateKey} events={events} />
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

@@ -4,7 +4,7 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -98,7 +98,7 @@ const DataDetailScreen: React.FC = () => {
   const keyExtractor = React.useCallback((item: IFile) => item.id, []);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable hitSlop={8} onPress={handlePressBack}>
@@ -230,7 +230,7 @@ const DataDetailScreen: React.FC = () => {
           kind="file"
         />
       )}
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

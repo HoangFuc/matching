@@ -8,6 +8,7 @@ import { ms } from 'react-native-size-matters/extend';
 import { AppColors } from '@/src/constants/colors';
 import { TDayCell, TScheduleEvent } from '@/src/interface/schedule.interface';
 import type { ScheduleNavigationProp } from '@/src/interface/tab.interface';
+import { TCheckinInfo } from '../hook/useAttendanceData';
 import { MemoDateNumber } from './DateNumber';
 import { MemoEvents } from './Events';
 
@@ -15,7 +16,7 @@ interface IProps {
   year: number;
   month: number;
   events: Record<string, TScheduleEvent[]>;
-  checkinTimes?: Record<string, string>;
+  checkinTimes?: Record<string, TCheckinInfo>;
 }
 
 const CalendarGrid: React.FC<IProps> = props => {
@@ -65,7 +66,7 @@ const CalendarGrid: React.FC<IProps> = props => {
                     events={[
                       {
                         id: `checkin-${key}`,
-                        title: checkinTime,
+                        title: checkinTime.time,
                         color: AppColors.gray90,
                         backgroundColor: 'transparent',
                       },

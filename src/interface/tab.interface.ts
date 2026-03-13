@@ -41,7 +41,7 @@ export type HomeStackParamList = {
 };
 
 export type ScheduleStackParamList = {
-  ScheduleMain: { mode?: TScheduleMode; filterTypes?: TScheduleType[] } | undefined;
+  ScheduleMain: { mode?: TScheduleMode; filterTypes?: TScheduleType[]; hideTabBar?: boolean } | undefined;
   ScheduleDetail: {
     dateKey: string;
     events: TScheduleEvent[];

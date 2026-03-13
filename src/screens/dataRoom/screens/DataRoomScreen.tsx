@@ -10,7 +10,7 @@ import {
 } from '@react-native-documents/picker';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -156,7 +156,7 @@ const DataRoomScreen: React.FC = () => {
   const fileKeyExtractor = React.useCallback((item: IFile) => item.id, []);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable hitSlop={8} onPress={handlePressBack}>
@@ -270,7 +270,7 @@ const DataRoomScreen: React.FC = () => {
           kind="folder"
         />
       )}
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

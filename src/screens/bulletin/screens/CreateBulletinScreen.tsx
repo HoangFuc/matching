@@ -12,7 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useForm } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -116,7 +116,7 @@ const CreateBulletinScreen: React.FC = () => {
   }, [title, content, images, createBulletin, navigation]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="게시글 작성" />
 
       <MemoScreenBody>
@@ -208,7 +208,7 @@ const CreateBulletinScreen: React.FC = () => {
           <ActivityIndicator size="large" color={AppColors.purple} />
         </View>
       )}
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

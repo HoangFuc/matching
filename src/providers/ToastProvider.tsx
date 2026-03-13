@@ -79,7 +79,7 @@ export const ToastProvider = ({children}: {children: React.ReactNode}) => {
       anim.translateY.value = withTiming(-20, {duration: 250});
 
       setTimeout(() => setToast(null), 250);
-    }, 1800);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [toast, anim]);

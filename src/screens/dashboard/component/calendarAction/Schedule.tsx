@@ -37,7 +37,6 @@ const styles = StyleSheet.create({
     padding: ms(16),
     paddingBottom: ms(64),
     flex: 1,
-    aspectRatio: 167.5 / 120,
     borderWidth: 1,
     borderColor: AppColors.gray30,
     backgroundColor: AppColors.white,

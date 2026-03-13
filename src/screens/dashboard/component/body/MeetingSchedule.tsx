@@ -2,24 +2,61 @@ import React, { useCallback } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import dayjs from 'dayjs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { AppImages } from '@/src/constants/images';
-import { RootStackParamList } from '@/src/interface/tab.interface';
+import { RootTabNavigationProp } from '@/src/interface/tab.interface';
+import { useGetSchedulesQuery } from '@/src/store/api';
+import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
+import { showGlobalToast } from '@/src/utils/toastDispatcher';
 import { MemoTemplateMeetingCard } from '../meetingSchedule/TemplateMeetingCard';
 
-type TNav = NativeStackNavigationProp<RootStackParamList>;
-
 const MeetingSchedule: React.FC = () => {
-  const navigation = useNavigation<TNav>();
+  const navigation = useNavigation<RootTabNavigationProp>();
 
   //---------------------------------------
-  const handlePressMeetingSchedule = useCallback(() => {
-    navigation.navigate('MeetingScheduleManagement');
-  }, [navigation]);
+  const today = dayjs().format('YYYY-MM-DD');
+  const { data: schedules = [] } = useGetSchedulesQuery({
+    startDate: today,
+    endDate: today,
+  });
+
+  //---------------------------------------
+  const todayEvents = React.useMemo(() => {
+    const events = convertSchedulesToEvents(schedules);
+    return events[today] ?? [];
+  }, [schedules, today]);
+
+  //---------------------------------------
+  const handlePressMeeting = useCallback(() => {
+    navigation.navigate('Schedule', {
+      screen: 'ScheduleMain',
+      params: { filterTypes: ['고객 미팅'] },
+    });
+
+    if (todayEvents.length === 0) {
+      requestAnimationFrame(() => {
+        showGlobalToast({ type: 'info', message: '현재 등록된 일정이 없습니다.' });
+      });
+    }
+  }, [navigation, todayEvents]);
+
+  //---------------------------------------
+  const handlePressGeneral = useCallback(() => {
+    navigation.navigate('Schedule', {
+      screen: 'ScheduleMain',
+      params: { filterTypes: ['일반일정'] },
+    });
+
+    if (todayEvents.length === 0) {
+      requestAnimationFrame(() => {
+        showGlobalToast({ type: 'info', message: '현재 등록된 일정이 없습니다.' });
+      });
+    }
+  }, [navigation, todayEvents]);
 
   return (
     <View style={styles.container}>
@@ -30,7 +67,7 @@ const MeetingSchedule: React.FC = () => {
       <View style={styles.row}>
         <MemoTemplateMeetingCard
           text="OO고객과의 미팅"
-          onPress={handlePressMeetingSchedule}
+          onPress={handlePressMeeting}
           image={
             <Image source={AppImages.chatBubble} style={styles.cardImage} />
           }
@@ -38,7 +75,7 @@ const MeetingSchedule: React.FC = () => {
 
         <MemoTemplateMeetingCard
           text="OO 분양 1차 회의"
-          onPress={() => {}}
+          onPress={handlePressGeneral}
           image={<Image source={AppImages.list} style={styles.cardImage} />}
         />
       </View>

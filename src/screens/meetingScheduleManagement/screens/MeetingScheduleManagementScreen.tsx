@@ -3,7 +3,7 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -59,6 +59,12 @@ const MeetingScheduleManagementScreen: React.FC = () => {
   //---------------------------------------
   useFocusEffect(
     React.useCallback(() => {
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${padZero(today.getMonth() + 1)}-${padZero(today.getDate())}`;
+      const nextWeekStr = `${today.getFullYear()}-${padZero(today.getMonth() + 1)}-${padZero(today.getDate() + 6)}`;
+      setStartDate(todayStr);
+      setEndDate(nextWeekStr);
+      setActiveTab(MeetingScheduleScopeEnum.COMPANY);
       refetch();
     }, [refetch]),
   );
@@ -136,7 +142,7 @@ const MeetingScheduleManagementScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="방문 예약" rightElement={headerRight} />
 
       {/* Filter Bar */}
@@ -226,7 +232,7 @@ const MeetingScheduleManagementScreen: React.FC = () => {
         initialStartDate={startDate}
         initialEndDate={endDate}
       />
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

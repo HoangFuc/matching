@@ -3,7 +3,7 @@ import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -56,6 +56,7 @@ const BulletinBoard: React.FC = () => {
   //---------------------------------------
   useFocusEffect(
     React.useCallback(() => {
+      setPage(1);
       refetch();
     }, [refetch]),
   );
@@ -91,7 +92,7 @@ const BulletinBoard: React.FC = () => {
   }, [isLoading]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoBulletinHeader
         onPressAdd={() => navigation.navigate('CreateBulletin')}
       />
@@ -114,7 +115,7 @@ const BulletinBoard: React.FC = () => {
           refreshing={isLoading}
         />
       </MemoScreenBody>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

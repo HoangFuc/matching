@@ -5,60 +5,55 @@ import dayjs from 'dayjs';
 import { useGetMyAttendanceQuery } from '@/src/store/api';
 import { TScheduleMode } from '../type';
 
-const CHECKIN_ON_TIME = '08:00';
+export type TCheckinInfo = { time: string; isLate: boolean };
 
 export const useAttendanceData = (
   startDate: string,
   endDate: string,
   mode: TScheduleMode,
 ) => {
+  // Cap endDate to today if today falls within the visible range
+  const today = dayjs().format('YYYY-MM-DD');
+  const effectiveEndDate =
+    today >= startDate && today <= endDate ? today : endDate;
+
+  //---------------------------------------
   const { data: attendanceData } = useGetMyAttendanceQuery(
-    { startDate, endDate },
+    { startDate, endDate: effectiveEndDate },
     { skip: mode !== 'attendance' },
   );
 
   //---------------------------------------
   const checkinTimes = React.useMemo(() => {
-    const map: Record<string, string> = {};
-    if (attendanceData?.data) {
-      for (const record of attendanceData.data) {
+    const map: Record<string, TCheckinInfo> = {};
+
+    // Default all days in query range to late (trễ giờ)
+    let current = dayjs(startDate);
+    const end = dayjs(effectiveEndDate);
+    while (!current.isAfter(end, 'day')) {
+      const dateKey = current.format('YYYY-MM-DD');
+      map[dateKey] = { time: '', isLate: true };
+      current = current.add(1, 'day');
+    }
+
+    // Override with actual data from API
+    if (Array.isArray(attendanceData?.records)) {
+      for (const record of attendanceData.records) {
         const date = dayjs(record.checkInDate).format('YYYY-MM-DD');
-        const timeCheckin = dayjs(record.checkInTime).format('HH:mm');
-        map[date] = timeCheckin;
+        const time = dayjs(record.checkInTime).format('HH:mm');
+        map[date] = { time, isLate: record.isLate };
       }
     }
+
     return map;
-  }, [attendanceData]);
+  }, [attendanceData, startDate, effectiveEndDate]);
 
   //---------------------------------------
-  const checkinDateKeys = React.useMemo(
-    () => Object.keys(checkinTimes).sort(),
-    [checkinTimes],
-  );
+  const attendanceStats = attendanceData?.summary ?? {
+    onTime: 0,
+    late: 0,
+    absent: 0,
+  };
 
-  //---------------------------------------
-  const firstCheckinDate = checkinDateKeys[0];
-  const lastCheckinDate = checkinDateKeys[checkinDateKeys.length - 1];
-
-  //---------------------------------------
-  const attendanceStats = React.useMemo(() => {
-    const entries = Object.entries(checkinTimes);
-    const onTime = entries.filter(([, t]) => t === CHECKIN_ON_TIME).length;
-    const late = entries.filter(([, t]) => t !== CHECKIN_ON_TIME).length;
-    let absent = 0;
-    if (firstCheckinDate && lastCheckinDate) {
-      let current = new Date(firstCheckinDate);
-      const end = new Date(lastCheckinDate);
-      while (current <= end) {
-        const key = current.toISOString().slice(0, 10);
-        if (!checkinTimes[key]) absent++;
-        current.setDate(current.getDate() + 1);
-      }
-    }
-    return { onTime, late, absent };
-  }, [checkinTimes, firstCheckinDate, lastCheckinDate]);
-
-  return { checkinTimes, firstCheckinDate, lastCheckinDate, attendanceStats };
+  return { checkinTimes, attendanceStats };
 };
-
-export { CHECKIN_ON_TIME };

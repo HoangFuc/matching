@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import { Controller, useForm } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
 import PhoneInput, { ICountry } from 'react-native-international-phone-number';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -82,7 +82,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="방문 일정 등록" />
 
       <MemoScreenBody>
@@ -293,7 +293,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
           />
         </View>
       </MemoScreenBody>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useFocusEffect } from '@react-navigation/native';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { MemoCommonCalendar } from '@/src/component/calendar/CommonCalendar';
@@ -10,7 +11,7 @@ import { CloseCircle } from '@/src/constants/icons';
 import { TDayCell, TScheduleEvent } from '@/src/interface/schedule.interface';
 import { useGetSchedulesQuery } from '@/src/store/api';
 import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
-import { CHECKIN_ON_TIME, useAttendanceData } from '../hook/useAttendanceData';
+import { useAttendanceData } from '../hook/useAttendanceData';
 import { useCalendarNavigation } from '../hook/useCalendarNavigation';
 import { TScheduleMode } from '../type';
 import { MemoAttendanceSummary } from './AttendanceSummary';
@@ -25,7 +26,11 @@ interface IProps {
   onDayPress: (dateKey: string, events: TScheduleEvent[]) => void;
 }
 
-const ScheduleCalendar: React.FC<IProps> = ({ mode, selectedFilterTypes, onDayPress }) => {
+const ScheduleCalendar: React.FC<IProps> = ({
+  mode,
+  selectedFilterTypes,
+  onDayPress,
+}) => {
   const {
     year,
     month,
@@ -34,7 +39,15 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode, selectedFilterTypes, onDayPr
     goToPrev,
     goToNext,
     handleSelectYearMonth,
+    resetToCurrentMonth,
   } = useCalendarNavigation();
+
+  //---------------------------------------
+  useFocusEffect(
+    React.useCallback(() => {
+      resetToCurrentMonth();
+    }, [resetToCurrentMonth]),
+  );
 
   //---------------------------------------
   const { data: schedules = [] } = useGetSchedulesQuery({ startDate, endDate });
@@ -61,8 +74,11 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode, selectedFilterTypes, onDayPr
   }, [allEvents, selectedFilterTypes]);
 
   //---------------------------------------
-  const { checkinTimes, firstCheckinDate, lastCheckinDate, attendanceStats } =
-    useAttendanceData(startDate, endDate, mode);
+  const { checkinTimes, attendanceStats } = useAttendanceData(
+    startDate,
+    endDate,
+    mode,
+  );
 
   //---------------------------------------
   const handleDayPress = React.useCallback(
@@ -78,18 +94,18 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode, selectedFilterTypes, onDayPr
   const renderDayContent = React.useCallback(
     (cell: TDayCell, dateKey: string, today: boolean) => {
       const dayEvents = events[dateKey] || [];
-      const checkinTime = checkinTimes[dateKey];
+      const checkinInfo = checkinTimes[dateKey];
 
       let cellContent: React.ReactNode;
-      if (mode === 'attendance' && cell.isCurrentMonth) {
-        if (checkinTime) {
-          const isOnTime = checkinTime === CHECKIN_ON_TIME;
+      if (mode === 'attendance') {
+        if (checkinInfo?.time) {
+          const isOnTime = !checkinInfo.isLate;
           cellContent = (
             <MemoEvents
               events={[
                 {
                   id: `checkin-${dateKey}`,
-                  title: checkinTime,
+                  title: checkinInfo.time,
                   color: isOnTime ? AppColors.strongBlue : AppColors.purple,
                   backgroundColor: isOnTime
                     ? AppColors.lightBlue
@@ -100,14 +116,11 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode, selectedFilterTypes, onDayPr
               containerStyle={styles.checkinContainer}
             />
           );
-        } else if (dateKey >= firstCheckinDate && dateKey <= lastCheckinDate) {
+        } else if (checkinInfo) {
+          // No check-in record
           cellContent = (
             <View style={styles.absentContainer}>
-              <CloseCircle
-                size={ms(10)}
-                color={AppColors.negative}
-                variant="Linear"
-              />
+              <CloseCircle size={ms(18)} color={AppColors.negative} />
             </View>
           );
         } else {
@@ -124,7 +137,7 @@ const ScheduleCalendar: React.FC<IProps> = ({ mode, selectedFilterTypes, onDayPr
         </>
       );
     },
-    [events, mode, checkinTimes, firstCheckinDate, lastCheckinDate],
+    [events, mode, checkinTimes],
   );
 
   return (
@@ -161,9 +174,8 @@ const styles = StyleSheet.create({
     gap: ms(16),
   },
   absentContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center' as const,
+    marginTop: ms(4),
   },
   checkinContainer: {
     gap: ms(10),

@@ -8,11 +8,26 @@ export interface IAttendanceToday {
 
 //---------------------------------------
 export interface IAttendanceRecord {
+  id: string;
+  userId: string;
+  companyId: string;
   checkInDate: string;
   checkInTime: string;
+  isLate: boolean;
+  latitude: string;
+  longitude: string;
+  createdAt: string;
+}
+
+//---------------------------------------
+export interface IAttendanceSummary {
+  onTime: number;
+  late: number;
+  absent: number;
 }
 
 //---------------------------------------
 export interface IMyAttendanceResponse {
-  data: IAttendanceRecord[];
+  records: IAttendanceRecord[];
+  summary: IAttendanceSummary;
 }

@@ -1,136 +1,185 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { BlurView } from '@react-native-community/blur';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
-import { Add, Calendar, ClipboardText, DocumentText } from '@/src/constants/icons';
+import {
+  Add,
+  Calendar,
+  ClipboardText,
+  DocumentText,
+} from '@/src/constants/icons';
 import { CardShadow } from '@/src/constants/shadows';
+import { useOverlay } from '@/src/providers/OverlayProvider';
 
-interface IProps {
-  visible: boolean;
-  onClose: () => void;
-}
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const ICON_SIZE = ms(24);
 const ICON_COLOR = AppColors.purple;
 
 const ACTIONS = [
   {
+    key: 'schedule',
     label: '일정 등록',
     Icon: Calendar,
   },
   {
+    key: 'meeting',
     label: '미팅록 작성',
     Icon: ClipboardText,
   },
   {
+    key: 'draft',
     label: '기안 등록',
     Icon: DocumentText,
   },
 ];
 
-const QuickActionModal: React.FC<IProps> = ({ visible, onClose }) => {
+//---------------------------------------
+
+const QuickActionFAB: React.FC = () => {
+  const { overlayVisible: expanded, setOverlayVisible } = useOverlay();
+  const rotation = useSharedValue(0);
+
+  //---------------------------------------
+
+  React.useEffect(() => {
+    rotation.value = withSpring(expanded ? 1 : 0, {
+      damping: 12,
+      stiffness: 180,
+    });
+  }, [expanded, rotation]);
+
+  //---------------------------------------
+
+  const toggle = React.useCallback(() => {
+    setOverlayVisible(!expanded);
+  }, [expanded, setOverlayVisible]);
+
+  //---------------------------------------
+
+  const handleAction = React.useCallback(
+    (_key: string) => {
+      toggle();
+      // TODO: navigate based on key
+    },
+    [toggle],
+  );
+
+  //---------------------------------------
+
+  const fabIconStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value * 45}deg` }],
+  }));
+
+  //---------------------------------------
+
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.container}>
-        <Pressable style={styles.blurWrapper} onPress={onClose}>
-          <BlurView
-            style={styles.blur}
-            blurType="light"
-            blurAmount={10}
-            reducedTransparencyFallbackColor={AppColors.white}
-          />
-        </Pressable>
-
-        <View style={styles.actionsRow}>
-          {ACTIONS.map(action => (
-            <Pressable
-              key={action.label}
-              style={styles.actionItem}
-              onPress={onClose}
+    <>
+      <View style={styles.wrapper} pointerEvents="box-none">
+        <View style={styles.row}>
+          {expanded && (
+            <Animated.View
+              style={styles.actionsRow}
+              entering={FadeIn.duration(200)}
+              exiting={FadeOut.duration(150)}
+              layout={LinearTransition}
             >
-              <View style={styles.iconCircle}>
-                <action.Icon
-                  size={ICON_SIZE}
-                  color={ICON_COLOR}
-                  variant="Linear"
-                  style={{
-                    borderWidth: ms(1.5),
-                  }}
-                />
+              {ACTIONS.map(action => (
+                <Pressable
+                  key={action.key}
+                  style={styles.actionItem}
+                  onPress={() => handleAction(action.key)}
+                >
+                  <View style={styles.iconCircle}>
+                    <action.Icon
+                      size={ICON_SIZE}
+                      color={ICON_COLOR}
+                      variant="Linear"
+                      style={{ borderWidth: ms(1.5) }}
+                    />
+                    <AppText variant="detail" color={AppColors.purple}>
+                      {action.label}
+                    </AppText>
+                  </View>
+                </Pressable>
+              ))}
+            </Animated.View>
+          )}
 
-                <AppText variant="detail" color={AppColors.purple}>
-                  {action.label}
-                </AppText>
-              </View>
-            </Pressable>
-          ))}
+          <AnimatedPressable style={styles.fab} onPress={toggle}>
+            <Animated.View style={fabIconStyle}>
+              <Add
+                size={`${ms(28)}`}
+                color={expanded ? AppColors.negative : AppColors.purple}
+                variant="Linear"
+              />
+            </Animated.View>
+          </AnimatedPressable>
         </View>
-
-        <Pressable style={styles.fab} onPress={onClose}>
-          <Add
-            size={`${ms(28)}`}
-            color={AppColors.negative}
-            variant="Linear"
-            style={{ transform: [{ rotate: '45deg' }] }}
-          />
-        </Pressable>
       </View>
-    </Modal>
+    </>
   );
 };
 
-export const MemoQuickActionModal = React.memo(QuickActionModal);
+export const MemoQuickActionFAB = React.memo(QuickActionFAB);
+
+//---------------------------------------
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  blurWrapper: {
+  wrapper: {
     position: 'absolute',
-    top: 0,
+    bottom: ms(116),
     left: 0,
     right: 0,
-    bottom: 0,
+    alignItems: 'flex-end',
+    paddingRight: ms(16),
+    zIndex: 3,
   },
-  blur: {
-    flex: 1,
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-end',
   },
   actionsRow: {
-    position: 'absolute',
-    bottom: ms(24) + ms(92),
-    left: ms(16),
-    right: ms(60),
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
-  },
-  fab: {
-    position: 'absolute',
-    bottom: ms(24) + ms(92),
-    right: ms(16),
-    width: ms(48),
-    height: ms(48),
-    borderRadius: ms(100),
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: AppColors.white,
-    borderColor: AppColors.gray30,
-    ...CardShadow,
+    gap: ms(16),
+    marginRight: ms(12),
   },
   actionItem: {
     alignItems: 'center',
+    gap: ms(4),
   },
   iconCircle: {
-    width: ms(66),
-    height: ms(66),
+    width: ms(74),
+    height: ms(74),
     borderRadius: ms(33),
     backgroundColor: AppColors.lavendar,
     alignItems: 'center',
     justifyContent: 'center',
     gap: ms(4),
+    borderColor: AppColors.white,
+    borderWidth: 2,
+  },
+  fab: {
+    width: ms(48),
+    height: ms(48),
+    borderRadius: ms(100),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    backgroundColor: AppColors.white,
+    ...CardShadow,
   },
 });

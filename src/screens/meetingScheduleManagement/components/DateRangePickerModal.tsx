@@ -39,6 +39,17 @@ const DateRangePickerModal: React.FC<IProps> = ({
   );
 
   //---------------------------------------
+  React.useEffect(() => {
+    if (visible) {
+      const today = new Date();
+      setYear(today.getFullYear());
+      setMonth(today.getMonth());
+      setStartDate(initialStartDate ?? null);
+      setEndDate(initialEndDate ?? null);
+    }
+  }, [visible, initialStartDate, initialEndDate]);
+
+  //---------------------------------------
   const days = React.useMemo(() => getCalendarDays(year, month), [year, month]);
 
   const weeks = React.useMemo(() => {

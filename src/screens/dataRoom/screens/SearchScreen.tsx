@@ -10,7 +10,7 @@ import {
 
 import { ArrowLeft2, SearchNormal1 } from '@/src/constants/icons';
 import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -80,7 +80,7 @@ const SearchScreen: React.FC = () => {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <AppSafeAreaView style={styles.safeArea}>
       <StatusBar backgroundColor={AppColors.white} barStyle="dark-content" />
       {/* Header */}
       <View style={styles.header}>
@@ -127,7 +127,7 @@ const SearchScreen: React.FC = () => {
           ) : null
         }
       />
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 };
 

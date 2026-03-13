@@ -31,7 +31,12 @@ const MoreActions: React.FC = () => {
           label="일정"
           style={styles.gridItem}
           image={<Image source={AppImages.calendar} style={styles.icon} />}
-          onPress={() => navigation.navigate('Schedule')}
+          onPress={() =>
+            navigation.navigate('Schedule', {
+              screen: 'ScheduleMain',
+              params: { filterTypes: [] },
+            })
+          }
         />
 
         <MemoCommonAction

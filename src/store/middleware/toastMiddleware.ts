@@ -8,6 +8,11 @@ const ToastSuccessMap: Record<string, string> = {
   'bulletinApi/executeMutation/fulfilled': '게시글이 등록되었습니다.',
 };
 
+// 에러 toast를 표시하지 않을 action type 목록
+const ToastErrorSilentSet = new Set<string>([
+  'checkinApi/executeMutation/rejected',
+]);
+
 export const toastMiddleware: Middleware = () => next => action => {
   const result = next(action);
 
@@ -41,7 +46,7 @@ export const toastMiddleware: Middleware = () => next => action => {
     if ((action.error as any)?.name === 'ConditionError') {
       return result;
     }
-    if (silent) {
+    if (silent || ToastErrorSilentSet.has(action.type)) {
       return result;
     }
 

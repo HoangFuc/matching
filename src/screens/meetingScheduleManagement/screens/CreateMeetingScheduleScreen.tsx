@@ -6,9 +6,9 @@ import { useNavigation } from '@react-navigation/native';
 import dayjs from 'dayjs';
 import { Controller, useForm } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
-import PhoneInput, { ICountry } from 'react-native-international-phone-number';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
+import { MemoPhoneInput, stripDashes } from '@/src/component/PhoneInput';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
@@ -31,16 +31,13 @@ const CreateMeetingScheduleScreen: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [showTimePicker, setShowTimePicker] = React.useState(false);
   const [showPostcode, setShowPostcode] = React.useState(false);
-  const [selectedCountry, setSelectedCountry] = React.useState<ICountry | null>(
-    null,
-  );
 
   //---------------------------------------
   const { control, handleSubmit, watch } =
     useForm<ICreateMeetingSchedulePayload>({
       defaultValues: {
         scheduleDate: '',
-        startTime: '09:00',
+        startTime: '',
         description: '',
         address: '',
         customerName: '',
@@ -72,6 +69,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
         await createMeetingSchedule({
           ...data,
           scheduleDate: data.scheduleDate.replace(/\./g, '-'),
+          customerPhone: stripDashes(data.customerPhone),
         }).unwrap();
         navigation.goBack();
       } catch (error) {
@@ -149,8 +147,11 @@ const CreateMeetingScheduleScreen: React.FC = () => {
                       style={[styles.dropdownBtn, styles.timeInput]}
                       onPress={() => setShowTimePicker(true)}
                     >
-                      <AppText variant="body7" color={AppColors.gray100}>
-                        {value}
+                      <AppText
+                        variant="body7"
+                        color={value ? AppColors.gray100 : AppColors.gray40}
+                      >
+                        {value || 'hh:mm'}
                       </AppText>
                       <Clock
                         size={`${ms(16)}`}
@@ -247,18 +248,11 @@ const CreateMeetingScheduleScreen: React.FC = () => {
               control={control}
               name="customerPhone"
               render={({ field: { value, onChange } }) => (
-                <PhoneInput
+                <MemoPhoneInput
                   value={value}
-                  onChangePhoneNumber={onChange}
-                  selectedCountry={selectedCountry}
-                  onChangeSelectedCountry={setSelectedCountry}
-                  defaultCountry="KR"
-                  placeholder="연락처를 입력하세요"
-                  phoneInputStyles={{
-                    container: styles.phoneContainer,
-                    input: styles.phoneInput,
-                    flagContainer: styles.phoneFlagContainer,
-                  }}
+                  onChangeText={onChange}
+                  label=""
+                  required
                 />
               )}
             />
@@ -334,6 +328,7 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     paddingVertical: ms(16),
     alignItems: 'center',
+    marginBottom: ms(10),
   },
   submitBtn: {
     width: ms(163),
@@ -344,19 +339,5 @@ const styles = StyleSheet.create({
   },
   postcode: {
     flex: 1,
-  },
-  phoneContainer: {
-    backgroundColor: AppColors.gray10,
-    borderWidth: 0,
-    borderRadius: ms(8),
-  },
-  phoneInput: {
-    fontSize: 14,
-    color: AppColors.gray100,
-  },
-  phoneFlagContainer: {
-    backgroundColor: AppColors.gray10,
-    borderTopLeftRadius: ms(8),
-    borderBottomLeftRadius: ms(8),
   },
 });

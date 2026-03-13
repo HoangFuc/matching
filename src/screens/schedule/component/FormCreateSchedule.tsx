@@ -200,7 +200,7 @@ const FormCreateSchedule: React.FC<IProps> = ({
               name="customerPhone"
               label="연락처"
               labelVariant="body6"
-              placeholder="연락처를 입력하세요"
+              placeholder="연락처을 입력하세요"
               keyboardType="phone-pad"
             />
 

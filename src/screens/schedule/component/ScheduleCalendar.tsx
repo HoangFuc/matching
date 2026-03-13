@@ -23,7 +23,7 @@ import { TScheduleType } from './ScheduleTypePicker';
 interface IProps {
   mode: TScheduleMode;
   selectedFilterTypes: TScheduleType[];
-  onDayPress: (dateKey: string, events: TScheduleEvent[]) => void;
+  onDayPress: (dateKey: string) => void;
 }
 
 const ScheduleCalendar: React.FC<IProps> = ({
@@ -84,10 +84,9 @@ const ScheduleCalendar: React.FC<IProps> = ({
   const handleDayPress = React.useCallback(
     (dateKey: string) => {
       if (mode === 'attendance') return;
-      const dayEvents = events[dateKey] || [];
-      onDayPress(dateKey, dayEvents);
+      onDayPress(dateKey);
     },
-    [events, mode, onDayPress],
+    [mode, onDayPress],
   );
 
   //---------------------------------------

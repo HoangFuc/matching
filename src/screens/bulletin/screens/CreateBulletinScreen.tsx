@@ -260,6 +260,7 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     paddingVertical: ms(16),
     alignItems: 'center',
+    marginBottom: ms(10),
   },
   submitBtn: {
     width: ms(163),

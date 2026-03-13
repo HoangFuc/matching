@@ -257,13 +257,14 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
       async (
         uploadId: string,
         file: { uri: string; name: string; type: string },
+        extraFields?: Record<string, string>,
       ) => {
         updateProgressState({ uploadId });
         listenProgress(uploadId);
 
         const token = await getToken();
         const encoding = config.encoding ?? 'stream';
-        const uploadData = await prepareUploadData(file, encoding);
+        const uploadData = await prepareUploadData(file, encoding, extraFields);
         const task = fetchUpload(
           `${config.basePath}/${uploadId}`,
           uploadData,

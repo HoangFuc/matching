@@ -27,8 +27,11 @@ const Chip: React.FC<IProps> = ({
     <Pressable
       style={[
         styles.chip,
-        { backgroundColor: bgColor },
-        selected && { borderColor: textColor, borderWidth: 1 },
+        {
+          backgroundColor: bgColor,
+          borderWidth: 1,
+          borderColor: selected ? textColor : 'transparent',
+        },
       ]}
       onPress={onPress}
     >

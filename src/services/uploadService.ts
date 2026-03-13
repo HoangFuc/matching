@@ -15,32 +15,39 @@ type UploadMode = 'base64' | 'stream';
 export const prepareUploadData = async (
   file: UploadFileInfo,
   mode: UploadMode,
+  extraFields?: Record<string, string>,
 ) => {
   const cleanPath = file.uri.replace('file://', '');
+
+  const parts: { name: string; filename?: string; type?: string; data: string }[] = [];
 
   if (mode === 'base64') {
     const base64Data = await ReactNativeBlobUtil.fs.readFile(
       cleanPath,
       'base64',
     );
-    return [
-      {
-        name: 'file',
-        filename: file.name || 'file',
-        type: file.type || 'application/octet-stream',
-        data: base64Data,
-      },
-    ];
-  }
-
-  return [
-    {
+    parts.push({
+      name: 'file',
+      filename: file.name || 'file',
+      type: file.type || 'application/octet-stream',
+      data: base64Data,
+    });
+  } else {
+    parts.push({
       name: 'file',
       filename: file.name || 'file',
       type: file.type || 'application/octet-stream',
       data: ReactNativeBlobUtil.wrap(cleanPath),
-    },
-  ];
+    });
+  }
+
+  if (extraFields) {
+    for (const [key, value] of Object.entries(extraFields)) {
+      parts.push({ name: key, data: value });
+    }
+  }
+
+  return parts;
 };
 
 //---------------------------------------
@@ -52,7 +59,7 @@ export const prepareUploadData = async (
  */
 export const fetchUpload = (
   path: string,
-  uploadData: { name: string; filename: string; type: string; data: string }[],
+  uploadData: { name: string; filename?: string; type?: string; data: string }[],
   token: string,
 ) => {
   return ReactNativeBlobUtil.fetch(

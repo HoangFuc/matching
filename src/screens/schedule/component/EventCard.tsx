@@ -39,6 +39,19 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
           color={AppColors.gray90}
           style={{ width: ms(60) }}
         >
+          시간
+        </AppText>
+        <AppText variant="body8" color={AppColors.gray90}>
+          {event.startTime || '-'}
+        </AppText>
+      </View>
+
+      <View style={styles.row}>
+        <AppText
+          variant="body5"
+          color={AppColors.gray90}
+          style={{ width: ms(60) }}
+        >
           일정명
         </AppText>
         <AppText variant="body8" color={AppColors.gray90}>

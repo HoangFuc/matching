@@ -19,7 +19,11 @@ import { AppColors } from '@/src/constants/colors';
 interface IProps {
   visible: boolean;
   onClose: () => void;
-  onRecordingComplete: (filePath: string, waveformData: number[]) => void;
+  onRecordingComplete: (
+    filePath: string,
+    waveformData: number[],
+    durationMs: number,
+  ) => void;
 }
 
 const WAVEFORM_BAR_COUNT = 40;
@@ -116,14 +120,15 @@ const RecordingBottomSheet: React.FC<IProps> = ({
       if (isPaused) {
         await resumeRecorder();
       }
-      const result = await stopRecorder();
+      const durationMs = currentPosition;
+      await stopRecorder();
       setIsPaused(false);
       setMeteringLevels(Array(WAVEFORM_BAR_COUNT).fill(0));
-      onRecordingComplete(result, allMeteringRef.current);
+      onRecordingComplete(filePathRef.current, allMeteringRef.current, durationMs);
     } catch {
       Toast.show({ type: 'error', text1: '녹음 중지에 실패했습니다' });
     }
-  }, [isPaused, resumeRecorder, stopRecorder, onRecordingComplete]);
+  }, [isPaused, currentPosition, resumeRecorder, stopRecorder, onRecordingComplete]);
 
   //---------------------------------------
   const handleTogglePause = useCallback(async () => {

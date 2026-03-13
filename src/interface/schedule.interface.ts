@@ -6,6 +6,7 @@ export type TScheduleEvent = {
   backgroundColor: string;
   type?: string;
   description?: string;
+  startTime?: string;
 };
 
 //---------------------------------------

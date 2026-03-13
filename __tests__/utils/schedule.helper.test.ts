@@ -50,7 +50,8 @@ describe('convertSchedulesToEvents', () => {
 
     const result = convertSchedulesToEvents(schedules);
     const event = result['2025-03-15'][0];
-    expect(event.title).toBe('지방출장');
+    expect(event.title).toBe('Test Schedule');
+    expect(event.type).toBe('지방출장');
     expect(event.color).toBe(AppColors.purple);
     expect(event.backgroundColor).toBe(AppColors.lavendar);
   });
@@ -62,7 +63,8 @@ describe('convertSchedulesToEvents', () => {
 
     const result = convertSchedulesToEvents(schedules);
     const event = result['2025-03-15'][0];
-    expect(event.title).toBe('고객 미팅');
+    expect(event.title).toBe('Test Schedule');
+    expect(event.type).toBe('고객 미팅');
     expect(event.color).toBe(AppColors.strongBlue);
     expect(event.backgroundColor).toBe(AppColors.lightBlue);
   });
@@ -74,7 +76,8 @@ describe('convertSchedulesToEvents', () => {
 
     const result = convertSchedulesToEvents(schedules);
     const event = result['2025-03-15'][0];
-    expect(event.title).toBe('계약 일정');
+    expect(event.title).toBe('Test Schedule');
+    expect(event.type).toBe('계약 일정');
     expect(event.color).toBe(AppColors.negative);
     expect(event.backgroundColor).toBe(AppColors.pastelPink);
   });
@@ -86,7 +89,8 @@ describe('convertSchedulesToEvents', () => {
 
     const result = convertSchedulesToEvents(schedules);
     const event = result['2025-03-15'][0];
-    expect(event.title).toBe('');
+    expect(event.title).toBe('Test Schedule');
+    expect(event.type).toBe('');
     expect(event.color).toBe(AppColors.strongBlue);
     expect(event.backgroundColor).toBe(AppColors.lightBlue);
   });

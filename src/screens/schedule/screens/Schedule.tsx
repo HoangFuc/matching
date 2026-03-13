@@ -10,14 +10,13 @@ import {
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 
 import { AppColors } from '@/src/constants/colors';
-import { TScheduleEvent } from '@/src/interface/schedule.interface';
 import { ScheduleNavigationProp } from '@/src/interface/tab.interface';
 import { MemoEventCardContent } from '../component/EventCardContent';
 import { MemoScheduleCalendar } from '../component/ScheduleCalendar';
 import { MemoScheduleFilterModal } from '../component/ScheduleFilterModal';
 import { MemoScheduleHeader } from '../component/ScheduleHeader';
 import { TScheduleType } from '../component/ScheduleTypePicker';
-import { TDetailData, TScheduleRoute } from '../type';
+import { TScheduleRoute } from '../type';
 
 const Schedule: React.FC = () => {
   const route = useRoute<TScheduleRoute>();
@@ -59,7 +58,7 @@ const Schedule: React.FC = () => {
   >([]);
 
   //---------------------------------------
-  const [detailData, setDetailData] = React.useState<TDetailData>();
+  const [detailDateKey, setDetailDateKey] = React.useState<string>();
 
   //---------------------------------------
   const handleOpenFilter = React.useCallback(() => {
@@ -73,15 +72,15 @@ const Schedule: React.FC = () => {
 
   //---------------------------------------
   const handleDayPress = React.useCallback(
-    (dateKey: string, events: TScheduleEvent[]) => {
-      setDetailData({ dateKey, events });
+    (dateKey: string) => {
+      setDetailDateKey(dateKey);
     },
     [],
   );
 
   //---------------------------------------
   const handlePressBack = React.useCallback(() => {
-    setDetailData(undefined);
+    setDetailDateKey(undefined);
   }, []);
 
   //---------------------------------------
@@ -96,15 +95,14 @@ const Schedule: React.FC = () => {
       <MemoScheduleHeader
         onPressFilter={handleOpenFilter}
         mode={mode}
-        detailData={detailData}
+        detailDateKey={detailDateKey}
         isFilterActive={selectedFilterTypes.length > 0}
       />
 
-      {detailData ? (
+      {detailDateKey ? (
         <MemoEventCardContent
           handlePressBack={handlePressBack}
-          dateKey={detailData.dateKey}
-          events={detailData.events}
+          dateKey={detailDateKey}
         />
       ) : (
         <View style={styles.content}>

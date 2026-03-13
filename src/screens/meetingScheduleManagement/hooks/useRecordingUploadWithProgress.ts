@@ -47,6 +47,7 @@ export const useRecordingUploadWithProgress = () => {
       scheduleId: string,
       file: { uri: string; name: string; type: string },
       memo: string,
+      durationSeconds?: number,
     ) => {
       try {
         initProgress(file.name);
@@ -62,7 +63,11 @@ export const useRecordingUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        await performUpload(uploadId, file);
+        const extraFields = durationSeconds != null
+          ? { durationSeconds: String(durationSeconds) }
+          : undefined;
+
+        await performUpload(uploadId, file, extraFields);
       } catch (err) {
         console.error('[Upload] Error:', err);
         handleUploadError(err instanceof Error ? err.message : 'Upload failed');

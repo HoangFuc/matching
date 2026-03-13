@@ -179,12 +179,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
     } finally {
       isPickingRef.current = false;
     }
-  }, [
-    savedUploadId,
-    uploadFileWithUploadId,
-    deleteRecording,
-    item.id,
-  ]);
+  }, [savedUploadId, uploadFileWithUploadId, deleteRecording, item.id]);
 
   //---------------------------------------
   const handleRemoveFile = React.useCallback(
@@ -326,7 +321,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
             control={control}
             name="phone"
             label="연락처"
-            placeholder="연락처를 입력해주세요"
+            placeholder="연락처을 입력하세요"
           />
 
           <RHFFormInput
@@ -394,6 +389,7 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     paddingVertical: ms(16),
     alignItems: 'center',
+    marginBottom: ms(10),
   },
   submitBtn: {
     width: ms(163),

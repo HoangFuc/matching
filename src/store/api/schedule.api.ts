@@ -28,6 +28,13 @@ export const scheduleApi = createApi({
       providesTags: ['Schedule'],
     }),
     //---------------------------------------
+    getSchedulesByDate: builder.query<ISchedule[], string>({
+      query: date => `/schedules?startDate=${date}&endDate=${date}`,
+      transformResponse: (response: any) =>
+        Array.isArray(response) ? response : response?.data ?? [],
+      providesTags: ['Schedule'],
+    }),
+    //---------------------------------------
     createSchedule: builder.mutation<any, ISchedulePayload>({
       query: body => ({
         url: '/schedules',
@@ -86,4 +93,8 @@ export const scheduleApi = createApi({
   }),
 });
 
-export const { useGetSchedulesQuery, useCreateScheduleMutation } = scheduleApi;
+export const {
+  useGetSchedulesQuery,
+  useGetSchedulesByDateQuery,
+  useCreateScheduleMutation,
+} = scheduleApi;

@@ -113,6 +113,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
     path: string;
     name: string;
     waveformData: number[];
+    durationMs: number;
   } | null>(null);
 
   const infoRows = React.useMemo(
@@ -132,10 +133,10 @@ const MeetingScheduleDetailScreen: React.FC = () => {
 
   //---------------------------------------
   const handleRecordingComplete = React.useCallback(
-    (filePath: string, waveformData: number[]) => {
+    (filePath: string, waveformData: number[], durationMs: number) => {
       setShowRecording(false);
       const fileName = filePath.split('/').pop() ?? 'recording.m4a';
-      setRecordedFile({ path: filePath, name: fileName, waveformData });
+      setRecordedFile({ path: filePath, name: fileName, waveformData, durationMs });
     },
     [],
   );
@@ -162,6 +163,8 @@ const MeetingScheduleDetailScreen: React.FC = () => {
     const mimeType = mimeMap[ext] ?? 'audio/octet-stream';
     const memo = displayItem.memo ?? '';
 
+    const durationSeconds = Math.round(recordedFile.durationMs / 1000);
+
     try {
       await uploadRecording(
         item.id,
@@ -171,6 +174,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
           type: mimeType,
         },
         memo,
+        durationSeconds,
       );
     } catch {
       // error is handled via Redux progress state
@@ -317,6 +321,7 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     paddingVertical: ms(16),
     alignItems: 'center',
+    marginBottom: ms(10),
   },
   completeBtn: {
     width: ms(200),

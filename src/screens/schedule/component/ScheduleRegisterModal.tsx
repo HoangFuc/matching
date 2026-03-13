@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import dayjs from 'dayjs';
 import { useForm } from 'react-hook-form';
-import { s } from 'react-native-size-matters/extend';
+import { ms, s } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { MemoBottomSheetModal } from '@/src/component/BottomSheetModal';
@@ -27,8 +27,6 @@ const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
     useForm<ISchedulePayload>({
       defaultValues: {
         scheduleType: '일반일정',
-        scheduleDate: dayjs().format('YYYY.MM.DD'),
-        startTime: dayjs().format('HH:mm'),
       },
     });
 
@@ -145,6 +143,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignItems: 'center',
+    marginBottom: ms(10),
   },
   registerButton: {
     width: s(163),

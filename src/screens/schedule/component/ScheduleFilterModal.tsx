@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: ms(8),
     paddingHorizontal: ms(16),
+    marginBottom: ms(10),
   },
   flexButton: {
     flex: 1,

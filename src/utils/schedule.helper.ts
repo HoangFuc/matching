@@ -1,6 +1,7 @@
 import { AppColors } from '@/src/constants/colors';
 import { ScheduleTypeEnum } from '@/src/constants/schedule';
 import { TScheduleEvent } from '@/src/interface/schedule.interface';
+import dayjs from 'dayjs';
 import { ISchedule } from '../screens/schedule/type';
 
 const SCHEDULE_TYPE_MAP: Record<
@@ -37,16 +38,16 @@ export function convertSchedulesToEvents(
 
   for (const schedule of schedules) {
     const dateKey = schedule.scheduleDate.slice(0, 10); // 'YYYY-MM-DD'
-    const typeInfo =
-      SCHEDULE_TYPE_MAP[schedule.scheduleType] || DEFAULT_TYPE;
+    const typeInfo = SCHEDULE_TYPE_MAP[schedule.scheduleType] || DEFAULT_TYPE;
 
     const event: TScheduleEvent = {
       id: schedule.createdBy,
-      title: typeInfo.title,
+      title: schedule.title,
       type: typeInfo.title,
       description: schedule.description,
       color: typeInfo.color,
       backgroundColor: typeInfo.backgroundColor,
+      startTime: dayjs(schedule.startTime).format('HH:mm'),
     };
 
     if (!result[dateKey]) {

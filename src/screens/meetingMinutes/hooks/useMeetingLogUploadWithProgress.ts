@@ -47,6 +47,7 @@ export const useMeetingLogUploadWithProgress = () => {
     async (
       meetingLogId: string,
       file: { uri: string; name: string; type: string },
+      durationSeconds?: number,
     ) => {
       try {
         initProgress(file.name);
@@ -74,7 +75,11 @@ export const useMeetingLogUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        await performUpload(uploadId, file);
+        const extraFields = durationSeconds != null
+          ? { durationSeconds: String(durationSeconds) }
+          : undefined;
+
+        await performUpload(uploadId, file, extraFields);
       } catch (err) {
         console.error('[MeetingLog Upload] Error:', err);
         handleUploadError(err instanceof Error ? err.message : 'Upload failed');
@@ -96,6 +101,7 @@ export const useMeetingLogUploadWithProgress = () => {
         consultationContent: string;
       },
       file: { uri: string; name: string; type: string },
+      durationSeconds?: number,
     ) => {
       try {
         initProgress(file.name);
@@ -110,7 +116,11 @@ export const useMeetingLogUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        await performUpload(uploadId, file);
+        const extraFields = durationSeconds != null
+          ? { durationSeconds: String(durationSeconds) }
+          : undefined;
+
+        await performUpload(uploadId, file, extraFields);
 
         return result;
       } catch (err) {
@@ -124,9 +134,16 @@ export const useMeetingLogUploadWithProgress = () => {
 
   //---------------------------------------
   const uploadFileWithUploadId = React.useCallback(
-    (uploadId: string, file: { uri: string; name: string; type: string }) => {
+    (
+      uploadId: string,
+      file: { uri: string; name: string; type: string },
+      durationSeconds?: number,
+    ) => {
+      const extraFields = durationSeconds != null
+        ? { durationSeconds: String(durationSeconds) }
+        : undefined;
       initProgress(file.name);
-      performUpload(uploadId, file).catch(() => {});
+      performUpload(uploadId, file, extraFields).catch(() => {});
     },
     [initProgress, performUpload],
   );

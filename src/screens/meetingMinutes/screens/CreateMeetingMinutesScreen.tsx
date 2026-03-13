@@ -43,7 +43,7 @@ const LABEL_TO_KEY: Record<TMeetingTypeLabel, TMeetingTypeKey> = {
 
 interface IFormData {
   meetingType: TMeetingTypeLabel;
-  date: Date;
+  date: Date | null;
   address: string;
   customerName: string;
   phone: string;
@@ -67,7 +67,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
   const { control, handleSubmit, watch } = useForm<IFormData>({
     defaultValues: {
       meetingType: '오프라인',
-      date: new Date(),
+      date: null,
       address: '',
       customerName: '',
       phone: '',
@@ -87,6 +87,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
   const isFormValid = React.useMemo(
     () =>
       !!formValue.meetingType &&
+      !!formValue.date &&
       !!formValue.address.trim() &&
       !!formValue.customerName.trim() &&
       !!formValue.phone.trim() &&
@@ -148,6 +149,8 @@ const CreateMeetingMinutesScreen: React.FC = () => {
         Alert.alert('', '녹음파일을 업로드해주세요.');
         return;
       }
+
+      if (!data.date) return;
 
       const meetingDate = `${data.date.getFullYear()}-${String(
         data.date.getMonth() + 1,
@@ -234,8 +237,8 @@ const CreateMeetingMinutesScreen: React.FC = () => {
               render={({ field: { value, onChange } }) => (
                 <>
                   <MemoDropdownButton
-                    label={formatDate(value)}
-                    textColor={AppColors.gray100}
+                    label={value ? formatDate(value) : 'yyyy.mm.dd'}
+                    textColor={value ? AppColors.gray100 : AppColors.gray40}
                     onPress={() => setShowDatePicker(true)}
                     icon={
                       <Calendar
@@ -248,7 +251,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
                   <DatePicker
                     modal
                     open={showDatePicker}
-                    date={value}
+                    date={value ?? new Date()}
                     mode="date"
                     onConfirm={selectedDate => {
                       setShowDatePicker(false);
@@ -290,7 +293,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
             control={control}
             name="phone"
             label="연락처"
-            placeholder="연락처를 입력해주세요"
+            placeholder="연락처을 입력하세요"
             required
           />
 
@@ -350,6 +353,7 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     paddingVertical: ms(16),
     alignItems: 'center',
+    marginBottom: ms(10),
   },
   submitBtn: {
     width: ms(163),

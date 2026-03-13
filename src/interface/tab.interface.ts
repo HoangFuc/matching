@@ -8,7 +8,6 @@ import type { TScheduleType } from '../screens/schedule/component/ScheduleTypePi
 import { TScheduleMode } from '../screens/schedule/type';
 import type { TMeetingMinutes } from './meetingMinutes.interface';
 import type { IMeetingScheduleManagement } from './meetingScheduleManagement.interface';
-import type { TScheduleEvent } from './schedule.interface';
 
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<RootTabParamList> | undefined;
@@ -44,7 +43,6 @@ export type ScheduleStackParamList = {
   ScheduleMain: { mode?: TScheduleMode; filterTypes?: TScheduleType[]; hideTabBar?: boolean } | undefined;
   ScheduleDetail: {
     dateKey: string;
-    events: TScheduleEvent[];
   };
 };
 

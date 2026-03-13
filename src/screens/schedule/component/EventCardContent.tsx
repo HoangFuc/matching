@@ -1,23 +1,32 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ArrowLeft2 } from '@/src/constants/icons';
 import { ms } from 'react-native-size-matters';
-import { MemoEventCard } from './EventCard';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
-import { TScheduleEvent } from '@/src/interface/schedule.interface';
+import { useGetSchedulesByDateQuery } from '@/src/store/api/schedule.api';
+import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
 import { formatDateHeader } from '@/src/utils/calendar.helper';
+import { MemoEventCard } from './EventCard';
 
 interface IProps {
   handlePressBack: () => void;
   dateKey: string;
-  events: TScheduleEvent[];
 }
 
 const EventCardContent: React.FC<IProps> = props => {
-  const { handlePressBack, dateKey, events } = props;
+  const { handlePressBack, dateKey } = props;
+
+  //---------------------------------------
+  const { data: schedules = [], isLoading } = useGetSchedulesByDateQuery(dateKey);
+
+  //---------------------------------------
+  const events = React.useMemo(() => {
+    const eventsMap = convertSchedulesToEvents(schedules);
+    return eventsMap[dateKey] || [];
+  }, [schedules, dateKey]);
 
   return (
     <View style={styles.content}>
@@ -40,11 +49,15 @@ const EventCardContent: React.FC<IProps> = props => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {events.map((event, index) => (
-          <MemoEventCard key={`${event.id}-${index}`} event={event} />
-        ))}
-
-        {events.length === 0 && (
+        {isLoading ? (
+          <View style={styles.emptyContainer}>
+            <ActivityIndicator color={AppColors.purple} />
+          </View>
+        ) : events.length > 0 ? (
+          events.map((event, index) => (
+            <MemoEventCard key={`${event.id}-${index}`} event={event} />
+          ))
+        ) : (
           <View style={styles.emptyContainer}>
             <AppText variant="body4" color={AppColors.gray50}>
               등록된 일정이 없습니다.

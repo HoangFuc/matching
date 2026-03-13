@@ -37,8 +37,8 @@ const CalendarGrid: React.FC<IProps> = props => {
 
   //---------------------------------------
   const handleDayPress = React.useCallback(
-    (dateKey: string, dayEvents: TScheduleEvent[]) => {
-      navigation.navigate('ScheduleDetail', { dateKey, events: dayEvents });
+    (dateKey: string) => {
+      navigation.navigate('ScheduleDetail', { dateKey });
     },
     [navigation],
   );
@@ -57,7 +57,7 @@ const CalendarGrid: React.FC<IProps> = props => {
               <Pressable
                 key={`${wi}-${di}`}
                 style={styles.dayCell}
-                onPress={() => handleDayPress(key, dayEvents)}
+                onPress={() => handleDayPress(key)}
               >
                 <MemoDateNumber cell={cell} today={today} />
 

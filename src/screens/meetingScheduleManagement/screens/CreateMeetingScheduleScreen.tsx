@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import Postcode from '@actbase/react-daum-postcode';
 import { useNavigation } from '@react-navigation/native';
@@ -7,12 +7,11 @@ import dayjs from 'dayjs';
 import { Controller, useForm } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
-import { moderateScale as ms } from 'react-native-size-matters/extend';
+import { moderateScale as ms, scale as s } from 'react-native-size-matters/extend';
 import { MemoPhoneInput, stripDashes } from '@/src/component/PhoneInput';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
-import { MemoBottomSheetModal } from '@/src/component/BottomSheetModal';
 import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
@@ -151,7 +150,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
                         variant="body7"
                         color={value ? AppColors.gray100 : AppColors.gray40}
                       >
-                        {value || 'hh:mm'}
+                        {value || '00:00'}
                       </AppText>
                       <Clock
                         size={`${ms(16)}`}
@@ -164,7 +163,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
                       modal
                       open={showTimePicker}
                       date={
-                        value ? new Date(`2000-01-01T${value}:00`) : new Date()
+                        new Date(`2000-01-01T${value || '00:00'}:00`)
                       }
                       mode="time"
                       onConfirm={d => {
@@ -205,22 +204,38 @@ const CreateMeetingScheduleScreen: React.FC = () => {
                     </AppText>
                   </Pressable>
 
-                  <MemoBottomSheetModal
+                  <Modal
                     visible={showPostcode}
-                    onClose={() => setShowPostcode(false)}
-                    title="주소 검색"
-                    sheetStyle={styles.postcodeSheet}
+                    transparent
+                    animationType="slide"
+                    onRequestClose={() => setShowPostcode(false)}
                   >
-                    <Postcode
-                      style={styles.postcode}
-                      jsOptions={{ animation: true }}
-                      onSelected={data => {
-                        onChange(data.address);
-                        setShowPostcode(false);
-                      }}
-                      onError={() => setShowPostcode(false)}
-                    />
-                  </MemoBottomSheetModal>
+                    <View style={styles.postcodeContainer}>
+                      <Pressable
+                        style={styles.postcodeOverlay}
+                        onPress={() => setShowPostcode(false)}
+                      />
+                      <View style={styles.postcodeSheet}>
+                        <View style={styles.postcodeHandleBar} />
+                        <AppText
+                          variant="heading3"
+                          color={AppColors.gray100}
+                          style={styles.postcodeTitle}
+                        >
+                          주소 검색
+                        </AppText>
+                        <Postcode
+                          style={styles.postcode}
+                          jsOptions={{ animation: true }}
+                          onSelected={data => {
+                            onChange(data.address);
+                            setShowPostcode(false);
+                          }}
+                          onError={() => setShowPostcode(false)}
+                        />
+                      </View>
+                    </View>
+                  </Modal>
                 </>
               )}
             />
@@ -334,8 +349,34 @@ const styles = StyleSheet.create({
     width: ms(163),
     paddingVertical: ms(8),
   },
+  postcodeContainer: {
+    flex: 1,
+    justifyContent: 'flex-end' as const,
+  },
+  postcodeOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
   postcodeSheet: {
     height: '80%',
+    backgroundColor: AppColors.white,
+    borderTopLeftRadius: ms(20),
+    borderTopRightRadius: ms(20),
+  },
+  postcodeHandleBar: {
+    width: s(50),
+    height: s(6),
+    borderRadius: ms(100),
+    backgroundColor: AppColors.gray20,
+    alignSelf: 'center' as const,
+    marginTop: ms(14),
+  },
+  postcodeTitle: {
+    textAlign: 'center' as const,
+    paddingVertical: ms(8),
+    paddingHorizontal: ms(16),
+    borderBottomWidth: 1,
+    borderBottomColor: AppColors.gray20,
   },
   postcode: {
     flex: 1,

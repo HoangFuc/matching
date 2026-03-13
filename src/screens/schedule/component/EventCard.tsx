@@ -55,7 +55,7 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
           일정명
         </AppText>
         <AppText variant="body8" color={AppColors.gray90}>
-          {event.title}
+          {event.scheduleName || event.title}
         </AppText>
       </View>
 

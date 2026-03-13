@@ -63,7 +63,13 @@ const Checkin: React.FC<IProps> = props => {
 
         <View style={styles.timeContainer}>
           <View style={styles.timeRow}>
-            <AppText variant="body5" color={AppColors.gray90}>
+            <AppText
+              variant="body5"
+              color={AppColors.gray90}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={styles.timeLabel}
+            >
               {'출근 시간'}
             </AppText>
 
@@ -73,7 +79,13 @@ const Checkin: React.FC<IProps> = props => {
           </View>
 
           <View style={styles.timeRow}>
-            <AppText variant="body5" color={AppColors.gray90}>
+            <AppText
+              variant="body5"
+              color={AppColors.gray90}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={styles.timeLabel}
+            >
               {'정시'}
             </AppText>
 
@@ -135,7 +147,12 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: ms(4),
     width: '100%',
+  },
+  timeLabel: {
+    flex: 1,
   },
   timeContainer: {
     backgroundColor: AppColors.lightBlue,

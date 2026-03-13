@@ -27,8 +27,22 @@ const Schedule: React.FC = () => {
   const filterTypes = route.params?.filterTypes;
 
   //---------------------------------------
+  const [filterVisible, setFilterVisible] = React.useState(false);
+  const [selectedFilterTypes, setSelectedFilterTypes] = React.useState<
+    TScheduleType[]
+  >([]);
+
+  //---------------------------------------
+  const [detailDateKey, setDetailDateKey] = React.useState<string>();
+
+  //---------------------------------------
   useFocusEffect(
     React.useCallback(() => {
+      // Reset local state on focus
+      setFilterVisible(false);
+      setSelectedFilterTypes([]);
+      setDetailDateKey(undefined);
+
       if (hideTabBar) {
         navigation.getParent()?.setOptions({
           tabBarStyle: {
@@ -50,15 +64,6 @@ const Schedule: React.FC = () => {
       };
     }, [navigation, hideTabBar]),
   );
-
-  //---------------------------------------
-  const [filterVisible, setFilterVisible] = React.useState(false);
-  const [selectedFilterTypes, setSelectedFilterTypes] = React.useState<
-    TScheduleType[]
-  >([]);
-
-  //---------------------------------------
-  const [detailDateKey, setDetailDateKey] = React.useState<string>();
 
   //---------------------------------------
   const handleOpenFilter = React.useCallback(() => {

@@ -65,6 +65,7 @@ const MeetingScheduleManagementScreen: React.FC = () => {
       setStartDate(todayStr);
       setEndDate(nextWeekStr);
       setActiveTab(MeetingScheduleScopeEnum.COMPANY);
+      setShowDatePicker(false);
       refetch();
     }, [refetch]),
   );

@@ -1,21 +1,32 @@
 import React, { useCallback } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { CompositeNavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { AppImages } from '@/src/constants/images';
-import { RootTabNavigationProp } from '@/src/interface/tab.interface';
+import {
+  RootStackParamList,
+  RootTabParamList,
+} from '@/src/interface/tab.interface';
+
+type TNav = CompositeNavigationProp<
+  NativeStackNavigationProp<RootStackParamList>,
+  BottomTabNavigationProp<RootTabParamList>
+>;
 import { useGetSchedulesQuery } from '@/src/store/api';
 import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
 import { showGlobalToast } from '@/src/utils/toastDispatcher';
 import { MemoTemplateMeetingCard } from '../meetingSchedule/TemplateMeetingCard';
 
 const MeetingSchedule: React.FC = () => {
-  const navigation = useNavigation<RootTabNavigationProp>();
+  const navigation = useNavigation<TNav>();
 
   //---------------------------------------
   const today = dayjs().format('YYYY-MM-DD');
@@ -32,17 +43,8 @@ const MeetingSchedule: React.FC = () => {
 
   //---------------------------------------
   const handlePressMeeting = useCallback(() => {
-    navigation.navigate('Schedule', {
-      screen: 'ScheduleMain',
-      params: { filterTypes: ['고객 미팅'] },
-    });
-
-    if (todayEvents.length === 0) {
-      requestAnimationFrame(() => {
-        showGlobalToast({ type: 'info', message: '현재 등록된 일정이 없습니다.' });
-      });
-    }
-  }, [navigation, todayEvents]);
+    navigation.navigate('MeetingScheduleManagement');
+  }, [navigation]);
 
   //---------------------------------------
   const handlePressGeneral = useCallback(() => {

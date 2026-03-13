@@ -42,8 +42,9 @@ export function convertSchedulesToEvents(
 
     const event: TScheduleEvent = {
       id: schedule.createdBy,
-      title: schedule.title,
+      title: typeInfo.title,
       type: typeInfo.title,
+      scheduleName: schedule.title,
       description: schedule.description,
       color: typeInfo.color,
       backgroundColor: typeInfo.backgroundColor,

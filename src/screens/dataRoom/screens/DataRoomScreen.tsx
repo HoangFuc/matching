@@ -8,7 +8,7 @@ import {
   pick,
   types,
 } from '@react-native-documents/picker';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { ms } from 'react-native-size-matters/extend';
@@ -50,6 +50,13 @@ const DataRoomScreen: React.FC = () => {
   const { data } = useGetFoldersQuery(activeTab);
   const folders = data?.folders ?? [];
   const files = data?.files ?? [];
+
+  //---------------------------------------
+  useFocusEffect(
+    React.useCallback(() => {
+      setActiveTab('MARKET_PRICE');
+    }, []),
+  );
 
   //---------------------------------------
   const {

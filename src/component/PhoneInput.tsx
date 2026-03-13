@@ -42,7 +42,7 @@ const PhoneInput: React.FC<IProps> = ({
   value,
   onChangeText,
   label = '연락처',
-  placeholder = '010-xxxx-xxxx',
+  placeholder = '연락처을 입력하세요',
   required,
 }) => {
   const displayValue = formatKoreanPhone(value.replace(/-/g, ''));

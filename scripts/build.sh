@@ -34,7 +34,7 @@ rm -rf app/build app/.cxx .gradle
 echo -e "${GREEN}  ✔ Clean done${NC}"
 
 echo -e "${YELLOW}[2/3] Copying .env.production -> .env${NC}"
-cp .env.production .env
+cp ../.env.production ../.env
 echo -e "${GREEN}  ✔ .env ready${NC}"
 
 echo -e "${YELLOW}[3/3] Building release APK...${NC}"

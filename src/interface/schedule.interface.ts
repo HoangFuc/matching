@@ -5,6 +5,7 @@ export type TScheduleEvent = {
   color: string;
   backgroundColor: string;
   type?: string;
+  scheduleName?: string;
   description?: string;
   startTime?: string;
 };

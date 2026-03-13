@@ -53,6 +53,7 @@ const MeetingMinutesScreen: React.FC = () => {
       setStartDate(todayStr);
       setEndDate(nextWeekStr);
       setPage(1);
+      setShowDatePicker(false);
     }, []),
   );
 

@@ -22,17 +22,21 @@ const ScreenHeader: React.FC<IProps> = ({ title, rightElement }) => {
 
   return (
     <View style={styles.container}>
-      <Pressable hitSlop={8} onPress={handlePressBack}>
+      <AppText
+        variant="heading3"
+        color={AppColors.white}
+        style={styles.title}
+      >
+        {title}
+      </AppText>
+
+      <Pressable hitSlop={8} onPress={handlePressBack} style={styles.left}>
         <ArrowLeft2
           size={`${ms(24)}`}
           color={AppColors.white}
           variant="Linear"
         />
       </Pressable>
-
-      <AppText variant="heading3" color={AppColors.white}>
-        {title}
-      </AppText>
 
       {rightElement ?? <View style={styles.placeholder} />}
     </View>
@@ -50,6 +54,17 @@ const styles = StyleSheet.create({
     paddingBottom: ms(24),
     backgroundColor: AppColors.purple,
     height: ms(49),
+  },
+  title: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingBottom: ms(24),
+    textAlign: 'center',
+  },
+  left: {
+    zIndex: 1,
   },
   placeholder: {
     width: ms(24),

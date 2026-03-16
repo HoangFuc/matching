@@ -10,6 +10,7 @@ import { AppColors } from '@/src/constants/colors';
 import { Document, DotsVertical } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
 import type { IFile } from '@/src/store/api/dataRoom.api';
+import dayjs from 'dayjs';
 
 interface FileGridItemProps {
   item: IFile;
@@ -33,7 +34,7 @@ const FileGridItem: React.FC<FileGridItemProps> = ({ item, onPressMore }) => {
           </AppText>
 
           <AppText variant="detail" color={AppColors.gray80}>
-            {item.createdAt}
+            {dayjs(item.createdAt).format('YYYY.MM.DD')}
           </AppText>
         </View>
 

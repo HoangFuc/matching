@@ -8,10 +8,11 @@ import {
 } from 'react-native';
 
 import { Calendar, Clock } from '@/src/constants/icons';
-import dayjs from 'dayjs';
 import { Control, Controller } from 'react-hook-form';
-import DatePicker from 'react-native-date-picker';
 import { ms } from 'react-native-size-matters';
+
+import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
+import { MemoTimePickerModal } from '@/src/component/calendar/TimePickerModal';
 
 import { AppText } from '@/src/component/AppText';
 import { MemoDropdownButton } from '@/src/component/DropdownButton';
@@ -25,9 +26,6 @@ interface IProps {
   setShowTypePicker: (show: boolean) => void;
   scheduleType: string;
 }
-
-const formatDate = (d: Date) => dayjs(d).format('YYYY.MM.DD');
-const formatTime = (d: Date) => dayjs(d).format('HH:mm');
 
 const FormCreateSchedule: React.FC<IProps> = ({
   control,
@@ -99,16 +97,12 @@ const FormCreateSchedule: React.FC<IProps> = ({
                     />
                   </Pressable>
 
-                  <DatePicker
-                    modal
-                    open={showDatePicker}
-                    date={
-                      value ? new Date(value.replace(/\./g, '-')) : new Date()
-                    }
-                    mode="date"
-                    onConfirm={d => {
+                  <MemoDatePickerModal
+                    visible={showDatePicker}
+                    value={value}
+                    onConfirm={dateStr => {
                       setShowDatePicker(false);
-                      onChange(formatDate(d));
+                      onChange(dateStr);
                     }}
                     onCancel={() => setShowDatePicker(false)}
                   />
@@ -148,16 +142,12 @@ const FormCreateSchedule: React.FC<IProps> = ({
                     />
                   </Pressable>
 
-                  <DatePicker
-                    modal
-                    open={showTimePicker}
-                    date={
-                      value ? new Date(`2000-01-01T${value}:00`) : new Date()
-                    }
-                    mode="time"
-                    onConfirm={d => {
+                  <MemoTimePickerModal
+                    visible={showTimePicker}
+                    value={value}
+                    onConfirm={time => {
                       setShowTimePicker(false);
-                      onChange(formatTime(d));
+                      onChange(time);
                     }}
                     onCancel={() => setShowTimePicker(false)}
                   />

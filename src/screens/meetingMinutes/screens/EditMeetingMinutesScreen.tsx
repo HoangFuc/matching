@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
-import DatePicker from 'react-native-date-picker';
+import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
 import {
   errorCodes,
   isErrorWithCode,
@@ -32,6 +32,8 @@ import {
 } from '@/src/constants/meetingMinutes';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
 import { MemoFileInfoCard } from '@/src/component/FileInfoCard';
+import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
+import { MemoPhoneInput } from '@/src/component/PhoneInput';
 import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { MemoFileUploadSection } from '../components/FileUploadSection';
 import { MemoMeetingTypePicker } from '../components/MeetingTypePicker';
@@ -50,18 +52,17 @@ type TRoute = NativeStackScreenProps<
 
 interface IFormData {
   meetingType: TMeetingTypeLabel;
-  date: Date;
+  date: string;
   visitLocation: string;
   customerName: string;
   phone: string;
   content: string;
 }
 
-const formatDate = (d: Date) => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}.${m}.${day}`;
+const formatDateToDisplay = (dateStr: string) => {
+  if (!dateStr) return '';
+  const dateOnly = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+  return dateOnly.replace(/-/g, '.');
 };
 
 const EditMeetingMinutesScreen: React.FC = () => {
@@ -73,7 +74,9 @@ const EditMeetingMinutesScreen: React.FC = () => {
   const { control, handleSubmit } = useForm<IFormData>({
     defaultValues: {
       meetingType: MEETING_TYPE_LABEL[item.meetingType],
-      date: item.meetingDate ? new Date(item.meetingDate) : new Date(),
+      date: item.meetingDate
+        ? formatDateToDisplay(item.meetingDate)
+        : '',
       visitLocation: item.address,
       customerName: item.customerName,
       phone: item.customerPhone,
@@ -196,7 +199,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
   const onSubmit = React.useCallback(
     async (data: IFormData) => {
       try {
-        const meetingDateStr = data.date.toISOString().split('T')[0];
+        const meetingDateStr = data.date.replace(/\./g, '-');
         await updateMeetingLog({
           id: item.id,
           meetingType: MEETING_TYPE_KEY[data.meetingType],
@@ -276,8 +279,8 @@ const EditMeetingMinutesScreen: React.FC = () => {
               render={({ field: { value, onChange } }) => (
                 <>
                   <MemoDropdownButton
-                    label={formatDate(value)}
-                    textColor={AppColors.gray100}
+                    label={value || 'yyyy.mm.dd'}
+                    textColor={value ? AppColors.gray100 : AppColors.gray40}
                     onPress={() => setShowDatePicker(true)}
                     icon={
                       <Calendar
@@ -287,14 +290,12 @@ const EditMeetingMinutesScreen: React.FC = () => {
                       />
                     }
                   />
-                  <DatePicker
-                    modal
-                    open={showDatePicker}
-                    date={value}
-                    mode="date"
-                    onConfirm={selectedDate => {
+                  <MemoDatePickerModal
+                    visible={showDatePicker}
+                    value={value}
+                    onConfirm={dateStr => {
                       setShowDatePicker(false);
-                      onChange(selectedDate);
+                      onChange(dateStr);
                     }}
                     onCancel={() => setShowDatePicker(false)}
                   />
@@ -317,11 +318,17 @@ const EditMeetingMinutesScreen: React.FC = () => {
             placeholder="고객명을 입력해주세요"
           />
 
-          <RHFFormInput
+          <Controller
             control={control}
             name="phone"
-            label="연락처"
-            placeholder="연락처을 입력하세요"
+            render={({ field: { value, onChange } }) => (
+              <MemoPhoneInput
+                value={value}
+                onChangeText={onChange}
+                label="연락처"
+                placeholder="연락처을 입력하세요"
+              />
+            )}
           />
 
           <RHFFormInput
@@ -341,7 +348,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
               recordings.map(rec => (
                 <MemoFileInfoCard
                   key={rec.id}
-                  fileName={rec.fileName}
+                  fileName={fixBrokenUtf8Encoding(rec.fileName)}
                   fileSize={rec.fileSize}
                   onRemove={() => handleRemoveRecording(rec.id)}
                 />

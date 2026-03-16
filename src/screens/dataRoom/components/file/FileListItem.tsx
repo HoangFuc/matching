@@ -6,6 +6,7 @@ import { Document, DotsVertical } from '@/src/constants/icons';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import type { IFile } from '@/src/store/api/dataRoom.api';
+import dayjs from 'dayjs';
 
 interface FileListItemProps {
   item: IFile;
@@ -23,7 +24,7 @@ const FileListItem: React.FC<FileListItemProps> = ({ item, onPressMore }) => {
         </AppText>
 
         <AppText variant="detail" color={AppColors.gray80}>
-          {item.createdAt}
+          {dayjs(item.createdAt).format('YYYY.MM.DD')}
         </AppText>
       </View>
 

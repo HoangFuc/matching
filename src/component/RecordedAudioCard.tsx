@@ -253,7 +253,7 @@ const RecordedAudioCard: React.FC<IProps> = ({
     <MemoBaseCard style={styles.card}>
       {/* File name */}
       <AppText variant="body7" color={AppColors.gray90} numberOfLines={1}>
-        {fileName}
+        {fileName.replace(/\.[^.]+$/, '')}
       </AppText>
 
       {/* Waveform */}

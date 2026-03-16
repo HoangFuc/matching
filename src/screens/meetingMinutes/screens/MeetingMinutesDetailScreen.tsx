@@ -24,11 +24,13 @@ import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { formatKoreanPhone } from '@/src/component/PhoneInput';
 import {
   MemoDetailInfoRow,
   TDetailInfoRow,
 } from '@/src/component/DetailInfoRow';
 import { MemoRecordedAudioCard } from '@/src/component/RecordedAudioCard';
+import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
@@ -80,7 +82,7 @@ const buildInfoRows = (item: TMeetingMinutes): TDetailInfoRow[] => {
 
   const rows: TDetailInfoRow[] = [
     { label: '미팅종류', type: 'chip', chips },
-    { label: '날짜', type: 'text', value: item.meetingDate?.split('T')[0] },
+    { label: '날짜', type: 'text', value: item.meetingDate?.split('T')[0]?.replace(/-/g, '.') },
   ];
 
   if (item.address) {
@@ -95,7 +97,7 @@ const buildInfoRows = (item: TMeetingMinutes): TDetailInfoRow[] => {
   rows.push({ label: '고객명', type: 'text', value: item.customerName });
 
   if (item.customerPhone) {
-    rows.push({ label: '연락처', type: 'text', value: item.customerPhone });
+    rows.push({ label: '연락처', type: 'text', value: formatKoreanPhone(item.customerPhone ?? '') });
   }
 
   rows.push({
@@ -321,7 +323,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
             <MemoRecordedAudioCard
               key={rec.id}
               filePath={rec.playUrl}
-              fileName={rec.fileName}
+              fileName={fixBrokenUtf8Encoding(rec.fileName)}
               durationMs={
                 rec.durationSeconds ? rec.durationSeconds * 1000 : undefined
               }

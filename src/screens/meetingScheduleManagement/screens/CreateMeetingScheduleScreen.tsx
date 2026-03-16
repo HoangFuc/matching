@@ -1,12 +1,12 @@
 import React from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import Postcode from '@actbase/react-daum-postcode';
 import { useNavigation } from '@react-navigation/native';
-import dayjs from 'dayjs';
 import { Controller, useForm } from 'react-hook-form';
-import DatePicker from 'react-native-date-picker';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
+import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
+import { MemoTimePickerModal } from '@/src/component/calendar/TimePickerModal';
 import { moderateScale as ms, scale as s } from 'react-native-size-matters/extend';
 import { MemoPhoneInput, stripDashes } from '@/src/component/PhoneInput';
 
@@ -19,9 +19,6 @@ import { AppColors } from '@/src/constants/colors';
 import { Calendar, Clock } from '@/src/constants/icons';
 import { ICreateMeetingSchedulePayload } from '@/src/interface/meetingScheduleManagement.interface';
 import { useCreateMeetingScheduleMutation } from '@/src/store/api/meetingScheduleManagement.api';
-
-const formatDate = (d: Date) => dayjs(d).format('YYYY.MM.DD');
-const formatTime = (d: Date) => dayjs(d).format('HH:mm');
 
 const CreateMeetingScheduleScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -88,6 +85,11 @@ const CreateMeetingScheduleScreen: React.FC = () => {
       <MemoScreenHeader title="방문 일정 등록" />
 
       <MemoScreenBody>
+        <KeyboardAvoidingView
+          style={styles.flex1}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? ms(100) : 0}
+        >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -125,16 +127,12 @@ const CreateMeetingScheduleScreen: React.FC = () => {
                       />
                     </Pressable>
 
-                    <DatePicker
-                      modal
-                      open={showDatePicker}
-                      date={
-                        value ? new Date(value.replace(/\./g, '-')) : new Date()
-                      }
-                      mode="date"
-                      onConfirm={d => {
+                    <MemoDatePickerModal
+                      visible={showDatePicker}
+                      value={value}
+                      onConfirm={dateStr => {
                         setShowDatePicker(false);
-                        onChange(formatDate(d));
+                        onChange(dateStr);
                       }}
                       onCancel={() => setShowDatePicker(false)}
                     />
@@ -164,16 +162,12 @@ const CreateMeetingScheduleScreen: React.FC = () => {
                       />
                     </Pressable>
 
-                    <DatePicker
-                      modal
-                      open={showTimePicker}
-                      date={
-                        new Date(`2000-01-01T${value || '00:00'}:00`)
-                      }
-                      mode="time"
-                      onConfirm={d => {
+                    <MemoTimePickerModal
+                      visible={showTimePicker}
+                      value={value}
+                      onConfirm={time => {
                         setShowTimePicker(false);
-                        onChange(formatTime(d));
+                        onChange(time);
                       }}
                       onCancel={() => setShowTimePicker(false)}
                     />
@@ -296,6 +290,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
             multiline
           />
         </ScrollView>
+        </KeyboardAvoidingView>
 
         <View style={styles.bottomContainer}>
           <MemoAppButton
@@ -319,6 +314,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: AppColors.purple,
+  },
+  flex1: {
+    flex: 1,
   },
   scrollContent: {
     padding: ms(16),

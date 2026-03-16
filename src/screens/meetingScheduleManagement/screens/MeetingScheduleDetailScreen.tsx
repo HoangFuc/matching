@@ -17,6 +17,7 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Toast from 'react-native-toast-message';
 
+import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
@@ -42,6 +43,7 @@ import { MemoRecordingBottomSheet } from '../components/RecordingBottomSheet';
 import { MemoUploadProgressBar } from '@/src/screens/dataRoom/components/UploadProgressBar';
 import { useAppSelector } from '@/src/store/hooks';
 import { useRecordingUploadWithProgress } from '../hooks/useRecordingUploadWithProgress';
+import { formatKoreanPhone } from '@/src/component/PhoneInput';
 
 type TRoute = NativeStackScreenProps<
   RootStackParamList,
@@ -92,7 +94,7 @@ const buildInfoRows = (item: IMeetingScheduleManagement): TDetailInfoRow[] => {
     },
     { label: '방문 장소', type: 'text', value: item.address, flex: true },
     { label: '고객명', type: 'text', value: item.customerName },
-    { label: '연락처', type: 'text', value: item.customerPhone },
+    { label: '연락처', type: 'text', value: formatKoreanPhone(item.customerPhone ?? '') },
     { label: '일정명', type: 'text', value: item.title },
     { label: '메모', type: 'text', value: item.memo, flex: true },
   ];
@@ -181,12 +183,11 @@ const MeetingScheduleDetailScreen: React.FC = () => {
         const ext = fileName.split('.').pop()?.toLowerCase() ?? 'm4a';
         const mimeMap: Record<string, string> = {
           m4a: 'audio/m4a',
-          mp4: 'audio/mp4',
           '3gp': 'audio/3gpp',
           wav: 'audio/wav',
           aac: 'audio/aac',
         };
-        const mimeType = mimeMap[ext] ?? 'audio/mpeg';
+        const mimeType = mimeMap[ext] ?? 'audio/m4a';
 
         if (Platform.OS === 'android') {
           await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
@@ -220,7 +221,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
     async (filePath: string, waveformData: number[], durationMs: number) => {
       setShowRecording(false);
       const originalName = filePath.split('/').pop() ?? 'recording.m4a';
-      const ext = originalName.split('.').pop() ?? 'm4a';
+      const ext = originalName.split('.').pop()?.toLowerCase() ?? 'm4a';
       const now = dayjs();
       const fileName = `녹음_${now.format('YYYYMMDD_HHmm')}.${ext}`;
 
@@ -247,16 +248,9 @@ const MeetingScheduleDetailScreen: React.FC = () => {
       return;
     }
 
-    const fileName = recordedFile.name;
-    const ext = fileName.split('.').pop()?.toLowerCase() ?? 'm4a';
-    const mimeMap: Record<string, string> = {
-      m4a: 'audio/m4a',
-      mp4: 'audio/mp4',
-      '3gp': 'audio/3gpp',
-      wav: 'audio/wav',
-      aac: 'audio/aac',
-    };
-    const mimeType = mimeMap[ext] ?? 'audio/octet-stream';
+    const uploadName = recordedFile.name.endsWith('.m4a')
+      ? recordedFile.name
+      : `${recordedFile.name}.m4a`;
     const memo = displayItem.memo ?? '';
 
     const durationSeconds = Math.round(recordedFile.durationMs / 1000);
@@ -273,8 +267,8 @@ const MeetingScheduleDetailScreen: React.FC = () => {
         item.id,
         {
           uri: recordedFile.path,
-          name: fileName,
-          type: mimeType,
+          name: uploadName,
+          type: 'audio/m4a',
         },
         memo,
         durationSeconds,
@@ -313,7 +307,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
           {isCompleted && serverRecording ? (
             <MemoRecordedAudioCard
               filePath={serverRecording.playUrl}
-              fileName={serverRecording.fileName}
+              fileName={fixBrokenUtf8Encoding(serverRecording.fileName)}
               durationMs={
                 serverRecording.durationSeconds
                   ? serverRecording.durationSeconds * 1000

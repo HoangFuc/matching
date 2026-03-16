@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { formatKoreanPhone } from '@/src/component/PhoneInput';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { MemoChip } from '@/src/component/Chip';
 import { AppColors } from '@/src/constants/colors';
@@ -62,7 +63,7 @@ const MeetingScheduleCard: React.FC<IProps> = ({ item, onPress }) => {
 
       <View style={styles.row}>
         <AppText variant="body6" color={AppColors.gray90}>
-          {item.customerPhone}
+          {formatKoreanPhone(item.customerPhone ?? '')}
         </AppText>
 
         <AppText variant="body8" color={AppColors.black}>

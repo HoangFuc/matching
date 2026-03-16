@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { Stop } from 'iconsax-react-nativejs';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
 
@@ -21,8 +22,6 @@ interface IProps {
 }
 
 const WAVEFORM_BAR_COUNT = 40;
-
-const recorderPlayer = AudioRecorderPlayer;
 
 const RecordingBottomSheet: React.FC<IProps> = ({
   visible,
@@ -55,12 +54,16 @@ const RecordingBottomSheet: React.FC<IProps> = ({
       setCurrentPosition(0);
       allMeteringRef.current = [];
 
-      const path = await recorderPlayer.startRecorder(undefined, undefined, true);
+      const recordPath = Platform.select({
+        ios: `recording_${Date.now()}.m4a`,
+        android: `${ReactNativeBlobUtil.fs.dirs.CacheDir}/recording_${Date.now()}.m4a`,
+      });
+      const path = await AudioRecorderPlayer.startRecorder(recordPath, undefined, true);
       filePathRef.current = path;
       isRecordingRef.current = true;
       setIsRecording(true);
 
-      recorderPlayer.addRecordBackListener(e => {
+      AudioRecorderPlayer.addRecordBackListener(e => {
         setCurrentPosition(e.currentPosition);
         if (e.currentMetering !== undefined && e.currentMetering !== null) {
           const normalized = Math.max(
@@ -80,12 +83,12 @@ const RecordingBottomSheet: React.FC<IProps> = ({
   const handleStopRecording = useCallback(async () => {
     try {
       if (isPaused) {
-        await recorderPlayer.resumeRecorder();
+        await AudioRecorderPlayer.resumeRecorder();
       }
 
       const durationMs = currentPosition;
-      await recorderPlayer.stopRecorder();
-      recorderPlayer.removeRecordBackListener();
+      await AudioRecorderPlayer.stopRecorder();
+      AudioRecorderPlayer.removeRecordBackListener();
       isRecordingRef.current = false;
       setIsRecording(false);
       setIsPaused(false);
@@ -104,10 +107,10 @@ const RecordingBottomSheet: React.FC<IProps> = ({
   const handleTogglePause = useCallback(async () => {
     try {
       if (isPaused) {
-        await recorderPlayer.resumeRecorder();
+        await AudioRecorderPlayer.resumeRecorder();
         setIsPaused(false);
       } else {
-        await recorderPlayer.pauseRecorder();
+        await AudioRecorderPlayer.pauseRecorder();
         setIsPaused(true);
       }
     } catch {
@@ -119,8 +122,8 @@ const RecordingBottomSheet: React.FC<IProps> = ({
   const handleClose = useCallback(async () => {
     if (isRecordingRef.current) {
       try {
-        await recorderPlayer.stopRecorder();
-        recorderPlayer.removeRecordBackListener();
+        await AudioRecorderPlayer.stopRecorder();
+        AudioRecorderPlayer.removeRecordBackListener();
         isRecordingRef.current = false;
       } catch {}
     }
@@ -134,8 +137,8 @@ const RecordingBottomSheet: React.FC<IProps> = ({
   //---------------------------------------
   useEffect(() => {
     if (!visible && isRecordingRef.current) {
-      recorderPlayer.stopRecorder().catch(() => {});
-      recorderPlayer.removeRecordBackListener();
+      AudioRecorderPlayer.stopRecorder().catch(() => {});
+      AudioRecorderPlayer.removeRecordBackListener();
       isRecordingRef.current = false;
       setIsRecording(false);
     }

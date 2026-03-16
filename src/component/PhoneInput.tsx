@@ -16,7 +16,7 @@ interface IProps {
 }
 
 //---------------------------------------
-const formatKoreanPhone = (digits: string): string => {
+export const formatKoreanPhone = (digits: string): string => {
   if (digits.length <= 3) {
     return digits;
   }

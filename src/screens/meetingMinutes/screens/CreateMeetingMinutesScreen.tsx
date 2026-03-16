@@ -1,6 +1,5 @@
 import React from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import DatePicker from 'react-native-date-picker';
 
 import {
   errorCodes,
@@ -21,6 +20,7 @@ import { MemoDropdownButton } from '@/src/component/DropdownButton';
 import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
+import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
 import { AppColors } from '@/src/constants/colors';
 import { Calendar } from '@/src/constants/icons';
 import {
@@ -43,19 +43,12 @@ const LABEL_TO_KEY: Record<TMeetingTypeLabel, TMeetingTypeKey> = {
 
 interface IFormData {
   meetingType: TMeetingTypeLabel;
-  date: Date | null;
+  date: string;
   address: string;
   customerName: string;
   phone: string;
   content: string;
 }
-
-const formatDate = (d: Date) => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}.${m}.${day}`;
-};
 
 const CreateMeetingMinutesScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
@@ -67,7 +60,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
   const { control, handleSubmit, watch } = useForm<IFormData>({
     defaultValues: {
       meetingType: '오프라인',
-      date: null,
+      date: '',
       address: '',
       customerName: '',
       phone: '',
@@ -152,9 +145,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
 
       if (!data.date) return;
 
-      const meetingDate = `${data.date.getFullYear()}-${String(
-        data.date.getMonth() + 1,
-      ).padStart(2, '0')}-${String(data.date.getDate()).padStart(2, '0')}`;
+      const meetingDate = data.date.replace(/\./g, '-');
 
       const formPayload = {
         meetingType: LABEL_TO_KEY[data.meetingType],
@@ -237,7 +228,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
               render={({ field: { value, onChange } }) => (
                 <>
                   <MemoDropdownButton
-                    label={value ? formatDate(value) : 'yyyy.mm.dd'}
+                    label={value || 'yyyy.mm.dd'}
                     textColor={value ? AppColors.gray100 : AppColors.gray40}
                     onPress={() => setShowDatePicker(true)}
                     icon={
@@ -248,14 +239,12 @@ const CreateMeetingMinutesScreen: React.FC = () => {
                       />
                     }
                   />
-                  <DatePicker
-                    modal
-                    open={showDatePicker}
-                    date={value ?? new Date()}
-                    mode="date"
-                    onConfirm={selectedDate => {
+                  <MemoDatePickerModal
+                    visible={showDatePicker}
+                    value={value}
+                    onConfirm={dateStr => {
                       setShowDatePicker(false);
-                      onChange(selectedDate);
+                      onChange(dateStr);
                     }}
                     onCancel={() => setShowDatePicker(false)}
                   />

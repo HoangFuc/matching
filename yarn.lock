@@ -6086,7 +6086,7 @@ react-native-dotenv@3.4.11:
 
 react-native-file-viewer@^2.1.5:
   version "2.1.5"
-  resolved "https://registry.yarnpkg.com/react-native-file-viewer/-/react-native-file-viewer-2.1.5.tgz#cd4544f573108e79002b5c7e1ebfce4371885250"
+  resolved "https://registry.npmjs.org/react-native-file-viewer/-/react-native-file-viewer-2.1.5.tgz"
   integrity sha512-MGC6sx9jsqHdefhVQ6o0akdsPGpkXgiIbpygb2Sg4g4bh7v6K1cardLV1NwGB9A6u1yICOSDT/MOC//9Ez6EUg==
 
 react-native-geolocation-service@5.3.1:
@@ -6163,6 +6163,11 @@ react-native-screens@4.23.0:
   dependencies:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
+
+react-native-share@^12.2.6:
+  version "12.2.6"
+  resolved "https://registry.npmjs.org/react-native-share/-/react-native-share-12.2.6.tgz"
+  integrity sha512-K9jZCQaTIqSNG37kMVygU1rflVMJm2g0ikslnbbmQ7EgsckYpw7ipePyp01E64hG+HrWNl+z9ZnFWLCC6H+Tiw==
 
 react-native-size-matters@0.4.2:
   version "0.4.2"

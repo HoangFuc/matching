@@ -20,9 +20,9 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 
 import Postcode from '@actbase/react-daum-postcode';
-import { MemoAddressPickerInput } from '@/src/component/AddressPickerInput';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { MemoDropdownButton } from '@/src/component/DropdownButton';
@@ -130,6 +130,40 @@ const EditMeetingMinutesScreen: React.FC = () => {
   );
 
   //---------------------------------------
+  const getAudioDuration = React.useCallback(
+    async (uri: string): Promise<number> => {
+      try {
+        const durationMs = await new Promise<number>(resolve => {
+          const timeout = setTimeout(() => {
+            AudioRecorderPlayer.stopPlayer().catch(() => {});
+            AudioRecorderPlayer.removePlayBackListener();
+            resolve(0);
+          }, 5000);
+
+          AudioRecorderPlayer.addPlayBackListener(e => {
+            if (e.duration > 0) {
+              clearTimeout(timeout);
+              AudioRecorderPlayer.stopPlayer().catch(() => {});
+              AudioRecorderPlayer.removePlayBackListener();
+              resolve(e.duration);
+            }
+          });
+
+          AudioRecorderPlayer.startPlayer(uri).catch(() => {
+            clearTimeout(timeout);
+            AudioRecorderPlayer.removePlayBackListener();
+            resolve(0);
+          });
+        });
+        return durationMs;
+      } catch {
+        return 0;
+      }
+    },
+    [],
+  );
+
+  //---------------------------------------
   const handlePickFile = React.useCallback(async () => {
     if (isPickingRef.current) return;
     isPickingRef.current = true;
@@ -147,6 +181,16 @@ const EditMeetingMinutesScreen: React.FC = () => {
       if (fileSizeBytes > MAX_SIZE) {
         Alert.alert('', '파일 최대 용량은 100MB입니다.');
         return;
+      }
+
+      // Get duration (best effort — never block upload)
+      let durationSeconds: number | undefined;
+      try {
+        const durationMs = await getAudioDuration(file.uri);
+        durationSeconds =
+          durationMs > 0 ? Math.round(durationMs / 1000) : undefined;
+      } catch (durErr) {
+        console.warn('[EditMeetingMinutes] getAudioDuration failed:', durErr);
       }
 
       const newFile: TUploadFile = {
@@ -168,14 +212,14 @@ const EditMeetingMinutesScreen: React.FC = () => {
       };
 
       if (savedUploadId) {
-        uploadFileWithUploadId(savedUploadId, filePayload);
+        uploadFileWithUploadId(savedUploadId, filePayload, durationSeconds);
       } else {
         try {
           const res = await deleteRecording(item.id).unwrap();
           const uploadId = res?.uploadId;
           if (uploadId) {
             setSavedUploadId(uploadId);
-            uploadFileWithUploadId(uploadId, filePayload);
+            uploadFileWithUploadId(uploadId, filePayload, durationSeconds);
           }
         } catch (err) {
           console.error('[EditMeetingMinutes] Get uploadId error:', err);
@@ -190,7 +234,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
     } finally {
       isPickingRef.current = false;
     }
-  }, [savedUploadId, uploadFileWithUploadId, deleteRecording, item.id]);
+  }, [savedUploadId, uploadFileWithUploadId, deleteRecording, item.id, getAudioDuration]);
 
   //---------------------------------------
   const handleRemoveFile = React.useCallback(

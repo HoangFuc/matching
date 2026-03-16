@@ -39,6 +39,7 @@ import {
   type TDataRoomTabType,
 } from '../constants';
 import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
+import { useShareItem } from '../hooks/useShareItem';
 import { useSheetManager } from '../hooks/useSheetManager';
 
 type TNav = NativeStackNavigationProp<DataRoomStackParamList, 'DataRoomMain'>;
@@ -52,6 +53,17 @@ const DataRoomScreen: React.FC = () => {
   const files = data?.files ?? [];
 
   //---------------------------------------
+  const { shareFolder } = useShareItem();
+
+  //---------------------------------------
+  const handleShareFolder = React.useCallback(
+    (folder: IFolder) => {
+      shareFolder(folder.name);
+    },
+    [shareFolder],
+  );
+
+  //---------------------------------------
   const {
     selectedItem: selectedFolder,
     actionSheetVisible,
@@ -62,7 +74,7 @@ const DataRoomScreen: React.FC = () => {
     closeMoveSheet,
     closeRenameSheet,
     handleAction: handleFolderAction,
-  } = useSheetManager<IFolder>();
+  } = useSheetManager<IFolder>({ onShare: handleShareFolder });
 
   //---------------------------------------
   const handlePressSearch = React.useCallback(() => {

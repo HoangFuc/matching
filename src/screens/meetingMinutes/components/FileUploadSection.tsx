@@ -14,10 +14,7 @@ interface IUploadFileItemProps {
   onRemove: (id: string) => void;
 }
 
-const UploadFileItem: React.FC<IUploadFileItemProps> = ({
-  file,
-  onRemove,
-}) => {
+const UploadFileItem: React.FC<IUploadFileItemProps> = ({ file, onRemove }) => {
   const isDone = file.status === 'done';
 
   if (isDone) {
@@ -46,18 +43,12 @@ const UploadFileItem: React.FC<IUploadFileItemProps> = ({
           onPress={() => onRemove(file.id)}
           style={styles.trashContainer}
         >
-          <Trash
-            size={`${ms(20)}`}
-            color={AppColors.negative}
-            variant="Bold"
-          />
+          <Trash size={`${ms(20)}`} color={AppColors.negative} variant="Bold" />
         </Pressable>
       </View>
 
       <View style={styles.progressBar}>
-        <View
-          style={[styles.progressFill, { width: `${file.progress}%` }]}
-        />
+        <View style={[styles.progressFill, { width: `${file.progress}%` }]} />
       </View>
     </View>
   );
@@ -80,11 +71,7 @@ const FileUploadSection: React.FC<IProps> = ({
     <View style={styles.container}>
       {hasFiles ? (
         files.map(file => (
-          <UploadFileItem
-            key={file.id}
-            file={file}
-            onRemove={onRemoveFile}
-          />
+          <UploadFileItem key={file.id} file={file} onRemove={onRemoveFile} />
         ))
       ) : (
         <Pressable style={styles.dropZone} onPress={onPickFile}>
@@ -99,11 +86,11 @@ const FileUploadSection: React.FC<IProps> = ({
             color={AppColors.gray40}
             style={styles.formatsText}
           >
-            m4a, amr, mp3, wav, ogg, flac
+            .m4a, .amr, .mp3, .wav, .ogg, .flac
           </AppText>
 
           <AppText variant="detail" color={AppColors.gray40}>
-            지원 파일 용량 100MB
+            지원 파일 용량: 100MB
           </AppText>
         </Pressable>
       )}

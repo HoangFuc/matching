@@ -61,6 +61,7 @@ const MeetingMinutesScreen: React.FC = () => {
   const { data, isLoading, isFetching, refetch } = useGetMeetingLogsQuery({
     page,
     limit: LIMIT,
+    sortBy: 'createdAt',
     sortOrder: 'desc',
     startDate,
     endDate,

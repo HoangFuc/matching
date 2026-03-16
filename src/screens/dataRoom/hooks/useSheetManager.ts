@@ -1,6 +1,10 @@
 import React from 'react';
 
-export function useSheetManager<T>() {
+interface UseSheetManagerOptions<T> {
+  onShare?: (item: T) => void;
+}
+
+export function useSheetManager<T>(options?: UseSheetManagerOptions<T>) {
   const [actionSheetVisible, setActionSheetVisible] = React.useState(false);
   const [moveSheetVisible, setMoveSheetVisible] = React.useState(false);
   const [renameSheetVisible, setRenameSheetVisible] = React.useState(false);
@@ -34,6 +38,9 @@ export function useSheetManager<T>() {
         return;
       }
       switch (action) {
+        case 'share':
+          options?.onShare?.(selectedItem);
+          break;
         case 'move':
           setMoveSheetVisible(true);
           break;
@@ -44,7 +51,7 @@ export function useSheetManager<T>() {
           break;
       }
     },
-    [selectedItem],
+    [selectedItem, options],
   );
 
   return {

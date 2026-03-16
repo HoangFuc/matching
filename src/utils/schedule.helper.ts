@@ -42,7 +42,7 @@ export function convertSchedulesToEvents(
 
     const event: TScheduleEvent = {
       id: schedule.createdBy,
-      title: typeInfo.title,
+      title: schedule.title || typeInfo.title,
       type: typeInfo.title,
       scheduleName: schedule.title,
       description: schedule.description,

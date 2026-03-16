@@ -43,7 +43,7 @@ export interface ISchedulePayload {
   title: string;
   description: string;
   scheduleDate: string;
-  startTime: string;
+  startTime: string | Date;
   customerName: string;
   customerPhone: string;
   memo: string;

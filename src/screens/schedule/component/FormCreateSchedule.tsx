@@ -146,7 +146,7 @@ const FormCreateSchedule: React.FC<IProps> = ({
 
                   <MemoTimePickerModal
                     visible={showTimePicker}
-                    value={value}
+                    value={value instanceof Date ? value : undefined}
                     onConfirm={time => {
                       setShowTimePicker(false);
                       onChange(time);

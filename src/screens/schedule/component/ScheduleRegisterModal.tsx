@@ -73,6 +73,11 @@ const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
   const onSubmit = React.useCallback(
     async (data: ISchedulePayload) => {
       try {
+        const startTime =
+          data.startTime instanceof Date
+            ? `${String(data.startTime.getHours()).padStart(2, '0')}:${String(data.startTime.getMinutes()).padStart(2, '0')}`
+            : data.startTime;
+
         const payload: ISchedulePayload = {
           ...data,
           scheduleType:
@@ -80,6 +85,7 @@ const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
           scheduleDate: dayjs(data.scheduleDate.replace(/\./g, '-'))
             .add(1, 'day')
             .toISOString(),
+          startTime,
         };
 
         await createSchedule(payload).unwrap();

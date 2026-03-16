@@ -3,7 +3,6 @@ import {
   Alert,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -15,10 +14,12 @@ import {
   types,
 } from '@react-native-documents/picker';
 import { useNavigation } from '@react-navigation/native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 
 import Postcode from '@actbase/react-daum-postcode';
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -92,9 +93,42 @@ const CreateMeetingMinutesScreen: React.FC = () => {
       !!formValue.address.trim() &&
       !!formValue.customerName.trim() &&
       !!formValue.phone.trim() &&
-      !!formValue.content.trim() &&
-      uploadFiles.some(f => f.status === 'done'),
-    [formValue, uploadFiles],
+      !!formValue.content.trim(),
+    [formValue],
+  );
+
+  //---------------------------------------
+  const getAudioDuration = React.useCallback(
+    async (uri: string): Promise<number> => {
+      try {
+        const durationMs = await new Promise<number>(resolve => {
+          const timeout = setTimeout(() => {
+            AudioRecorderPlayer.stopPlayer().catch(() => {});
+            AudioRecorderPlayer.removePlayBackListener();
+            resolve(0);
+          }, 5000);
+
+          AudioRecorderPlayer.addPlayBackListener(e => {
+            if (e.duration > 0) {
+              clearTimeout(timeout);
+              AudioRecorderPlayer.stopPlayer().catch(() => {});
+              AudioRecorderPlayer.removePlayBackListener();
+              resolve(e.duration);
+            }
+          });
+
+          AudioRecorderPlayer.startPlayer(uri).catch(() => {
+            clearTimeout(timeout);
+            AudioRecorderPlayer.removePlayBackListener();
+            resolve(0);
+          });
+        });
+        return durationMs;
+      } catch {
+        return 0;
+      }
+    },
+    [],
   );
 
   //---------------------------------------
@@ -117,6 +151,16 @@ const CreateMeetingMinutesScreen: React.FC = () => {
         return;
       }
 
+      // Get duration (best effort — never block upload)
+      let durationSeconds: number | undefined;
+      try {
+        const durationMs = await getAudioDuration(file.uri);
+        durationSeconds =
+          durationMs > 0 ? Math.round(durationMs / 1000) : undefined;
+      } catch (durErr) {
+        console.warn('[CreateMeetingMinutes] getAudioDuration failed:', durErr);
+      }
+
       const newFile: TUploadFile = {
         id: `${Date.now()}`,
         name: file.name ?? 'unknown',
@@ -125,6 +169,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
         status: 'done',
         uri: file.uri,
         type: file.type ?? 'audio/m4a',
+        durationSeconds,
       };
 
       setUploadFiles(prev => [...prev, newFile]);
@@ -135,7 +180,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
     } finally {
       isPickingRef.current = false;
     }
-  }, []);
+  }, [getAudioDuration]);
 
   //---------------------------------------
   const handleRemoveFile = React.useCallback((id: string) => {
@@ -165,11 +210,15 @@ const CreateMeetingMinutesScreen: React.FC = () => {
       };
 
       try {
-        const result = await uploadMeetingLog(formPayload, {
-          uri: firstFile.uri,
-          name: firstFile.name,
-          type: firstFile.type || 'audio/m4a',
-        });
+        const result = await uploadMeetingLog(
+          formPayload,
+          {
+            uri: firstFile.uri,
+            name: firstFile.name,
+            type: firstFile.type || 'audio/m4a',
+          },
+          firstFile.durationSeconds,
+        );
 
         navigation.replace('MeetingMinutesDetail', { id: result.id });
       } catch (err) {
@@ -185,7 +234,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
       <MemoScreenHeader title="미팅록 작성" />
 
       <MemoScreenBody>
-        <ScrollView
+        <KeyboardAwareScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -360,7 +409,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
               onRemoveFile={handleRemoveFile}
             />
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         <View style={styles.bottomContainer}>
           <MemoAppButton

@@ -12,15 +12,15 @@ export const useAttendanceData = (
   endDate: string,
   mode: TScheduleMode,
 ) => {
-  // Cap endDate to today if today falls within the visible range
+  // Cap endDate to today so future dates don't get marked as absent
   const today = dayjs().format('YYYY-MM-DD');
-  const effectiveEndDate =
-    today >= startDate && today <= endDate ? today : endDate;
+  const effectiveEndDate = today < endDate ? today : endDate;
+  const isFutureRange = effectiveEndDate < startDate;
 
   //---------------------------------------
   const { data: attendanceData } = useGetMyAttendanceQuery(
     { startDate, endDate: effectiveEndDate },
-    { skip: mode !== 'attendance' },
+    { skip: mode !== 'attendance' || isFutureRange },
   );
 
   //---------------------------------------

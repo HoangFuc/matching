@@ -74,8 +74,6 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
           },
         });
 
-        console.log('======================es', es);
-
         sharedEventSource = es;
 
         const handleEventData = (eventData: string | null) => {
@@ -129,8 +127,32 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
           }
         };
 
-        es.addEventListener('open', () => {
-          console.log('[SSE] Connected to progress stream:', uploadId);
+        // Wait for SSE connection before resolving
+        await new Promise<void>((resolve) => {
+          const timeout = setTimeout(() => {
+            console.warn('[SSE] Connection timeout, proceeding with upload');
+            resolve();
+          }, 5000);
+
+          es.addEventListener('open', () => {
+            clearTimeout(timeout);
+            console.log('[SSE] Connected to progress stream:', uploadId);
+            resolve();
+          });
+
+          es.addEventListener('error', event => {
+            clearTimeout(timeout);
+            console.error('[SSE] Error:', event);
+            dispatch(
+              config.updateProgress({
+                status: 'error',
+                error: 'Connection lost',
+              }),
+            );
+            es.close();
+            sharedEventSource = null;
+            resolve();
+          });
         });
 
         es.addEventListener('message', event => {
@@ -138,18 +160,6 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
         });
         es.addEventListener('progress', event => {
           handleEventData(event.data);
-        });
-
-        es.addEventListener('error', event => {
-          console.error('[SSE] Error:', event);
-          dispatch(
-            config.updateProgress({
-              status: 'error',
-              error: 'Connection lost',
-            }),
-          );
-          es.close();
-          sharedEventSource = null;
         });
       },
       [closeEventSource, dispatch],
@@ -260,7 +270,7 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
         extraFields?: Record<string, string>,
       ) => {
         updateProgressState({ uploadId });
-        listenProgress(uploadId);
+        await listenProgress(uploadId);
 
         const token = await getToken();
         const encoding = config.encoding ?? 'stream';

@@ -69,6 +69,7 @@ export type TUploadFile = {
   status: TUploadFileStatus;
   uri?: string;
   type?: string;
+  durationSeconds?: number;
 };
 
 export interface ICreateMeetingLogPayload {

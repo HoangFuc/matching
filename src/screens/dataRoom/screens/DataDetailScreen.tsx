@@ -32,6 +32,7 @@ import { MemoRenameSheet } from '../components/RenameSheet';
 import { MemoUploadProgressBar } from '../components/UploadProgressBar';
 import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
 import { useFilePicker } from '../hooks/useFilePicker';
+import { useShareItem } from '../hooks/useShareItem';
 import { useSheetManager } from '../hooks/useSheetManager';
 
 type TNav = NativeStackNavigationProp<DataRoomStackParamList, 'DataRoomDetail'>;
@@ -51,6 +52,9 @@ const DataDetailScreen: React.FC = () => {
   const { cancelUpload } = useFileUploadWithProgress();
 
   //---------------------------------------
+  const { shareFile } = useShareItem();
+
+  //---------------------------------------
   const {
     selectedItem: selectedFile,
     actionSheetVisible,
@@ -61,7 +65,7 @@ const DataDetailScreen: React.FC = () => {
     closeMoveSheet,
     closeRenameSheet,
     handleAction: handleFileAction,
-  } = useSheetManager<IFile>();
+  } = useSheetManager<IFile>({ onShare: shareFile });
 
   //---------------------------------------
   const handlePressBack = React.useCallback(() => {

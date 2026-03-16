@@ -86,6 +86,7 @@ const ScheduleCalendarView: React.FC = () => {
             mode="schedule"
             selectedFilterTypes={selectedFilterTypes}
             onDayPress={handleDayPress}
+            showTitle
           />
         </View>
       )}

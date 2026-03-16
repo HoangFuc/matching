@@ -24,12 +24,14 @@ interface IProps {
   mode: TScheduleMode;
   selectedFilterTypes: TScheduleType[];
   onDayPress: (dateKey: string) => void;
+  showTitle?: boolean;
 }
 
 const ScheduleCalendar: React.FC<IProps> = ({
   mode,
   selectedFilterTypes,
   onDayPress,
+  showTitle = false,
 }) => {
   const {
     year,
@@ -126,7 +128,10 @@ const ScheduleCalendar: React.FC<IProps> = ({
           cellContent = null;
         }
       } else {
-        cellContent = <MemoEvents events={dayEvents} />;
+        const displayEvents = showTitle
+          ? dayEvents
+          : dayEvents.map(e => ({ ...e, title: e.type || e.title }));
+        cellContent = <MemoEvents events={displayEvents} />;
       }
 
       return (
@@ -136,7 +141,7 @@ const ScheduleCalendar: React.FC<IProps> = ({
         </>
       );
     },
-    [events, mode, checkinTimes],
+    [events, mode, checkinTimes, showTitle],
   );
 
   return (

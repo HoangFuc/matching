@@ -9,7 +9,7 @@ const SCHEDULE_TYPE_MAP: Record<
   { title: string; color: string; backgroundColor: string }
 > = {
   [ScheduleTypeEnum.GENERAL]: {
-    title: '지방출장',
+    title: '일반일정',
     color: AppColors.purple,
     backgroundColor: AppColors.lavendar,
   },

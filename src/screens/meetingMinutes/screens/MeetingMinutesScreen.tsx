@@ -45,19 +45,6 @@ const MeetingMinutesScreen: React.FC = () => {
   );
 
   //---------------------------------------
-  useFocusEffect(
-    React.useCallback(() => {
-      const today = new Date();
-      const todayStr = `${today.getFullYear()}-${padZero(today.getMonth() + 1)}-${padZero(today.getDate())}`;
-      const nextWeekStr = `${today.getFullYear()}-${padZero(today.getMonth() + 1)}-${padZero(today.getDate() + 6)}`;
-      setStartDate(todayStr);
-      setEndDate(nextWeekStr);
-      setPage(1);
-      setShowDatePicker(false);
-    }, []),
-  );
-
-  //---------------------------------------
   const { data, isLoading, isFetching, refetch } = useGetMeetingLogsQuery({
     page,
     limit: LIMIT,
@@ -66,6 +53,13 @@ const MeetingMinutesScreen: React.FC = () => {
     startDate,
     endDate,
   });
+
+  //---------------------------------------
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const meetingLogs = data?.data ?? [];
   const hasMore = page < (data?.meta?.totalPages ?? 0);

@@ -101,28 +101,30 @@ export const useMeetingLogUploadWithProgress = () => {
         address: string;
         consultationContent: string;
       },
-      file: { uri: string; name: string; type: string },
+      file?: { uri: string; name: string; type: string },
       durationSeconds?: number,
     ) => {
       try {
-        initProgress(file.name);
+        if (file) {
+          initProgress(file.name);
+        }
 
         const result = await createMeetingLog(formData).unwrap();
 
-        console.log('======================result', result);
+        if (file) {
+          const uploadId = result?.uploadId;
 
-        const uploadId = result?.uploadId;
+          if (!uploadId) {
+            throw new Error('No uploadId returned from server');
+          }
 
-        if (!uploadId) {
-          throw new Error('No uploadId returned from server');
+          const extraFields =
+            durationSeconds != null
+              ? { duration: String(durationSeconds) }
+              : undefined;
+
+          await performUpload(uploadId, file, extraFields);
         }
-
-        const extraFields =
-          durationSeconds != null
-            ? { duration: String(durationSeconds) }
-            : undefined;
-
-        await performUpload(uploadId, file, extraFields);
 
         return result;
       } catch (err) {

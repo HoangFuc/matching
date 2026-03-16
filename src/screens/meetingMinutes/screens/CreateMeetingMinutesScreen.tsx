@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Alert,
-  Modal,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import {
   errorCodes,
@@ -190,14 +184,9 @@ const CreateMeetingMinutesScreen: React.FC = () => {
   //---------------------------------------
   const onSubmit = React.useCallback(
     async (data: IFormData) => {
-      const firstFile = uploadFiles.find(f => f.status === 'done');
-      if (!firstFile?.uri) {
-        Alert.alert('', '녹음파일을 업로드해주세요.');
-        return;
-      }
-
       if (!data.date) return;
 
+      const firstFile = uploadFiles.find(f => f.status === 'done');
       const meetingDate = data.date.replace(/\./g, '-');
 
       const formPayload = {
@@ -212,12 +201,14 @@ const CreateMeetingMinutesScreen: React.FC = () => {
       try {
         const result = await uploadMeetingLog(
           formPayload,
-          {
-            uri: firstFile.uri,
-            name: firstFile.name,
-            type: firstFile.type || 'audio/m4a',
-          },
-          firstFile.durationSeconds,
+          firstFile
+            ? {
+                uri: firstFile.uri!,
+                name: firstFile.name,
+                type: firstFile.type || 'audio/m4a',
+              }
+            : undefined,
+          firstFile?.durationSeconds,
         );
 
         navigation.replace('MeetingMinutesDetail', { id: result.id });
@@ -344,7 +335,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
                   >
                     <View style={styles.postcodeOverlay}>
                       <Pressable
-                        style={{flex: 1}}
+                        style={{ flex: 1 }}
                         onPress={() => setShowPostcode(false)}
                       />
                       <View style={styles.postcodeSheet}>

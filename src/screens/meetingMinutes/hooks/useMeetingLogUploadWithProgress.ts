@@ -69,15 +69,16 @@ export const useMeetingLogUploadWithProgress = () => {
         }
 
         const result = await response.json();
-        const uploadId = result?.data?.uploadId ?? result?.uploadId;
+        const uploadId = result?.data?.uploadId;
 
         if (!uploadId) {
           throw new Error('No uploadId returned from server');
         }
 
-        const extraFields = durationSeconds != null
-          ? { durationSeconds: String(durationSeconds) }
-          : undefined;
+        const extraFields =
+          durationSeconds != null
+            ? { duration: String(durationSeconds) }
+            : undefined;
 
         await performUpload(uploadId, file, extraFields);
       } catch (err) {
@@ -116,9 +117,10 @@ export const useMeetingLogUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        const extraFields = durationSeconds != null
-          ? { durationSeconds: String(durationSeconds) }
-          : undefined;
+        const extraFields =
+          durationSeconds != null
+            ? { duration: String(durationSeconds) }
+            : undefined;
 
         await performUpload(uploadId, file, extraFields);
 
@@ -139,9 +141,10 @@ export const useMeetingLogUploadWithProgress = () => {
       file: { uri: string; name: string; type: string },
       durationSeconds?: number,
     ) => {
-      const extraFields = durationSeconds != null
-        ? { durationSeconds: String(durationSeconds) }
-        : undefined;
+      const extraFields =
+        durationSeconds != null
+          ? { duration: String(durationSeconds) }
+          : undefined;
       initProgress(file.name);
       performUpload(uploadId, file, extraFields).catch(() => {});
     },

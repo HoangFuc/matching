@@ -14,6 +14,7 @@ import {
 } from '@react-navigation/native-stack';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import Toast from 'react-native-toast-message';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -174,11 +175,58 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   }, []);
 
   //---------------------------------------
+  const saveRecordingToLocal = React.useCallback(
+    async (sourcePath: string, fileName: string) => {
+      try {
+        const ext = fileName.split('.').pop()?.toLowerCase() ?? 'm4a';
+        const mimeMap: Record<string, string> = {
+          m4a: 'audio/m4a',
+          mp4: 'audio/mp4',
+          '3gp': 'audio/3gpp',
+          wav: 'audio/wav',
+          aac: 'audio/aac',
+        };
+        const mimeType = mimeMap[ext] ?? 'audio/mpeg';
+
+        if (Platform.OS === 'android') {
+          await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
+            {
+              name: fileName,
+              parentFolder: 'Recordings',
+              mimeType,
+            },
+            'Audio',
+            sourcePath,
+          );
+        } else {
+          const destDir = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Recordings`;
+          const dirExists = await ReactNativeBlobUtil.fs.isDir(destDir);
+          if (!dirExists) {
+            await ReactNativeBlobUtil.fs.mkdir(destDir);
+          }
+          await ReactNativeBlobUtil.fs.cp(sourcePath, `${destDir}/${fileName}`);
+        }
+
+        Toast.show({ type: 'success', text1: '녹음 파일이 저장되었습니다' });
+      } catch (error) {
+        console.error('Failed to save recording to local:', error);
+      }
+    },
+    [],
+  );
+
+  //---------------------------------------
   const handleRecordingComplete = React.useCallback(
-    (filePath: string, waveformData: number[], durationMs: number) => {
-      console.log('======================durration', durationMs);
+    async (filePath: string, waveformData: number[], durationMs: number) => {
       setShowRecording(false);
-      const fileName = filePath.split('/').pop() ?? 'recording.m4a';
+      const originalName = filePath.split('/').pop() ?? 'recording.m4a';
+      const ext = originalName.split('.').pop() ?? 'm4a';
+      const now = dayjs();
+      const fileName = `녹음_${now.format('YYYYMMDD_HHmm')}.${ext}`;
+
+      // Save recording to phone's local storage
+      await saveRecordingToLocal(filePath, fileName);
+
       setRecordedFile({
         path: filePath,
         name: fileName,
@@ -186,7 +234,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
         durationMs,
       });
     },
-    [],
+    [saveRecordingToLocal],
   );
 
   //---------------------------------------
@@ -213,7 +261,12 @@ const MeetingScheduleDetailScreen: React.FC = () => {
 
     const durationSeconds = Math.round(recordedFile.durationMs / 1000);
     console.log('[handleComplete] recordedFile:', recordedFile);
-    console.log('[handleComplete] durationMs:', recordedFile.durationMs, '-> durationSeconds:', durationSeconds);
+    console.log(
+      '[handleComplete] durationMs:',
+      recordedFile.durationMs,
+      '-> durationSeconds:',
+      durationSeconds,
+    );
 
     try {
       await uploadRecording(

@@ -15,6 +15,7 @@ import {
   types,
 } from '@react-native-documents/picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
@@ -156,6 +157,40 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   const [uploadFiles, setUploadFiles] = React.useState<TUploadFile[]>([]);
 
   //---------------------------------------
+  const getAudioDuration = React.useCallback(
+    async (uri: string): Promise<number> => {
+      try {
+        const durationMs = await new Promise<number>(resolve => {
+          const timeout = setTimeout(() => {
+            AudioRecorderPlayer.stopPlayer().catch(() => {});
+            AudioRecorderPlayer.removePlayBackListener();
+            resolve(0);
+          }, 5000);
+
+          AudioRecorderPlayer.addPlayBackListener(e => {
+            if (e.duration > 0) {
+              clearTimeout(timeout);
+              AudioRecorderPlayer.stopPlayer().catch(() => {});
+              AudioRecorderPlayer.removePlayBackListener();
+              resolve(e.duration);
+            }
+          });
+
+          AudioRecorderPlayer.startPlayer(uri).catch(() => {
+            clearTimeout(timeout);
+            AudioRecorderPlayer.removePlayBackListener();
+            resolve(0);
+          });
+        });
+        return durationMs;
+      } catch {
+        return 0;
+      }
+    },
+    [],
+  );
+
+  //---------------------------------------
   const handlePickFile = React.useCallback(async () => {
     if (isPickingRef.current || !item) return;
     isPickingRef.current = true;
@@ -181,6 +216,16 @@ const MeetingMinutesDetailScreen: React.FC = () => {
         type: file.type ?? 'audio/m4a',
       };
 
+      // Get duration (best effort — never block upload)
+      let durationSeconds: number | undefined;
+      try {
+        const durationMs = await getAudioDuration(pickedFile.uri);
+        durationSeconds =
+          durationMs > 0 ? Math.round(durationMs / 1000) : undefined;
+      } catch (durErr) {
+        console.warn('[MeetingMinutes] getAudioDuration failed:', durErr);
+      }
+
       setUploadFiles([
         {
           id: `${Date.now()}`,
@@ -193,15 +238,19 @@ const MeetingMinutesDetailScreen: React.FC = () => {
         },
       ]);
 
-      await uploadRecordingToExisting(item.id, pickedFile);
+      await uploadRecordingToExisting(item.id, pickedFile, durationSeconds);
     } catch (err) {
-      if (isErrorWithCode(err) && err.code !== errorCodes.OPERATION_CANCELED) {
-        console.error('DocumentPicker error:', err);
+      if (isErrorWithCode(err)) {
+        if (err.code !== errorCodes.OPERATION_CANCELED) {
+          console.error('DocumentPicker error:', err);
+        }
+      } else {
+        console.error('[MeetingMinutes] Upload error:', err);
       }
     } finally {
       isPickingRef.current = false;
     }
-  }, [item, uploadRecordingToExisting]);
+  }, [item, uploadRecordingToExisting, getAudioDuration]);
 
   //---------------------------------------
   const handleRemoveFile = React.useCallback((fileId: string) => {
@@ -273,6 +322,9 @@ const MeetingMinutesDetailScreen: React.FC = () => {
               key={rec.id}
               filePath={rec.playUrl}
               fileName={rec.fileName}
+              durationMs={
+                rec.durationSeconds ? rec.durationSeconds * 1000 : undefined
+              }
             />
           ))}
 
@@ -287,7 +339,6 @@ const MeetingMinutesDetailScreen: React.FC = () => {
                 files={uploadFiles}
                 onPickFile={handlePickFile}
                 onRemoveFile={handleRemoveFile}
-
               />
             </View>
           )}

@@ -11,14 +11,19 @@ import { ArrowLeft2 } from '../constants/icons';
 interface IProps {
   title: string;
   rightElement?: React.ReactNode;
+  onPressBack?: () => void;
 }
 
-const ScreenHeader: React.FC<IProps> = ({ title, rightElement }) => {
+const ScreenHeader: React.FC<IProps> = ({ title, rightElement, onPressBack }) => {
   const navigation = useNavigation();
 
   const handlePressBack = React.useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
+    if (onPressBack) {
+      onPressBack();
+    } else {
+      navigation.goBack();
+    }
+  }, [navigation, onPressBack]);
 
   return (
     <View style={styles.container}>

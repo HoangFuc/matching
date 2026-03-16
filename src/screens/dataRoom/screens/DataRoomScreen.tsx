@@ -52,13 +52,6 @@ const DataRoomScreen: React.FC = () => {
   const files = data?.files ?? [];
 
   //---------------------------------------
-  useFocusEffect(
-    React.useCallback(() => {
-      setActiveTab('MARKET_PRICE');
-    }, []),
-  );
-
-  //---------------------------------------
   const {
     selectedItem: selectedFolder,
     actionSheetVisible,
@@ -87,9 +80,10 @@ const DataRoomScreen: React.FC = () => {
       navigation.navigate('DataRoomDetail', {
         folderId: folder.id,
         folderName: folder.name,
+        tabType: activeTab,
       });
     },
-    [navigation],
+    [navigation, activeTab],
   );
 
   //---------------------------------------

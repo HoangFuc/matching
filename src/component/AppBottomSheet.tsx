@@ -22,6 +22,7 @@ interface IProps {
   children: React.ReactNode;
   maxHeight?: number;
   showHandle?: boolean;
+  scrollable?: boolean;
   contentContainerStyle?: ViewStyle;
   footer?: React.ReactNode;
 }
@@ -33,6 +34,7 @@ const AppBottomSheet: React.FC<IProps> = ({
   children,
   maxHeight = s(716),
   showHandle = true,
+  scrollable = true,
   contentContainerStyle,
   footer,
 }) => {
@@ -63,16 +65,25 @@ const AppBottomSheet: React.FC<IProps> = ({
               </View>
             )}
 
-            <ScrollView
-              contentContainerStyle={[
-                styles.contentContainer,
-                contentContainerStyle,
-              ]}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              {children}
-            </ScrollView>
+            {scrollable ? (
+              <ScrollView
+                contentContainerStyle={[
+                  styles.contentContainer,
+                  contentContainerStyle,
+                ]}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled
+              >
+                {children}
+              </ScrollView>
+            ) : (
+              <View
+                style={[styles.contentContainer, contentContainerStyle]}
+              >
+                {children}
+              </View>
+            )}
 
             {footer && <View style={styles.footerContainer}>{footer}</View>}
           </Pressable>

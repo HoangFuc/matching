@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, Image, Pressable, StyleSheet, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
 import { ms } from 'react-native-size-matters/extend';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -8,8 +8,8 @@ const CARD_WIDTH = (SCREEN_WIDTH - ms(16) * 2 - ms(12)) / 2;
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { Document, DotsVertical } from '@/src/constants/icons';
-import { AppImages } from '@/src/constants/images';
 import type { IFile } from '@/src/store/api/dataRoom.api';
+import { MemoFileThumbnail } from './FileThumbnail';
 import dayjs from 'dayjs';
 
 interface FileGridItemProps {
@@ -49,11 +49,7 @@ const FileGridItem: React.FC<FileGridItemProps> = ({ item, onPressMore }) => {
 
       {/* Preview */}
       <View style={styles.preview}>
-        <Image
-          source={AppImages.file}
-          style={styles.previewImage}
-          resizeMode="contain"
-        />
+        <MemoFileThumbnail file={item} style={styles.thumbnailFill} />
       </View>
     </Pressable>
   );
@@ -86,8 +82,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: AppColors.gray20,
   },
-  previewImage: {
+  thumbnailFill: {
     width: '100%',
     height: '100%',
+    borderRadius: ms(8),
   },
 });

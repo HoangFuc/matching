@@ -1,5 +1,12 @@
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import {
   errorCodes,
@@ -13,7 +20,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
-import { MemoAddressPickerInput } from '@/src/component/AddressPickerInput';
+import Postcode from '@actbase/react-daum-postcode';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { MemoDropdownButton } from '@/src/component/DropdownButton';
@@ -73,6 +80,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
   //---------------------------------------
   const [showTypePicker, setShowTypePicker] = React.useState(false);
   const [showDatePicker, setShowDatePicker] = React.useState(false);
+  const [showPostcode, setShowPostcode] = React.useState(false);
   const [uploadFiles, setUploadFiles] = React.useState<TUploadFile[]>([]);
   const isPickingRef = React.useRef(false);
 
@@ -265,7 +273,53 @@ const CreateMeetingMinutesScreen: React.FC = () => {
               control={control}
               name="address"
               render={({ field: { value, onChange } }) => (
-                <MemoAddressPickerInput value={value} onChange={onChange} />
+                <>
+                  <Pressable
+                    style={styles.dropdownBtn}
+                    onPress={() => setShowPostcode(true)}
+                  >
+                    <AppText
+                      variant="body7"
+                      color={value ? AppColors.gray100 : AppColors.gray40}
+                    >
+                      {value || '방문 장소를 입력하세요'}
+                    </AppText>
+                  </Pressable>
+
+                  <Modal
+                    visible={showPostcode}
+                    transparent
+                    animationType="slide"
+                    statusBarTranslucent
+                    onRequestClose={() => setShowPostcode(false)}
+                  >
+                    <View style={styles.postcodeOverlay}>
+                      <Pressable
+                        style={{flex: 1}}
+                        onPress={() => setShowPostcode(false)}
+                      />
+                      <View style={styles.postcodeSheet}>
+                        <View style={styles.postcodeHandleBar} />
+                        <AppText
+                          variant="heading3"
+                          color={AppColors.gray100}
+                          style={styles.postcodeTitle}
+                        >
+                          주소 검색
+                        </AppText>
+                        <Postcode
+                          style={styles.postcode}
+                          jsOptions={{ animation: true }}
+                          onSelected={data => {
+                            onChange(data.address);
+                            setShowPostcode(false);
+                          }}
+                          onError={() => setShowPostcode(false)}
+                        />
+                      </View>
+                    </View>
+                  </Modal>
+                </>
               )}
             />
           </View>
@@ -347,5 +401,44 @@ const styles = StyleSheet.create({
   submitBtn: {
     width: ms(163),
     paddingVertical: ms(8),
+  },
+  dropdownBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: ms(8),
+    paddingHorizontal: ms(16),
+    paddingVertical: ms(10),
+    backgroundColor: AppColors.gray10,
+    marginTop: ms(4),
+  },
+  postcodeOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  postcodeSheet: {
+    backgroundColor: AppColors.white,
+    borderTopLeftRadius: ms(20),
+    borderTopRightRadius: ms(20),
+    height: '80%',
+  },
+  postcodeHandleBar: {
+    width: ms(50),
+    height: ms(6),
+    borderRadius: ms(100),
+    backgroundColor: AppColors.gray20,
+    alignSelf: 'center',
+    marginTop: ms(14),
+  },
+  postcodeTitle: {
+    textAlign: 'center',
+    paddingVertical: ms(8),
+    paddingHorizontal: ms(16),
+    borderBottomWidth: 1,
+    borderBottomColor: AppColors.gray20,
+  },
+  postcode: {
+    flex: 1,
   },
 });

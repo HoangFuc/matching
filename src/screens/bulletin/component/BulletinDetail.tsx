@@ -1,14 +1,15 @@
 import React from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   Image,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RouteProp, useRoute } from '@react-navigation/native';
 import dayjs from 'dayjs';
@@ -33,6 +34,30 @@ import { MemoPostStats } from './PostStats';
 const BulletinDetail: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'BulletinDetail'>>();
   const { postId } = route.params;
+
+  //---------------------------------------
+  const insets = useSafeAreaInsets();
+  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, e => {
+      setKeyboardHeight(e.endCoordinates.height - insets.bottom);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [insets.bottom]);
 
   //---------------------------------------
   const { data: post, isLoading } = useGetBulletinDetailQuery(postId);
@@ -105,15 +130,14 @@ const BulletinDetail: React.FC = () => {
     <AppSafeAreaView style={styles.safeAreaTop}>
       <MemoScreenHeader title="게시글 상세" />
 
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
+      <View style={styles.flex}>
+        <KeyboardAwareScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          enableOnAndroid
+          extraScrollHeight={ms(20)}
         >
           {/* Post author */}
           <View style={styles.authorRow}>
@@ -151,7 +175,7 @@ const BulletinDetail: React.FC = () => {
               extra={
                 <Pressable>
                   <AppText variant="pretendard" color={AppColors.gray100}>
-                    댓글 남기기
+                    답글 남기기
                   </AppText>
                 </Pressable>
               }
@@ -169,15 +193,17 @@ const BulletinDetail: React.FC = () => {
               />
             ))}
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
-        {/* Comment input */}
-        <MemoCommentInput
-          replyTo={replyTo}
-          onCancelReply={handleCancelReply}
-          onSend={handleSend}
-        />
-      </KeyboardAvoidingView>
+        {/* Comment input - pinned at bottom */}
+        <View style={{ paddingBottom: keyboardHeight }}>
+          <MemoCommentInput
+            replyTo={replyTo}
+            onCancelReply={handleCancelReply}
+            onSend={handleSend}
+          />
+        </View>
+      </View>
     </AppSafeAreaView>
   );
 };

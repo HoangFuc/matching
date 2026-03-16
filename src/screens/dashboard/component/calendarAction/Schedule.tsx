@@ -22,10 +22,7 @@ const Schedule: React.FC = () => {
         {'오늘의 루틴을 확인해볼까요?'}
       </AppText>
 
-      <Image
-        style={styles.image}
-        source={AppImages.schedule}
-      />
+      <Image style={styles.image} source={AppImages.schedule} />
     </Pressable>
   );
 };

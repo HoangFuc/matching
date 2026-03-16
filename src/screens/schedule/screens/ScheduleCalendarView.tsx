@@ -1,29 +1,24 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { moderateScale as ms } from 'react-native-size-matters/extend';
 
-import {
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
+
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
-
 import { AppColors } from '@/src/constants/colors';
-import { ScheduleNavigationProp } from '@/src/interface/tab.interface';
+import type { RootStackParamList } from '@/src/interface/tab.interface';
 import { MemoEventCardContent } from '../component/EventCardContent';
 import { MemoScheduleCalendar } from '../component/ScheduleCalendar';
 import { MemoScheduleFilterModal } from '../component/ScheduleFilterModal';
 import { MemoScheduleHeader } from '../component/ScheduleHeader';
 import { TScheduleType } from '../component/ScheduleTypePicker';
-import { TScheduleRoute } from '../type';
 
-const Schedule: React.FC = () => {
-  const route = useRoute<TScheduleRoute>();
-  const navigation = useNavigation<ScheduleNavigationProp>();
-  const mode = route.params?.mode ?? 'schedule';
-  const hideTabBar = route.params?.hideTabBar;
+type ScheduleCalendarViewRoute = RouteProp<RootStackParamList, 'ScheduleCalendarView'>;
 
+const ScheduleCalendarView: React.FC = () => {
+  const route = useRoute<ScheduleCalendarViewRoute>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const filterTypes = route.params?.filterTypes;
 
   //---------------------------------------
@@ -36,39 +31,13 @@ const Schedule: React.FC = () => {
   const [detailDateKey, setDetailDateKey] = React.useState<string>();
 
   //---------------------------------------
-  useFocusEffect(
-    React.useCallback(() => {
-      // Reset local state on focus
-      setFilterVisible(false);
-      setSelectedFilterTypes([]);
+  const handlePressBack = React.useCallback(() => {
+    if (detailDateKey) {
       setDetailDateKey(undefined);
-
-      if (hideTabBar) {
-        navigation.getParent()?.setOptions({
-          tabBarStyle: {
-            ...styles.tabBar,
-            opacity: 0,
-          },
-        });
-      }
-
-      return () => {
-        navigation.getParent()?.setOptions({
-          tabBarStyle: { ...styles.tabBar, opacity: 1 },
-        });
-        navigation.setParams({
-          mode: undefined,
-          filterTypes: undefined,
-          hideTabBar: undefined,
-        });
-      };
-    }, [navigation, hideTabBar]),
-  );
-
-  //---------------------------------------
-  const handleGoHome = React.useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
+    } else {
+      navigation.goBack();
+    }
+  }, [navigation, detailDateKey]);
 
   //---------------------------------------
   const handleOpenFilter = React.useCallback(() => {
@@ -86,7 +55,7 @@ const Schedule: React.FC = () => {
   }, []);
 
   //---------------------------------------
-  const handlePressBack = React.useCallback(() => {
+  const handleDetailBack = React.useCallback(() => {
     setDetailDateKey(undefined);
   }, []);
 
@@ -101,21 +70,20 @@ const Schedule: React.FC = () => {
     <AppSafeAreaView style={styles.safeArea}>
       <MemoScheduleHeader
         onPressFilter={handleOpenFilter}
-        onPressBack={handleGoHome}
-        mode={mode}
+        onPressBack={handlePressBack}
         detailDateKey={detailDateKey}
         isFilterActive={selectedFilterTypes.length > 0}
       />
 
       {detailDateKey ? (
         <MemoEventCardContent
-          handlePressBack={handlePressBack}
+          handlePressBack={handleDetailBack}
           dateKey={detailDateKey}
         />
       ) : (
         <View style={styles.content}>
           <MemoScheduleCalendar
-            mode={mode}
+            mode="schedule"
             selectedFilterTypes={selectedFilterTypes}
             onDayPress={handleDayPress}
           />
@@ -132,7 +100,7 @@ const Schedule: React.FC = () => {
   );
 };
 
-export const MemoScheduleMain = React.memo(Schedule);
+export const MemoScheduleCalendarView = React.memo(ScheduleCalendarView);
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -141,10 +109,5 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  tabBar: {
-    height: ms(92),
-    borderTopLeftRadius: ms(20),
-    borderTopRightRadius: ms(20),
   },
 });

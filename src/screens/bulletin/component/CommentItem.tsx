@@ -117,13 +117,13 @@ const CommentItem: React.FC<IProps> = ({
               {comment.author.fullName}
             </AppText>
 
-            {isAuthor && (
+            {/* {isAuthor && (
               <View style={styles.authorBadge}>
                 <AppText variant="detail" color={AppColors.purple}>
                   작성자
                 </AppText>
               </View>
-            )}
+            )} */}
 
             <AppText variant="detail" color={AppColors.gray80}>
               · {formatTimeAgo(comment.createdAt)}
@@ -131,11 +131,11 @@ const CommentItem: React.FC<IProps> = ({
           </View>
         </View>
 
-        {isAuthor && (
+        {/* {isAuthor && (
           <Pressable onPress={handleOpenOptions}>
             <EllipsisVerticalIcon color={AppColors.gray100} size={ms(20)} />
           </Pressable>
-        )}
+        )} */}
       </View>
 
       {/* Comment content */}
@@ -210,7 +210,7 @@ const CommentItem: React.FC<IProps> = ({
             </Pressable>
           ) : undefined
         }
-        isAuthor={isAuthor}
+        // isAuthor={isAuthor}
       />
 
       {/* Replies */}
@@ -224,7 +224,7 @@ const CommentItem: React.FC<IProps> = ({
         />
       ))}
 
-      {isAuthor && (
+      {/* {isAuthor && (
         <MemoBottomSheetModal
           visible={showOptions}
           onClose={handleCloseOptions}
@@ -251,7 +251,7 @@ const CommentItem: React.FC<IProps> = ({
             </Pressable>
           </View>
         </MemoBottomSheetModal>
-      )}
+      )} */}
     </View>
   );
 };

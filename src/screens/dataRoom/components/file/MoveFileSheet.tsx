@@ -83,30 +83,36 @@ const MoveFileSheet: React.FC<IProps> = ({
           폴더
         </AppText>
 
-        {folders.map((folder: IFolder) => (
-          <Pressable
-            key={folder.id}
-            style={styles.folderItem}
-            onPress={() => setSelectedFolderId(folder.id)}
-          >
-            <AppText
-              variant={selectedFolderId === folder.id ? 'body2' : 'body4'}
-              color={
-                folder.id === currentFolderId
-                  ? AppColors.gray40
-                  : selectedFolderId === folder.id
-                  ? AppColors.purple
-                  : AppColors.gray80
-              }
-            >
-              {folder.name}
-            </AppText>
+        {folders.map((folder: IFolder) => {
+          const isCurrent = folder.id === currentFolderId;
+          const isSelected = selectedFolderId === folder.id;
 
-            {selectedFolderId === folder.id && (
-              <RadioCheck width={ms(20)} height={ms(20)} />
-            )}
-          </Pressable>
-        ))}
+          return (
+            <Pressable
+              key={folder.id}
+              style={styles.folderItem}
+              onPress={() => setSelectedFolderId(folder.id)}
+              disabled={isCurrent}
+            >
+              <AppText
+                variant={isSelected ? 'body2' : 'body4'}
+                color={
+                  isCurrent
+                    ? AppColors.gray40
+                    : isSelected
+                    ? AppColors.purple
+                    : AppColors.gray80
+                }
+              >
+                {folder.name}
+              </AppText>
+
+              {isSelected && !isCurrent && (
+                <RadioCheck width={ms(20)} height={ms(20)} />
+              )}
+            </Pressable>
+          );
+        })}
       </View>
     </MemoAppBottomSheet>
   );

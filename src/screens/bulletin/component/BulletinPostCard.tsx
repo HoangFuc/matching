@@ -79,7 +79,12 @@ const BulletinPostCard: React.FC<IProps> = ({ post, onPress }) => {
       </View>
 
       {/* Footer - likes & comments */}
-      <MemoPostStats likes={post.likeCount} comments={post.commentCount} />
+      <MemoPostStats
+        postId={post.id}
+        likes={post.likeCount}
+        comments={post.commentCount}
+        isLiked={post.isLiked}
+      />
     </MemoBaseCard>
   );
 };

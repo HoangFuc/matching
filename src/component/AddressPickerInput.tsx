@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { InteractionManager, Pressable, StyleSheet } from 'react-native';
 
 import Postcode from '@actbase/react-daum-postcode';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -20,6 +20,19 @@ const AddressPickerInput: React.FC<IProps> = ({
   placeholder = '방문 장소를 입력하세요',
 }) => {
   const [showPostcode, setShowPostcode] = React.useState(false);
+  const [postcodeReady, setPostcodeReady] = React.useState(false);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    if (!showPostcode) {
+      setPostcodeReady(false);
+      return;
+    }
+    const task = InteractionManager.runAfterInteractions(() => {
+      setPostcodeReady(true);
+    });
+    return () => task.cancel();
+  }, [showPostcode]);
 
   return (
     <>
@@ -35,22 +48,26 @@ const AddressPickerInput: React.FC<IProps> = ({
         </AppText>
       </Pressable>
 
-      <MemoBottomSheetModal
-        visible={showPostcode}
-        onClose={() => setShowPostcode(false)}
-        title="주소 검색"
-        sheetStyle={styles.postcodeSheet}
-      >
-        <Postcode
-          style={styles.postcode}
-          jsOptions={{ animation: true }}
-          onSelected={data => {
-            setShowPostcode(false);
-            onChange(data.address);
-          }}
-          onError={() => setShowPostcode(false)}
-        />
-      </MemoBottomSheetModal>
+      {showPostcode && (
+        <MemoBottomSheetModal
+          visible={showPostcode}
+          onClose={() => setShowPostcode(false)}
+          title="주소 검색"
+          sheetStyle={styles.postcodeSheet}
+        >
+          {postcodeReady && (
+            <Postcode
+              style={styles.postcode}
+              jsOptions={{ animation: true }}
+              onSelected={data => {
+                setShowPostcode(false);
+                onChange(data.address);
+              }}
+              onError={() => setShowPostcode(false)}
+            />
+          )}
+        </MemoBottomSheetModal>
+      )}
     </>
   );
 };

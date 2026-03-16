@@ -1,14 +1,18 @@
 import React from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
 
-import Postcode from '@actbase/react-daum-postcode';
-import { useNavigation } from '@react-navigation/native';
-import { Controller, useForm } from 'react-hook-form';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
 import { MemoTimePickerModal } from '@/src/component/calendar/TimePickerModal';
-import { moderateScale as ms, scale as s } from 'react-native-size-matters/extend';
 import { MemoPhoneInput, stripDashes } from '@/src/component/PhoneInput';
+import Postcode from '@actbase/react-daum-postcode';
+import { useNavigation } from '@react-navigation/native';
+import { Controller, useForm } from 'react-hook-form';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {
+  moderateScale as ms,
+  scale as s,
+} from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
@@ -85,15 +89,12 @@ const CreateMeetingScheduleScreen: React.FC = () => {
       <MemoScreenHeader title="방문 일정 등록" />
 
       <MemoScreenBody>
-        <KeyboardAvoidingView
-          style={styles.flex1}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? ms(100) : 0}
-        >
-        <ScrollView
+        <KeyboardAwareScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          extraScrollHeight={ms(20)}
         >
           {/* Date & Time */}
           <View>
@@ -164,10 +165,11 @@ const CreateMeetingScheduleScreen: React.FC = () => {
 
                     <MemoTimePickerModal
                       visible={showTimePicker}
-                      value={value}
                       onConfirm={time => {
                         setShowTimePicker(false);
-                        onChange(time);
+                        const hh = String(time.getHours()).padStart(2, '0');
+                        const mm = String(time.getMinutes()).padStart(2, '0');
+                        onChange(`${hh}:${mm}`);
                       }}
                       onCancel={() => setShowTimePicker(false)}
                     />
@@ -289,8 +291,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
             placeholder="메모를 입력하세요"
             multiline
           />
-        </ScrollView>
-        </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
 
         <View style={styles.bottomContainer}>
           <MemoAppButton
@@ -314,9 +315,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: AppColors.purple,
-  },
-  flex1: {
-    flex: 1,
   },
   scrollContent: {
     padding: ms(16),

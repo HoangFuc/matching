@@ -1,39 +1,107 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
 
-import { ms } from 'react-native-size-matters/extend';
+import { ms, s } from 'react-native-size-matters/extend';
 
-import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
-import { MemoAppButton } from '@/src/component/AppButton';
-import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { AppText } from '../AppText';
+import { MemoAppBottomSheet } from '../AppBottomSheet';
+
+const ITEM_HEIGHT = s(40);
+const VISIBLE_ITEMS = 5;
+
+const hours = Array.from({ length: 24 }, (_, i) => i);
+const minutes = Array.from({ length: 60 }, (_, i) => i);
 
 interface IProps {
   visible: boolean;
-  value?: string; // 'HH:mm'
-  onConfirm: (time: string) => void; // returns 'HH:mm'
+  value?: Date;
+  onConfirm: (time: Date) => void;
   onCancel: () => void;
 }
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const MINUTES = Array.from({ length: 60 }, (_, i) => i);
-const ITEM_HEIGHT = ms(40);
-const VISIBLE_COUNT = 5;
-const LIST_HEIGHT = ITEM_HEIGHT * VISIBLE_COUNT;
-const PADDING = ITEM_HEIGHT * Math.floor(VISIBLE_COUNT / 2);
-const pad = (n: number) => String(n).padStart(2, '0');
+//---------------------------------------
 
-const parseTime = (value?: string) => {
-  if (!value) return { hour: 0, minute: 0 };
-  const [h, m] = value.split(':').map(Number);
-  return { hour: h ?? 0, minute: m ?? 0 };
+const WheelColumn: React.FC<{
+  data: number[];
+  selectedIndex: number;
+  onSelect: (index: number) => void;
+}> = ({ data, selectedIndex, onSelect }) => {
+  const scrollRef = useRef<ScrollView>(null);
+  const isUserScrolling = useRef(false);
+
+  useEffect(() => {
+    if (!isUserScrolling.current) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          y: selectedIndex * ITEM_HEIGHT,
+          animated: false,
+        });
+      }, 100);
+    }
+  }, [selectedIndex]);
+
+  //---------------------------------------
+
+  const handleMomentumScrollEnd = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const offsetY = e.nativeEvent.contentOffset.y;
+      const index = Math.round(offsetY / ITEM_HEIGHT);
+      const clampedIndex = Math.max(0, Math.min(index, data.length - 1));
+      onSelect(clampedIndex);
+      isUserScrolling.current = false;
+    },
+    [data.length, onSelect],
+  );
+
+  //---------------------------------------
+
+  const handleScrollBeginDrag = useCallback(() => {
+    isUserScrolling.current = true;
+  }, []);
+
+  //---------------------------------------
+
+  const paddingVertical = ((VISIBLE_ITEMS - 1) / 2) * ITEM_HEIGHT;
+
+  return (
+    <View style={styles.columnContainer}>
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={ITEM_HEIGHT}
+        decelerationRate="fast"
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        onScrollBeginDrag={handleScrollBeginDrag}
+        contentContainerStyle={{ paddingVertical }}
+        nestedScrollEnabled
+      >
+        {data.map((item, index) => {
+          const isSelected = index === selectedIndex;
+          return (
+            <View key={index} style={styles.itemContainer}>
+              <AppText
+                variant={isSelected ? 'heading3' : 'body2'}
+                color={isSelected ? AppColors.gray100 : AppColors.gray40}
+              >
+                {String(item).padStart(2, '0')}
+              </AppText>
+            </View>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
 };
+
+//---------------------------------------
 
 const TimePickerModal: React.FC<IProps> = ({
   visible,
@@ -41,77 +109,44 @@ const TimePickerModal: React.FC<IProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  const { hour: initHour, minute: initMinute } = parseTime(value);
-
-  const [selectedHour, setSelectedHour] = React.useState(initHour);
-  const [selectedMinute, setSelectedMinute] = React.useState(initMinute);
-
-  const hourListRef = React.useRef<ScrollView>(null);
-  const minuteListRef = React.useRef<ScrollView>(null);
+  const [selectedHour, setSelectedHour] = useState(value?.getHours() ?? 0);
+  const [selectedMinute, setSelectedMinute] = useState(value?.getMinutes() ?? 0);
 
   //---------------------------------------
-  React.useEffect(() => {
+
+  useEffect(() => {
     if (visible) {
-      const { hour, minute } = parseTime(value);
-      setSelectedHour(hour);
-      setSelectedMinute(minute);
-      setTimeout(() => {
-        hourListRef.current?.scrollTo({
-          y: hour * ITEM_HEIGHT,
-          animated: false,
-        });
-        minuteListRef.current?.scrollTo({
-          y: minute * ITEM_HEIGHT,
-          animated: false,
-        });
-      }, 100);
+      setSelectedHour(value?.getHours() ?? 0);
+      setSelectedMinute(value?.getMinutes() ?? 0);
     }
   }, [visible, value]);
 
   //---------------------------------------
-  const handleHourScroll = React.useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const index = Math.round(e.nativeEvent.contentOffset.y / ITEM_HEIGHT);
-      const clamped = Math.max(0, Math.min(index, HOURS.length - 1));
-      setSelectedHour(clamped);
-    },
-    [],
-  );
+
+  const handleConfirm = useCallback(() => {
+    const newDate = new Date(value ?? new Date());
+    newDate.setHours(selectedHour);
+    newDate.setMinutes(selectedMinute);
+    newDate.setSeconds(0);
+    newDate.setMilliseconds(0);
+    onConfirm(newDate);
+  }, [value, selectedHour, selectedMinute, onConfirm]);
 
   //---------------------------------------
-  const handleMinuteScroll = React.useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const index = Math.round(e.nativeEvent.contentOffset.y / ITEM_HEIGHT);
-      const clamped = Math.max(0, Math.min(index, MINUTES.length - 1));
-      setSelectedMinute(clamped);
-    },
-    [],
-  );
 
-  //---------------------------------------
-  const handleConfirm = React.useCallback(() => {
-    onConfirm(`${pad(selectedHour)}:${pad(selectedMinute)}`);
-  }, [selectedHour, selectedMinute, onConfirm]);
-
-  //---------------------------------------
-  const footerButtons = React.useMemo(
-    () => (
-      <>
-        <MemoAppButton
-          label="취소"
-          variant="secondary"
-          style={styles.actionButton}
-          onPress={onCancel}
-        />
-        <MemoAppButton
-          label="확인"
-          variant="primary"
-          style={styles.actionButton}
-          onPress={handleConfirm}
-        />
-      </>
-    ),
-    [onCancel, handleConfirm],
+  const footer = (
+    <>
+      <Pressable style={styles.cancelButton} onPress={onCancel}>
+        <AppText variant="body1" color={AppColors.gray100}>
+          취소
+        </AppText>
+      </Pressable>
+      <Pressable style={styles.confirmButton} onPress={handleConfirm}>
+        <AppText variant="body1" color={AppColors.purple}>
+          확인
+        </AppText>
+      </Pressable>
+    </>
   );
 
   return (
@@ -119,65 +154,21 @@ const TimePickerModal: React.FC<IProps> = ({
       visible={visible}
       onClose={onCancel}
       title="시간 선택"
-      footer={footerButtons}
-      contentContainerStyle={styles.contentContainer}
+      footer={footer}
+      scrollable={false}
     >
-      <View style={styles.pickerRow}>
-        <View style={styles.selectedOverlay} pointerEvents="none" />
-
-        {/* Hour */}
-        <View style={[styles.listContainer, { height: LIST_HEIGHT }]}>
-          <ScrollView
-            ref={hourListRef}
-            showsVerticalScrollIndicator={false}
-            snapToInterval={ITEM_HEIGHT}
-            decelerationRate="fast"
-            onMomentumScrollEnd={handleHourScroll}
-            contentContainerStyle={{ paddingVertical: PADDING }}
-            nestedScrollEnabled
-          >
-            {HOURS.map(item => {
-              const isSelected = item === selectedHour;
-              return (
-                <View key={item} style={styles.item}>
-                  <AppText
-                    variant={isSelected ? 'body6' : 'body8'}
-                    color={isSelected ? AppColors.gray100 : AppColors.gray40}
-                  >
-                    {pad(item)}
-                  </AppText>
-                </View>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        {/* Minute */}
-        <View style={[styles.listContainer, { height: LIST_HEIGHT }]}>
-          <ScrollView
-            ref={minuteListRef}
-            showsVerticalScrollIndicator={false}
-            snapToInterval={ITEM_HEIGHT}
-            decelerationRate="fast"
-            onMomentumScrollEnd={handleMinuteScroll}
-            contentContainerStyle={{ paddingVertical: PADDING }}
-            nestedScrollEnabled
-          >
-            {MINUTES.map(item => {
-              const isSelected = item === selectedMinute;
-              return (
-                <View key={item} style={styles.item}>
-                  <AppText
-                    variant={isSelected ? 'body6' : 'body8'}
-                    color={isSelected ? AppColors.gray100 : AppColors.gray40}
-                  >
-                    {pad(item)}
-                  </AppText>
-                </View>
-              );
-            })}
-          </ScrollView>
-        </View>
+      <View style={styles.pickerContainer}>
+        <View style={styles.selectedIndicator} />
+        <WheelColumn
+          data={hours}
+          selectedIndex={selectedHour}
+          onSelect={setSelectedHour}
+        />
+        <WheelColumn
+          data={minutes}
+          selectedIndex={selectedMinute}
+          onSelect={setSelectedMinute}
+        />
       </View>
     </MemoAppBottomSheet>
   );
@@ -185,33 +176,46 @@ const TimePickerModal: React.FC<IProps> = ({
 
 export const MemoTimePickerModal = React.memo(TimePickerModal);
 
+//---------------------------------------
+
 const styles = StyleSheet.create({
-  contentContainer: {
-    paddingHorizontal: 0,
-  },
-  pickerRow: {
+  pickerContainer: {
     flexDirection: 'row',
-    position: 'relative',
+    height: ITEM_HEIGHT * VISIBLE_ITEMS,
+    justifyContent: 'center',
   },
-  listContainer: {
+  columnContainer: {
     flex: 1,
     overflow: 'hidden',
   },
-  item: {
+  itemContainer: {
     height: ITEM_HEIGHT,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  selectedOverlay: {
+  selectedIndicator: {
     position: 'absolute',
-    top: ITEM_HEIGHT * Math.floor(VISIBLE_COUNT / 2),
+    top: ITEM_HEIGHT * ((VISIBLE_ITEMS - 1) / 2),
     left: 0,
     right: 0,
     height: ITEM_HEIGHT,
-    backgroundColor: AppColors.gray10,
+    backgroundColor: AppColors.gray20,
     borderRadius: ms(8),
   },
-  actionButton: {
+  cancelButton: {
     flex: 1,
+    height: s(48),
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: ms(25),
+    backgroundColor: AppColors.gray20,
+  },
+  confirmButton: {
+    flex: 1,
+    height: s(48),
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: ms(25),
+    backgroundColor: AppColors.lavendar,
   },
 });

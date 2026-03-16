@@ -21,6 +21,7 @@ import { MemoCreateBulletinScreen } from '../screens/bulletin/screens/CreateBull
 import { MemoMeetingScheduleManagementScreen } from '../screens/meetingScheduleManagement/screens/MeetingScheduleManagementScreen';
 import { MemoCreateMeetingScheduleScreen } from '../screens/meetingScheduleManagement/screens/CreateMeetingScheduleScreen';
 import { MemoMeetingScheduleDetailScreen } from '../screens/meetingScheduleManagement/screens/MeetingScheduleDetailScreen';
+import { MemoScheduleCalendarView } from '../screens/schedule/screens/ScheduleCalendarView';
 import HomeStack from './HomeStack';
 import MeetingMinutesStack from './MeetingMinutesStack';
 import ScheduleStack from './ScheduleStack';
@@ -207,6 +208,10 @@ const AppNavigator: React.FC = () => {
           <RootStack.Screen
             name="MeetingScheduleDetail"
             component={MemoMeetingScheduleDetailScreen}
+          />
+          <RootStack.Screen
+            name="ScheduleCalendarView"
+            component={MemoScheduleCalendarView}
           />
         </RootStack.Navigator>
       </NavigationContainer>

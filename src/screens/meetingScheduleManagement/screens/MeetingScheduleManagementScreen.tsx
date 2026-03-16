@@ -91,12 +91,8 @@ const MeetingScheduleManagementScreen: React.FC = () => {
 
   //---------------------------------------
   const handlePressCalendar = React.useCallback(() => {
-    navigation.navigate('MainTabs', {
-      screen: 'Schedule',
-      params: {
-        screen: 'ScheduleMain',
-        params: { filterTypes: ['고객 미팅'] },
-      },
+    navigation.navigate('ScheduleCalendarView', {
+      filterTypes: ['고객 미팅'],
     });
   }, [navigation]);
 

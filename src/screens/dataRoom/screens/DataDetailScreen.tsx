@@ -44,7 +44,7 @@ const DataDetailScreen: React.FC = () => {
   const viewMode = useAppSelector(state => state.dataRoom.viewMode);
 
   //---------------------------------------
-  const { folderId, folderName } = route.params;
+  const { folderId, folderName, tabType } = route.params;
   const { data: files = [] } = useGetFilesByFolderQuery(folderId);
   const { pickAndUpload } = useFilePicker(folderId);
   const progress = useAppSelector(state => state.dataRoom.uploadProgress);
@@ -217,6 +217,7 @@ const DataDetailScreen: React.FC = () => {
           onClose={closeMoveSheet}
           fileId={selectedFile.id}
           currentFolderId={folderId}
+          type={tabType}
         />
       )}
 

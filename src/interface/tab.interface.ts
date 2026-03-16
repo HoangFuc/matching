@@ -18,6 +18,7 @@ export type RootStackParamList = {
   MeetingScheduleManagement: undefined;
   CreateMeetingSchedule: undefined;
   MeetingScheduleDetail: { item: IMeetingScheduleManagement };
+  ScheduleCalendarView: { filterTypes?: TScheduleType[] };
 };
 
 export type MeetingMinutesStackParamList = {
@@ -54,6 +55,7 @@ export type DataRoomStackParamList = {
   DataRoomDetail: {
     folderId: string;
     folderName: string;
+    tabType: import('../screens/dataRoom/constants').TDataRoomTabType;
   };
 };
 

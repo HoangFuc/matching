@@ -1,5 +1,12 @@
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
 import {
@@ -14,6 +21,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
+import Postcode from '@actbase/react-daum-postcode';
+import { MemoAddressPickerInput } from '@/src/component/AddressPickerInput';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { MemoDropdownButton } from '@/src/component/DropdownButton';
@@ -71,12 +80,10 @@ const EditMeetingMinutesScreen: React.FC = () => {
   const { item } = route.params;
 
   //---------------------------------------
-  const { control, handleSubmit } = useForm<IFormData>({
+  const { control, handleSubmit, setValue } = useForm<IFormData>({
     defaultValues: {
       meetingType: MEETING_TYPE_LABEL[item.meetingType],
-      date: item.meetingDate
-        ? formatDateToDisplay(item.meetingDate)
-        : '',
+      date: item.meetingDate ? formatDateToDisplay(item.meetingDate) : '',
       visitLocation: item.address,
       customerName: item.customerName,
       phone: item.customerPhone,
@@ -92,6 +99,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
     item.recordings ?? [],
   );
   const [savedUploadId, setSavedUploadId] = React.useState<string | null>(null);
+  const [showPostcode, setShowPostcode] = React.useState(false);
   const isPickingRef = React.useRef(false);
 
   //---------------------------------------
@@ -304,12 +312,66 @@ const EditMeetingMinutesScreen: React.FC = () => {
             />
           </View>
 
-          <RHFFormInput
-            control={control}
-            name="visitLocation"
-            label="방문 장소"
-            placeholder="방문 장소를 입력해주세요"
-          />
+          <View>
+            <AppText variant="body7" color={AppColors.gray90}>
+              방문 장소{' '}
+              <AppText variant="body7" color={AppColors.negative}>
+                *
+              </AppText>
+            </AppText>
+
+            <Controller
+              control={control}
+              name="visitLocation"
+              render={({ field: { value } }) => (
+                <Pressable
+                  style={styles.dropdownBtn}
+                  onPress={() => setShowPostcode(true)}
+                >
+                  <AppText
+                    variant="body7"
+                    color={value ? AppColors.gray100 : AppColors.gray40}
+                  >
+                    {value || '방문 장소를 입력하세요'}
+                  </AppText>
+                </Pressable>
+              )}
+            />
+
+            <Modal
+              visible={showPostcode}
+              transparent
+              animationType="slide"
+              statusBarTranslucent
+              onRequestClose={() => setShowPostcode(false)}
+            >
+              <View style={styles.postcodeOverlay}>
+                <Pressable
+                  style={{ flex: 1 }}
+                  onPress={() => setShowPostcode(false)}
+                />
+                <View style={styles.postcodeSheet}>
+                  <View style={styles.postcodeHandleBar} />
+                  <AppText
+                    variant="heading3"
+                    color={AppColors.gray100}
+                    style={styles.postcodeTitle}
+                  >
+                    주소 검색
+                  </AppText>
+                  <Postcode
+                    style={styles.postcode}
+                    jsOptions={{ animation: true }}
+                    onSelected={data => {
+                      setValue('visitLocation', data.address);
+                      setShowPostcode(false);
+                    }}
+                    onError={() => setShowPostcode(false)}
+                  />
+                </View>
+              </View>
+            </Modal>
+          </View>
 
           <RHFFormInput
             control={control}
@@ -401,5 +463,44 @@ const styles = StyleSheet.create({
   submitBtn: {
     width: ms(163),
     paddingVertical: ms(8),
+  },
+  dropdownBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: ms(8),
+    paddingHorizontal: ms(16),
+    paddingVertical: ms(10),
+    backgroundColor: AppColors.gray10,
+    marginTop: ms(4),
+  },
+  postcodeOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  postcodeSheet: {
+    backgroundColor: AppColors.white,
+    borderTopLeftRadius: ms(20),
+    borderTopRightRadius: ms(20),
+    height: '80%',
+  },
+  postcodeHandleBar: {
+    width: ms(50),
+    height: ms(6),
+    borderRadius: ms(100),
+    backgroundColor: AppColors.gray20,
+    alignSelf: 'center',
+    marginTop: ms(14),
+  },
+  postcodeTitle: {
+    textAlign: 'center',
+    paddingVertical: ms(8),
+    paddingHorizontal: ms(16),
+    borderBottomWidth: 1,
+    borderBottomColor: AppColors.gray20,
+  },
+  postcode: {
+    flex: 1,
   },
 });

@@ -9,19 +9,21 @@ import { Sort } from '@/src/constants/icons';
 
 interface IProps {
   onPressFilter: () => void;
+  onPressBack?: () => void;
   mode?: string;
   detailDateKey?: string;
   isFilterActive?: boolean;
 }
 
 const ScheduleHeader: React.FC<IProps> = props => {
-  const { onPressFilter, mode, detailDateKey, isFilterActive } = props;
+  const { onPressFilter, onPressBack, mode, detailDateKey, isFilterActive } = props;
 
   return (
     <MemoScreenHeader
       title={
         mode === 'attendance' ? '근태현황' : detailDateKey ? '일정 상세' : '일정'
       }
+      onPressBack={onPressBack}
       rightElement={
         mode !== 'attendance' && !detailDateKey ? (
           <Pressable hitSlop={8} onPress={onPressFilter}>

@@ -130,7 +130,9 @@ const FormCreateSchedule: React.FC<IProps> = ({
                         variant="body8"
                         color={value ? AppColors.gray100 : AppColors.gray40}
                       >
-                        {value || '00:00'}
+                        {value instanceof Date
+                          ? `${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`
+                          : value || '00:00'}
                       </AppText>
                     </View>
 

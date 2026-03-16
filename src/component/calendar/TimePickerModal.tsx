@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { ms, s } from 'react-native-size-matters/extend';
 
@@ -34,69 +34,80 @@ const WheelColumn: React.FC<{
   selectedIndex: number;
   onSelect: (index: number) => void;
 }> = ({ data, selectedIndex, onSelect }) => {
-  const scrollRef = useRef<ScrollView>(null);
-  const isUserScrolling = useRef(false);
-
-  useEffect(() => {
-    if (!isUserScrolling.current) {
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({
-          y: selectedIndex * ITEM_HEIGHT,
-          animated: false,
-        });
-      }, 100);
-    }
-  }, [selectedIndex]);
+  const translateY = useSharedValue(0);
+  const startY = useSharedValue(0);
+  const maxOffset = 0;
+  const minOffset = -(data.length - 1) * ITEM_HEIGHT;
 
   //---------------------------------------
 
-  const handleMomentumScrollEnd = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const offsetY = e.nativeEvent.contentOffset.y;
-      const index = Math.round(offsetY / ITEM_HEIGHT);
+  useEffect(() => {
+    translateY.value = withTiming(-selectedIndex * ITEM_HEIGHT, {
+      duration: 200,
+    });
+  }, [selectedIndex, translateY]);
+
+  //---------------------------------------
+
+  const snapToNearest = useCallback(
+    (currentY: number) => {
+      'worklet';
+      const index = Math.round(-currentY / ITEM_HEIGHT);
       const clampedIndex = Math.max(0, Math.min(index, data.length - 1));
-      onSelect(clampedIndex);
-      isUserScrolling.current = false;
+      translateY.value = withTiming(-clampedIndex * ITEM_HEIGHT, {
+        duration: 200,
+      });
+      runOnJS(onSelect)(clampedIndex);
     },
-    [data.length, onSelect],
+    [data.length, onSelect, translateY],
   );
 
   //---------------------------------------
 
-  const handleScrollBeginDrag = useCallback(() => {
-    isUserScrolling.current = true;
-  }, []);
+  const panGesture = Gesture.Pan()
+    .onStart(() => {
+      startY.value = translateY.value;
+    })
+    .onUpdate(e => {
+      const newY = startY.value + e.translationY;
+      translateY.value = Math.max(minOffset, Math.min(maxOffset, newY));
+    })
+    .onEnd(e => {
+      const projected =
+        translateY.value + e.velocityY * 0.15;
+      const clamped = Math.max(minOffset, Math.min(maxOffset, projected));
+      snapToNearest(clamped);
+    });
 
   //---------------------------------------
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   const paddingVertical = ((VISIBLE_ITEMS - 1) / 2) * ITEM_HEIGHT;
 
   return (
     <View style={styles.columnContainer}>
-      <ScrollView
-        ref={scrollRef}
-        showsVerticalScrollIndicator={false}
-        snapToInterval={ITEM_HEIGHT}
-        decelerationRate="fast"
-        onMomentumScrollEnd={handleMomentumScrollEnd}
-        onScrollBeginDrag={handleScrollBeginDrag}
-        contentContainerStyle={{ paddingVertical }}
-        nestedScrollEnabled
-      >
-        {data.map((item, index) => {
-          const isSelected = index === selectedIndex;
-          return (
-            <View key={index} style={styles.itemContainer}>
-              <AppText
-                variant={isSelected ? 'heading3' : 'body2'}
-                color={isSelected ? AppColors.gray100 : AppColors.gray40}
-              >
-                {String(item).padStart(2, '0')}
-              </AppText>
-            </View>
-          );
-        })}
-      </ScrollView>
+      <GestureDetector gesture={panGesture}>
+        <Animated.View
+          style={[animatedStyle, { paddingVertical }]}
+        >
+          {data.map((item, index) => {
+            const isSelected = index === selectedIndex;
+            return (
+              <View key={index} style={styles.itemContainer}>
+                <AppText
+                  variant={isSelected ? 'heading3' : 'body2'}
+                  color={isSelected ? AppColors.gray100 : AppColors.gray40}
+                >
+                  {String(item).padStart(2, '0')}
+                </AppText>
+              </View>
+            );
+          })}
+        </Animated.View>
+      </GestureDetector>
     </View>
   );
 };
@@ -110,7 +121,9 @@ const TimePickerModal: React.FC<IProps> = ({
   onCancel,
 }) => {
   const [selectedHour, setSelectedHour] = useState(value?.getHours() ?? 0);
-  const [selectedMinute, setSelectedMinute] = useState(value?.getMinutes() ?? 0);
+  const [selectedMinute, setSelectedMinute] = useState(
+    value?.getMinutes() ?? 0,
+  );
 
   //---------------------------------------
 

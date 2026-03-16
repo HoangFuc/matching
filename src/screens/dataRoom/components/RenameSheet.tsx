@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Controller, useForm } from 'react-hook-form';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -97,24 +99,33 @@ const RenameSheet: React.FC<IProps> = ({
       onClose={handleClose}
       title="이름 변경"
       showHandle={true}
+      scrollable={false}
       footer={footer}
     >
-      <View style={styles.container}>
-        <Controller
-          control={control}
-          name="name"
-          rules={{ required: '이름을 입력해주세요' }}
-          render={({ field: { value, onChange } }) => (
-            <MemoAppSheetInput
-              label="명"
-              value={value}
-              onChangeText={onChange}
-              placeholder="파일명을 입력해주세요"
-              error={errors.name?.message}
-            />
-          )}
-        />
-      </View>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid
+        extraScrollHeight={ms(20)}
+      >
+        <View style={styles.container}>
+          <Controller
+            control={control}
+            name="name"
+            rules={{ required: '이름을 입력해주세요' }}
+            render={({ field: { value, onChange } }) => (
+              <MemoAppSheetInput
+                label="명"
+                value={value}
+                onChangeText={onChange}
+                placeholder="파일명을 입력해주세요"
+                error={errors.name?.message}
+              />
+            )}
+          />
+        </View>
+      </KeyboardAwareScrollView>
     </MemoAppBottomSheet>
   );
 };
@@ -124,6 +135,10 @@ export const MemoRenameSheet = React.memo(RenameSheet);
 const styles = StyleSheet.create({
   button: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: ms(20),
+    gap: ms(16),
   },
   container: {
     paddingTop: 16,

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ArrowDown2 } from '@/src/constants/icons';
 import { Controller, useForm } from 'react-hook-form';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
@@ -101,8 +102,16 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
       onClose={handleClose}
       title="폴더 생성"
       showHandle={false}
+      scrollable={false}
       footer={footer}
     >
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid
+        extraScrollHeight={ms(20)}
+      >
       <Controller
         control={control}
         name="folderType"
@@ -182,6 +191,7 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
           />
         )}
       />
+      </KeyboardAwareScrollView>
     </MemoAppBottomSheet>
   );
 };
@@ -216,6 +226,10 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: ms(20),
+    gap: ms(16),
   },
   headerInput: {
     paddingTop: ms(16),

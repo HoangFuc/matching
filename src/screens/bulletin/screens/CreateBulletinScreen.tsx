@@ -4,7 +4,6 @@ import {
   Alert,
   Image,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -12,6 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useForm } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
@@ -120,9 +120,12 @@ const CreateBulletinScreen: React.FC = () => {
       <MemoScreenHeader title="게시글 작성" />
 
       <MemoScreenBody>
-        <ScrollView
+        <KeyboardAwareScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          extraScrollHeight={ms(20)}
         >
           <MemoFormInput
             label="제목"
@@ -190,7 +193,7 @@ const CreateBulletinScreen: React.FC = () => {
               *이미지는 jpg, png최대 10MB까지 등록가능
             </AppText>
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         <View style={styles.bottomContainer}>
           <MemoAppButton

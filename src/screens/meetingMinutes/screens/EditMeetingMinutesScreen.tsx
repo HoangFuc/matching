@@ -3,7 +3,6 @@ import {
   Alert,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -19,6 +18,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 
@@ -288,10 +288,12 @@ const EditMeetingMinutesScreen: React.FC = () => {
       <MemoScreenHeader title="미팅록 수정" />
 
       <MemoScreenBody>
-        <ScrollView
+        <KeyboardAwareScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          extraScrollHeight={ms(20)}
         >
           <View>
             <AppText variant="body7" color={AppColors.gray90}>
@@ -467,7 +469,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
               />
             )}
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         <View style={styles.bottomContainer}>
           <MemoAppButton

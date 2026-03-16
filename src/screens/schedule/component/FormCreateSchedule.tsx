@@ -2,13 +2,13 @@ import React from 'react';
 import {
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
 
 import { Calendar, Clock } from '@/src/constants/icons';
 import { Control, Controller } from 'react-hook-form';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ms } from 'react-native-size-matters';
 
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
@@ -36,10 +36,12 @@ const FormCreateSchedule: React.FC<IProps> = ({
   const [showTimePicker, setShowTimePicker] = React.useState(false);
 
   return (
-    <ScrollView
+    <KeyboardAwareScrollView
       style={styles.scrollView}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      enableOnAndroid
+      extraScrollHeight={ms(20)}
     >
       <AppText
         variant="heading3"
@@ -215,7 +217,7 @@ const FormCreateSchedule: React.FC<IProps> = ({
           </View>
         )}
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 };
 

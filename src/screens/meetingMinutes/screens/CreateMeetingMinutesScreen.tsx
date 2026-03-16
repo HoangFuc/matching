@@ -19,6 +19,7 @@ import Postcode from '@actbase/react-daum-postcode';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { MemoDropdownButton } from '@/src/component/DropdownButton';
+import { MemoPhoneInput, stripDashes } from '@/src/component/PhoneInput';
 import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
@@ -193,7 +194,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
         meetingType: LABEL_TO_KEY[data.meetingType],
         meetingDate,
         customerName: data.customerName.trim(),
-        customerPhone: data.phone.trim(),
+        customerPhone: stripDashes(data.phone),
         address: data.address.trim(),
         consultationContent: data.content.trim(),
       };
@@ -226,9 +227,12 @@ const CreateMeetingMinutesScreen: React.FC = () => {
 
       <MemoScreenBody>
         <KeyboardAwareScrollView
+          style={styles.flex1}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          extraScrollHeight={ms(20)}
         >
           <View>
             <AppText variant="body7" color={AppColors.gray90}>
@@ -372,12 +376,16 @@ const CreateMeetingMinutesScreen: React.FC = () => {
             required
           />
 
-          <RHFFormInput
+          <Controller
             control={control}
             name="phone"
-            label="연락처"
-            placeholder="연락처을 입력하세요"
-            required
+            render={({ field: { value, onChange } }) => (
+              <MemoPhoneInput
+                value={value}
+                onChangeText={onChange}
+                required
+              />
+            )}
           />
 
           <RHFFormInput
@@ -424,6 +432,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: AppColors.purple,
+  },
+  flex1: {
+    flex: 1,
   },
   scrollContent: {
     padding: ms(16),

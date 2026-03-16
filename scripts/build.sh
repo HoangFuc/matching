@@ -47,16 +47,10 @@ if [ $? -eq 0 ]; then
   echo -e "${GREEN}========================================${NC}"
   echo -e "${CYAN}  APK: ${APK_DIR}${NC}"
 
-  # Open the output folder
-  if command -v explorer.exe &> /dev/null; then
-    explorer.exe "$(wslpath -w "$(pwd)/${APK_DIR}" 2>/dev/null || echo "${APK_DIR}")"
-  elif command -v start &> /dev/null; then
-    start "" "${APK_DIR}"
-  elif command -v xdg-open &> /dev/null; then
-    xdg-open "${APK_DIR}"
-  elif command -v open &> /dev/null; then
-    open "${APK_DIR}"
-  fi
+  # Open the output folder (convert to Windows path for explorer)
+  APK_FULL_PATH="$(cd "${APK_DIR}" 2>/dev/null && pwd)"
+  APK_WIN_PATH="$(cygpath -w "${APK_FULL_PATH}" 2>/dev/null || echo "${APK_FULL_PATH}")"
+  explorer.exe "${APK_WIN_PATH}"
 else
   echo ""
   echo -e "${RED}========================================${NC}"

@@ -39,7 +39,7 @@ const FolderCard: React.FC<IProps> = ({
     <Pressable style={[styles.card, style]} onPress={() => onPress?.(folder)}>
       {showMore && (
         <Pressable
-          hitSlop={8}
+          hitSlop={12}
           onPress={() => onPressMore?.(folder)}
           style={styles.moreIcon}
         >
@@ -91,8 +91,9 @@ const styles = StyleSheet.create({
   card: folderCardStyles.card,
   moreIcon: {
     position: 'absolute',
-    top: ms(8),
-    right: ms(8),
+    top: ms(4),
+    right: ms(6),
+    padding: ms(6),
   },
   icon: {
     width: ms(46),

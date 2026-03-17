@@ -8,6 +8,7 @@ export function useSheetManager<T>(options?: UseSheetManagerOptions<T>) {
   const [actionSheetVisible, setActionSheetVisible] = React.useState(false);
   const [moveSheetVisible, setMoveSheetVisible] = React.useState(false);
   const [renameSheetVisible, setRenameSheetVisible] = React.useState(false);
+  const [infoSheetVisible, setInfoSheetVisible] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<T | null>(null);
 
   //---------------------------------------
@@ -32,6 +33,11 @@ export function useSheetManager<T>(options?: UseSheetManagerOptions<T>) {
   }, []);
 
   //---------------------------------------
+  const closeInfoSheet = React.useCallback(() => {
+    setInfoSheetVisible(false);
+  }, []);
+
+  //---------------------------------------
   const handleAction = React.useCallback(
     (action: string) => {
       if (!selectedItem) {
@@ -47,6 +53,9 @@ export function useSheetManager<T>(options?: UseSheetManagerOptions<T>) {
         case 'rename':
           setRenameSheetVisible(true);
           break;
+        case 'info':
+          setInfoSheetVisible(true);
+          break;
         default:
           break;
       }
@@ -59,10 +68,12 @@ export function useSheetManager<T>(options?: UseSheetManagerOptions<T>) {
     actionSheetVisible,
     moveSheetVisible,
     renameSheetVisible,
+    infoSheetVisible,
     openActionSheet,
     closeActionSheet,
     closeMoveSheet,
     closeRenameSheet,
+    closeInfoSheet,
     handleAction,
   };
 }

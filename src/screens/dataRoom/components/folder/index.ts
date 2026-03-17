@@ -3,3 +3,4 @@ export { MemoFolderActionSheet } from './FolderActionSheet';
 export type { TFolderAction } from './FolderActionSheet';
 export { MemoMoveFolderSheet } from './MoveFolderSheet';
 export { MemoCreateFolderSheet } from './CreateFolderSheet';
+export { MemoFolderInfoSheet } from './FolderInfoSheet';

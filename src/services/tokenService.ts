@@ -6,6 +6,7 @@ import {
 import { API_BASE_URL } from '@env';
 
 const TOKEN_KEY = 'auth_token';
+const USER_KEY = 'user_info';
 
 //---------------------------------------
 /**
@@ -58,11 +59,16 @@ const fetchToken = async (): Promise<string> => {
       throw new Error(`Failed to fetch token: ${response.status}`);
     }
 
-    const json = await response.json();
+    const json: any = await response.json();
     const token = json?.data?.accessToken ?? json?.accessToken ?? json?.token;
 
     if (!token) {
       throw new Error('No token returned from /dev/seed');
+    }
+
+    const user = json?.data?.user ?? json?.user;
+    if (user) {
+      await _storeData(USER_KEY, JSON.stringify(user));
     }
 
     return token;
@@ -98,6 +104,22 @@ export const getToken = async (): Promise<string> => {
  */
 export const removeToken = async (): Promise<void> => {
   await _removeData(TOKEN_KEY);
+};
+
+//---------------------------------------
+/**
+ * Get stored user info from AsyncStorage.
+ */
+export const getUserInfo = async () => {
+  const raw = await _retrieveData(USER_KEY);
+  if (raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  return null;
 };
 
 //---------------------------------------

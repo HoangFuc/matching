@@ -28,6 +28,7 @@ import { MemoFileGridItem } from '../components/file';
 import {
   MemoFolderActionSheet,
   MemoFolderCard,
+  MemoFolderInfoSheet,
   MemoMoveFolderSheet,
 } from '../components/folder';
 import { MemoNoData } from '../components/NoData';
@@ -69,10 +70,12 @@ const DataRoomScreen: React.FC = () => {
     actionSheetVisible,
     moveSheetVisible,
     renameSheetVisible,
+    infoSheetVisible,
     openActionSheet: handlePressMore,
     closeActionSheet,
     closeMoveSheet,
     closeRenameSheet,
+    closeInfoSheet,
     handleAction: handleFolderAction,
   } = useSheetManager<IFolder>({ onShare: handleShareFolder });
 
@@ -283,6 +286,13 @@ const DataRoomScreen: React.FC = () => {
           kind="folder"
         />
       )}
+
+      {/* Folder Info Sheet */}
+      <MemoFolderInfoSheet
+        visible={infoSheetVisible}
+        onClose={closeInfoSheet}
+        folder={selectedFolder}
+      />
     </AppSafeAreaView>
   );
 };

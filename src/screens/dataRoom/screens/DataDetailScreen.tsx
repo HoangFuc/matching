@@ -24,6 +24,7 @@ import { MemoFABWithMenu } from '../components/FABWithMenu';
 import {
   MemoFileActionSheet,
   MemoFileGridItem,
+  MemoFileInfoSheet,
   MemoFileListItem,
   MemoMoveFileSheet,
 } from '../components/file';
@@ -60,10 +61,12 @@ const DataDetailScreen: React.FC = () => {
     actionSheetVisible,
     moveSheetVisible,
     renameSheetVisible,
+    infoSheetVisible,
     openActionSheet,
     closeActionSheet,
     closeMoveSheet,
     closeRenameSheet,
+    closeInfoSheet,
     handleAction: handleFileAction,
   } = useSheetManager<IFile>({ onShare: shareFile });
 
@@ -235,6 +238,14 @@ const DataDetailScreen: React.FC = () => {
           kind="file"
         />
       )}
+
+      {/* File Info Sheet */}
+      <MemoFileInfoSheet
+        visible={infoSheetVisible}
+        onClose={closeInfoSheet}
+        file={selectedFile}
+        folderName={folderName}
+      />
     </AppSafeAreaView>
   );
 };

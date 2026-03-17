@@ -69,7 +69,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
         await createMeetingSchedule({
           ...data,
           scheduleDate: data.scheduleDate.replace(/\./g, '-'),
-          customerPhone: phone,
+          customerPhone: stripDashes(data.customerPhone),
         }).unwrap();
         navigation.goBack();
       } catch (error) {

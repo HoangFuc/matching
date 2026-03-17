@@ -31,6 +31,7 @@ const Chip: React.FC<IProps> = ({
           backgroundColor: bgColor,
           borderWidth: 1,
           borderColor: selected ? textColor : 'transparent',
+          opacity: selected ? 1 : 0.6,
         },
       ]}
       onPress={onPress}

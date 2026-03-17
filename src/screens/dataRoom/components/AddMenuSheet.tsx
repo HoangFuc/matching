@@ -63,7 +63,8 @@ export const MemoAddMenuSheet = React.memo(AddMenuSheet);
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 0,
-    paddingBottom: ms(20),
+    paddingBottom: ms(40),
+    marginBottom: ms(20),
     gap: 0,
   },
   menuItem: {

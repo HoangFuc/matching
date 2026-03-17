@@ -1,5 +1,12 @@
 import React from 'react';
-import { Dimensions, Image, Pressable, StyleSheet } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  Pressable,
+  StyleSheet,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { DotsVertical } from '@/src/constants/icons';
 import dayjs from 'dayjs';
@@ -18,6 +25,7 @@ interface IProps {
   onPress?: (folder: IFolder) => void;
   onPressMore?: (folder: IFolder) => void;
   showMore?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 const FolderCard: React.FC<IProps> = ({
@@ -25,9 +33,10 @@ const FolderCard: React.FC<IProps> = ({
   onPress,
   onPressMore,
   showMore = true,
+  style,
 }) => {
   return (
-    <Pressable style={styles.card} onPress={() => onPress?.(folder)}>
+    <Pressable style={[styles.card, style]} onPress={() => onPress?.(folder)}>
       {showMore && (
         <Pressable
           hitSlop={8}

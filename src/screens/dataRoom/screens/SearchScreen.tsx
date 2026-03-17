@@ -10,12 +10,14 @@ import {
 
 import { ArrowLeft2, SearchNormal1 } from '@/src/constants/icons';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { FontWeight } from '@/src/constants/typography';
+import type { DataRoomStackParamList } from '@/src/interface/tab.interface';
 import { IFile, IFolder, useSearchQuery } from '@/src/store/api/dataRoom.api';
 import { MemoFolderCard } from '../components/folder';
 
@@ -24,8 +26,10 @@ type TSearchResult = {
   item: IFolder | IFile;
 };
 
+type TNav = NativeStackNavigationProp<DataRoomStackParamList, 'DataRoomSearch'>;
+
 const SearchScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<TNav>();
   const [keyword, setKeyword] = React.useState('');
   const inputRef = React.useRef<TextInput>(null);
   const { data: dataSearch } = useSearchQuery(keyword.trim(), {
@@ -57,13 +61,34 @@ const SearchScreen: React.FC = () => {
   }, [navigation]);
 
   //---------------------------------------
-  const renderItem = React.useCallback(({ item }: { item: TSearchResult }) => {
-    if (item.type === 'folder') {
-      const folder = item.item as IFolder;
-      return <MemoFolderCard folder={folder} showMore={false} />;
-    }
-    return null;
-  }, []);
+  const handlePressFolder = React.useCallback(
+    (folder: IFolder) => {
+      navigation.navigate('DataRoomDetail', {
+        folderId: folder.id,
+        folderName: folder.name,
+        tabType: folder.type,
+      });
+    },
+    [navigation],
+  );
+
+  //---------------------------------------
+  const renderItem = React.useCallback(
+    ({ item }: { item: TSearchResult }) => {
+      if (item.type === 'folder') {
+        const folder = item.item as IFolder;
+        return (
+          <MemoFolderCard
+            folder={folder}
+            showMore={false}
+            onPress={handlePressFolder}
+          />
+        );
+      }
+      return null;
+    },
+    [handlePressFolder],
+  );
 
   //---------------------------------------
   const keyExtractor = React.useCallback(
@@ -115,6 +140,8 @@ const SearchScreen: React.FC = () => {
         data={results}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -165,6 +192,9 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: ms(16),
+    gap: ms(12),
+  },
+  row: {
     gap: ms(12),
   },
   emptyContainer: {

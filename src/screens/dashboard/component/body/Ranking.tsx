@@ -1,15 +1,28 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { ArrowRight2 } from '@/src/constants/icons';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
 import { AppColors } from '@/src/constants/colors';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { MemoFirstPlaceCard } from '../ranking/FirstPlaceCard';
 import { MemoRunnerUpCard } from '../ranking/RunnerUpCard';
 
 const Ranking: React.FC = () => {
+  const [showDevModal, setShowDevModal] = useState(false);
+
+  //---------------------------------------
+  const handlePress = useCallback(() => {
+    setShowDevModal(true);
+  }, []);
+
+  //---------------------------------------
+  const handleClose = useCallback(() => {
+    setShowDevModal(false);
+  }, []);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -18,7 +31,7 @@ const Ranking: React.FC = () => {
           랭킹
         </AppText>
 
-        <TouchableOpacity hitSlop={8}>
+        <TouchableOpacity hitSlop={8} onPress={handlePress}>
           <ArrowRight2 size={`${ms(16)}`} />
         </TouchableOpacity>
       </View>
@@ -32,6 +45,11 @@ const Ranking: React.FC = () => {
           <MemoRunnerUpCard rank={3} name="검은신사" score="90,000,000" />
         </View>
       </View>
+
+      <MemoUnderDevelopmentModal
+        visible={showDevModal}
+        onClose={handleClose}
+      />
     </View>
   );
 };

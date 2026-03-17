@@ -13,6 +13,7 @@ interface IProps {
   label?: string;
   placeholder?: string;
   required?: boolean;
+  error?: string;
 }
 
 //---------------------------------------
@@ -38,20 +39,74 @@ export const validateKoreanPhone = (value: string): boolean => {
 export const stripDashes = (value: string): string => value.replace(/-/g, '');
 
 //---------------------------------------
+const digitPosToCharPos = (formatted: string, digitPos: number): number => {
+  if (digitPos <= 0) {
+    return 0;
+  }
+  let count = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (/[0-9]/.test(formatted[i])) {
+      count++;
+      if (count === digitPos) {
+        return i + 1;
+      }
+    }
+  }
+  return formatted.length;
+};
+
+//---------------------------------------
 const PhoneInput: React.FC<IProps> = ({
   value,
   onChangeText,
   label = '연락처',
   placeholder = '연락처을 입력하세요',
   required,
+  error,
 }) => {
+  const inputRef = React.useRef<TextInput>(null);
+  const cursorRef = React.useRef(0);
   const displayValue = formatKoreanPhone(value.replace(/-/g, ''));
 
   //---------------------------------------
-  const handleChange = (text: string) => {
-    const digits = text.replace(/[^0-9]/g, '').slice(0, 11);
-    onChangeText(digits);
-  };
+  const handleSelectionChange = React.useCallback(
+    (e: { nativeEvent: { selection: { start: number } } }) => {
+      cursorRef.current = e.nativeEvent.selection.start;
+    },
+    [],
+  );
+
+  //---------------------------------------
+  const handleChange = React.useCallback(
+    (text: string) => {
+      const prevDisplay = displayValue;
+      const cursorPos = cursorRef.current;
+
+      const oldDigits = prevDisplay.replace(/[^0-9]/g, '');
+      const digitsBefore = prevDisplay
+        .slice(0, cursorPos)
+        .replace(/[^0-9]/g, '').length;
+
+      const newDigits = text.replace(/[^0-9]/g, '').slice(0, 11);
+      const delta = newDigits.length - oldDigits.length;
+      const newDigitCursor = Math.max(
+        0,
+        Math.min(newDigits.length, digitsBefore + delta),
+      );
+
+      const newDisplay = formatKoreanPhone(newDigits);
+      const newCursor = digitPosToCharPos(newDisplay, newDigitCursor);
+
+      onChangeText(newDigits);
+
+      setTimeout(() => {
+        inputRef.current?.setNativeProps({
+          selection: { start: newCursor, end: newCursor },
+        });
+      }, 1);
+    },
+    [displayValue, onChangeText],
+  );
 
   return (
     <View>
@@ -68,14 +123,22 @@ const PhoneInput: React.FC<IProps> = ({
       )}
 
       <TextInput
-        style={styles.input}
+        ref={inputRef}
+        style={[styles.input, error ? styles.inputError : undefined]}
         value={displayValue}
         onChangeText={handleChange}
+        onSelectionChange={handleSelectionChange}
         placeholder={placeholder}
         placeholderTextColor={AppColors.gray40}
         keyboardType="phone-pad"
         maxLength={13}
       />
+
+      {error && (
+        <AppText variant="body9" color={AppColors.negative} style={styles.errorText}>
+          {error}
+        </AppText>
+      )}
     </View>
   );
 };
@@ -96,5 +159,12 @@ const styles = StyleSheet.create({
       ios: {},
       default: { paddingVertical: 0 },
     }),
+  },
+  inputError: {
+    borderWidth: 1,
+    borderColor: AppColors.negative,
+  },
+  errorText: {
+    marginTop: ms(4),
   },
 });

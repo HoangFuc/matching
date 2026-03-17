@@ -9,7 +9,9 @@ import { AppColors } from '@/src/constants/colors';
 
 export type TScheduleType = '일반일정' | '고객 미팅' | '계약 일정';
 
-const SCHEDULE_TYPES: TScheduleType[] = ['일반일정', '고객 미팅', '계약 일정'];
+export const ALL_SCHEDULE_TYPES: TScheduleType[] = ['일반일정', '고객 미팅', '계약 일정'];
+
+const SCHEDULE_TYPES: TScheduleType[] = ALL_SCHEDULE_TYPES;
 
 interface IProps {
   visible: boolean;

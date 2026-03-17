@@ -1,9 +1,9 @@
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -49,19 +49,22 @@ const MeetingScheduleManagementScreen: React.FC = () => {
     )}`,
   );
 
-  const { data: meetingSchedules = [], refetch } =
-    useGetMeetingSchedulesQuery({
-      startDate,
-      endDate,
-      scope: activeTab,
-    });
+  const { data: meetingSchedules = [], refetch } = useGetMeetingSchedulesQuery({
+    startDate,
+    endDate,
+    scope: activeTab,
+  });
 
   //---------------------------------------
   useFocusEffect(
     React.useCallback(() => {
       const today = new Date();
-      const todayStr = `${today.getFullYear()}-${padZero(today.getMonth() + 1)}-${padZero(today.getDate())}`;
-      const nextWeekStr = `${today.getFullYear()}-${padZero(today.getMonth() + 1)}-${padZero(today.getDate() + 6)}`;
+      const todayStr = `${today.getFullYear()}-${padZero(
+        today.getMonth() + 1,
+      )}-${padZero(today.getDate())}`;
+      const nextWeekStr = `${today.getFullYear()}-${padZero(
+        today.getMonth() + 1,
+      )}-${padZero(today.getDate() + 6)}`;
       setStartDate(todayStr);
       setEndDate(nextWeekStr);
       setActiveTab(MeetingScheduleScopeEnum.COMPANY);

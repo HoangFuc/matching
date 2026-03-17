@@ -147,6 +147,9 @@ const BulletinDetail: React.FC = () => {
               <AppText variant="body1" color={AppColors.gray100}>
                 {post.author.fullName}
               </AppText>
+              <AppText variant="detail" color={AppColors.gray80}>
+                {dayjs(post.createdAt).format('YYYY.MM.DD')}
+              </AppText>
             </View>
           </View>
 
@@ -160,9 +163,6 @@ const BulletinDetail: React.FC = () => {
               <MemoImageCarousel images={post.images} />
             )}
 
-            <AppText variant="detail" color={AppColors.gray80}>
-              {dayjs(post.createdAt).format('YYYY.MM.DD')}
-            </AppText>
           </View>
 
           {/* Post stats */}
@@ -244,6 +244,9 @@ const styles = StyleSheet.create({
   },
   authorInfo: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   postContent: {
     gap: ms(12),

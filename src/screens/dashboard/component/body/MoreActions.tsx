@@ -1,17 +1,18 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { CompositeNavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
 import { AppColors } from '@/src/constants/colors';
 import { AppImages } from '@/src/constants/images';
 import type { RootStackParamList, RootTabParamList } from '@/src/interface/tab.interface';
 import { MemoCommonAction } from '../moreActions/CommonAction';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import type { CompositeNavigationProp } from '@react-navigation/native';
 
 type TNav = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList>,
@@ -20,6 +21,18 @@ type TNav = CompositeNavigationProp<
 
 const MoreActions: React.FC = () => {
   const navigation = useNavigation<TNav>();
+  const [showDevModal, setShowDevModal] = useState(false);
+
+  //---------------------------------------
+  const handleShowDevModal = useCallback(() => {
+    setShowDevModal(true);
+  }, []);
+
+  //---------------------------------------
+  const handleCloseDevModal = useCallback(() => {
+    setShowDevModal(false);
+  }, []);
+
   return (
     <View style={styles.container}>
       <AppText variant="body1" color={AppColors.gray90}>
@@ -71,20 +84,28 @@ const MoreActions: React.FC = () => {
           label="계약현황"
           style={styles.gridItem}
           image={<Image source={AppImages.clipboard} style={styles.icon} />}
+          onPress={handleShowDevModal}
         />
 
         <MemoCommonAction
           label="뉴스"
           style={styles.gridItem}
           image={<Image source={AppImages.speaker} style={styles.icon} />}
+          onPress={handleShowDevModal}
         />
 
         <MemoCommonAction
           label="기안"
           style={styles.gridItem}
           image={<Image source={AppImages.phoneBook} style={styles.icon} />}
+          onPress={handleShowDevModal}
         />
       </View>
+
+      <MemoUnderDevelopmentModal
+        visible={showDevModal}
+        onClose={handleCloseDevModal}
+      />
     </View>
   );
 };

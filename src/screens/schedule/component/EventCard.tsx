@@ -19,7 +19,7 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
         <AppText
           variant="body5"
           color={AppColors.gray90}
-          style={{ width: ms(60) }}
+          style={styles.label}
         >
           일정 종류
         </AppText>
@@ -37,7 +37,7 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
         <AppText
           variant="body5"
           color={AppColors.gray90}
-          style={{ width: ms(60) }}
+          style={styles.label}
         >
           시간
         </AppText>
@@ -50,7 +50,7 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
         <AppText
           variant="body5"
           color={AppColors.gray90}
-          style={{ width: ms(60) }}
+          style={styles.label}
         >
           일정명
         </AppText>
@@ -63,7 +63,7 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
         <AppText
           variant="body5"
           color={AppColors.gray90}
-          style={{ width: ms(60) }}
+          style={styles.label}
         >
           일정내용
         </AppText>
@@ -72,7 +72,7 @@ const EventCard: React.FC<IEventCardProps> = ({ event }) => {
           color={AppColors.gray90}
           style={styles.descriptionText}
         >
-          {event.description || '-'}
+          {event.description || event.memo || '-'}
         </AppText>
       </View>
     </MemoBaseCard>
@@ -84,6 +84,9 @@ export const MemoEventCard = React.memo(EventCard);
 const styles = StyleSheet.create({
   card: {
     gap: ms(12),
+  },
+  label: {
+    width: ms(80),
   },
   row: {
     flexDirection: 'row',

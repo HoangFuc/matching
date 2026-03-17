@@ -34,6 +34,9 @@ const Events: React.FC<IProps> = props => {
             </Text>
           </View>
         ))}
+        {events.length > 2 && (
+          <Text style={styles.moreText}>+{events.length - 2}</Text>
+        )}
       </View>
     )
   );
@@ -52,9 +55,15 @@ const styles = StyleSheet.create({
   },
   eventText: {
     fontWeight: '400',
-    fontSize: ms(12),
-    lineHeight: ms(12) * 1.4,
-    letterSpacing: ms(12) * -0.022,
+    fontSize: ms(9),
+    lineHeight: ms(9) * 1.4,
+    letterSpacing: ms(9) * -0.022,
+    textAlign: 'center',
+  },
+  moreText: {
+    fontSize: ms(9),
+    fontWeight: '500',
+    color: '#999',
     textAlign: 'center',
   },
 });

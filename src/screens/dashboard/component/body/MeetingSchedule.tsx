@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -23,6 +23,7 @@ type TNav = CompositeNavigationProp<
 import { useGetSchedulesQuery } from '@/src/store/api';
 import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
 import { showGlobalToast } from '@/src/utils/toastDispatcher';
+import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
 import { MemoTemplateMeetingCard } from '../meetingSchedule/TemplateMeetingCard';
 
 const MeetingSchedule: React.FC = () => {
@@ -47,18 +48,12 @@ const MeetingSchedule: React.FC = () => {
   }, [navigation]);
 
   //---------------------------------------
-  const handlePressGeneral = useCallback(() => {
-    navigation.navigate('Schedule', {
-      screen: 'ScheduleMain',
-      params: { filterTypes: ['일반일정'] },
-    });
+  const [showDevModal, setShowDevModal] = useState(false);
 
-    if (todayEvents.length === 0) {
-      requestAnimationFrame(() => {
-        showGlobalToast({ type: 'info', message: '현재 등록된 일정이 없습니다.' });
-      });
-    }
-  }, [navigation, todayEvents]);
+  //---------------------------------------
+  const handlePressGeneral = useCallback(() => {
+    setShowDevModal(true);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -81,6 +76,11 @@ const MeetingSchedule: React.FC = () => {
           image={<Image source={AppImages.list} style={styles.cardImage} />}
         />
       </View>
+
+      <MemoUnderDevelopmentModal
+        visible={showDevModal}
+        onClose={() => setShowDevModal(false)}
+      />
     </View>
   );
 };

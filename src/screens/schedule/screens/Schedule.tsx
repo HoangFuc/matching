@@ -15,7 +15,7 @@ import { MemoEventCardContent } from '../component/EventCardContent';
 import { MemoScheduleCalendar } from '../component/ScheduleCalendar';
 import { MemoScheduleFilterModal } from '../component/ScheduleFilterModal';
 import { MemoScheduleHeader } from '../component/ScheduleHeader';
-import { TScheduleType } from '../component/ScheduleTypePicker';
+import { ALL_SCHEDULE_TYPES, TScheduleType } from '../component/ScheduleTypePicker';
 import { TScheduleRoute } from '../type';
 
 const Schedule: React.FC = () => {
@@ -30,7 +30,7 @@ const Schedule: React.FC = () => {
   const [filterVisible, setFilterVisible] = React.useState(false);
   const [selectedFilterTypes, setSelectedFilterTypes] = React.useState<
     TScheduleType[]
-  >([]);
+  >(ALL_SCHEDULE_TYPES);
 
   //---------------------------------------
   const [detailDateKey, setDetailDateKey] = React.useState<string>();
@@ -40,7 +40,7 @@ const Schedule: React.FC = () => {
     React.useCallback(() => {
       // Reset local state on focus
       setFilterVisible(false);
-      setSelectedFilterTypes([]);
+      setSelectedFilterTypes(ALL_SCHEDULE_TYPES);
       setDetailDateKey(undefined);
 
       if (hideTabBar) {

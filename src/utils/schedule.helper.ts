@@ -46,6 +46,7 @@ export function convertSchedulesToEvents(
       type: typeInfo.title,
       scheduleName: schedule.title,
       description: schedule.description,
+      memo: schedule.memo,
       color: typeInfo.color,
       backgroundColor: typeInfo.backgroundColor,
       startTime: dayjs(schedule.startTime).format('HH:mm'),

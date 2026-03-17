@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import Animated, {
@@ -12,6 +12,7 @@ import Animated, {
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
 import { AppColors } from '@/src/constants/colors';
 import {
   Add,
@@ -50,6 +51,7 @@ const ACTIONS = [
 const QuickActionFAB: React.FC = () => {
   const { overlayVisible: expanded, setOverlayVisible } = useOverlay();
   const rotation = useSharedValue(0);
+  const [showDevModal, setShowDevModal] = useState(false);
 
   //---------------------------------------
 
@@ -71,10 +73,16 @@ const QuickActionFAB: React.FC = () => {
   const handleAction = React.useCallback(
     (_key: string) => {
       toggle();
-      // TODO: navigate based on key
+      setShowDevModal(true);
     },
     [toggle],
   );
+
+  //---------------------------------------
+
+  const handleCloseDevModal = React.useCallback(() => {
+    setShowDevModal(false);
+  }, []);
 
   //---------------------------------------
 
@@ -128,6 +136,11 @@ const QuickActionFAB: React.FC = () => {
           </AnimatedPressable>
         </View>
       </View>
+
+      <MemoUnderDevelopmentModal
+        visible={showDevModal}
+        onClose={handleCloseDevModal}
+      />
     </>
   );
 };

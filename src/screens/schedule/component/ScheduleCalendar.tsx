@@ -62,7 +62,7 @@ const ScheduleCalendar: React.FC<IProps> = ({
 
   //---------------------------------------
   const events = React.useMemo(() => {
-    if (selectedFilterTypes.length === 0) return allEvents;
+    if (selectedFilterTypes.length === 0) return {};
     const filtered: Record<string, TScheduleEvent[]> = {};
     for (const [dateKey, dayEvents] of Object.entries(allEvents)) {
       const matched = dayEvents.filter(e =>

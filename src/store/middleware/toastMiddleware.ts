@@ -2,10 +2,10 @@ import { showGlobalToast } from '@/src/utils/toastDispatcher';
 import { isFulfilled, isRejected, Middleware } from '@reduxjs/toolkit';
 import { setUploadProgress } from '../slices/dataRoomSlice';
 
-// Redux action type → 한국어 성공 메시지
+// endpointName → 한국어 성공 메시지
 const ToastSuccessMap: Record<string, string> = {
   // 게시판
-  'bulletinApi/executeMutation/fulfilled': '게시글이 등록되었습니다.',
+  createBulletin: '게시글이 등록되었습니다.',
 };
 
 // 에러 toast를 표시하지 않을 action type 목록
@@ -35,7 +35,8 @@ export const toastMiddleware: Middleware = () => next => action => {
     if (silent) {
       return result;
     }
-    const key = ToastSuccessMap[action.type];
+    const endpointName = (action as any)?.meta?.arg?.endpointName;
+    const key = endpointName ? ToastSuccessMap[endpointName] : undefined;
     if (key) {
       showGlobalToast({ type: 'success', message: key });
     }

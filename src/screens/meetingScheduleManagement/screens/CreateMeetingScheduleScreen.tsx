@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
@@ -65,11 +65,6 @@ const CreateMeetingScheduleScreen: React.FC = () => {
   //---------------------------------------
   const onSubmit = React.useCallback(
     async (data: ICreateMeetingSchedulePayload) => {
-      const phone = stripDashes(data.customerPhone);
-      if (!phone.startsWith('010') || phone.length < 10) {
-        Alert.alert('알림', '연락처는 010으로 시작해야 합니다.');
-        return;
-      }
       try {
         await createMeetingSchedule({
           ...data,
@@ -263,12 +258,25 @@ const CreateMeetingScheduleScreen: React.FC = () => {
             <Controller
               control={control}
               name="customerPhone"
-              render={({ field: { value, onChange } }) => (
+              rules={{
+                validate: (val?: string) => {
+                  if (!val) {
+                    return true;
+                  }
+                  const phone = stripDashes(val);
+                  if (!phone.startsWith('010') || phone.length < 10) {
+                    return '연락처는 010으로 시작해야 합니다.';
+                  }
+                  return true;
+                },
+              }}
+              render={({ field: { value, onChange }, fieldState: { error } }) => (
                 <MemoPhoneInput
                   value={value}
                   onChangeText={onChange}
                   label=""
                   required
+                  error={error?.message}
                 />
               )}
             />

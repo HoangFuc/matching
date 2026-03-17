@@ -16,6 +16,7 @@ import { MemoTimePickerModal } from '@/src/component/calendar/TimePickerModal';
 
 import { AppText } from '@/src/component/AppText';
 import { MemoDropdownButton } from '@/src/component/DropdownButton';
+import { MemoPhoneInput, stripDashes } from '@/src/component/PhoneInput';
 import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { AppColors } from '@/src/constants/colors';
 import { FontWeight } from '@/src/constants/typography';
@@ -54,7 +55,10 @@ const FormCreateSchedule: React.FC<IProps> = ({
       <View style={{ padding: ms(16), gap: ms(16) }}>
         <View>
           <AppText variant="body7" color={AppColors.gray90}>
-            일정 종류
+            일정 종류{' '}
+            <AppText variant="body7" color={AppColors.negative}>
+              *
+            </AppText>
           </AppText>
 
           <MemoDropdownButton
@@ -70,7 +74,10 @@ const FormCreateSchedule: React.FC<IProps> = ({
         <View style={styles.dateTimeRow}>
           <View style={styles.dateTimeField}>
             <AppText variant="body7" color={AppColors.gray90}>
-              날짜
+              날짜{' '}
+              <AppText variant="body7" color={AppColors.negative}>
+                *
+              </AppText>
             </AppText>
 
             <Controller
@@ -115,7 +122,10 @@ const FormCreateSchedule: React.FC<IProps> = ({
 
           <View style={styles.dateTimeField}>
             <AppText variant="body7" color={AppColors.gray90}>
-              시간
+              시간{' '}
+              <AppText variant="body7" color={AppColors.negative}>
+                *
+              </AppText>
             </AppText>
 
             <Controller
@@ -169,6 +179,7 @@ const FormCreateSchedule: React.FC<IProps> = ({
               name="title"
               label="일정명"
               placeholder="일정명을 입력하세요"
+              required
             />
 
             <RHFFormInput
@@ -177,6 +188,7 @@ const FormCreateSchedule: React.FC<IProps> = ({
               label="일정내용"
               placeholder="일정 내용을 입력하세요"
               multiline
+              required
             />
           </View>
         ) : (
@@ -187,16 +199,43 @@ const FormCreateSchedule: React.FC<IProps> = ({
               label="고객명"
               labelVariant="body6"
               placeholder="고객명을 입력하세요"
+              required
             />
 
-            <RHFFormInput
-              control={control}
-              name="customerPhone"
-              label="연락처"
-              labelVariant="body6"
-              placeholder="연락처을 입력하세요"
-              keyboardType="phone-pad"
-            />
+            <View>
+              <AppText variant="body6" color={AppColors.gray90}>
+                연락처{' '}
+                <AppText variant="body6" color={AppColors.negative}>
+                  *
+                </AppText>
+              </AppText>
+
+              <Controller
+                control={control}
+                name="customerPhone"
+                rules={{
+                  validate: (val?: string) => {
+                    if (!val) {
+                      return true;
+                    }
+                    const phone = stripDashes(val);
+                    if (!phone.startsWith('010') || phone.length < 10) {
+                      return '연락처는 010으로 시작해야 합니다.';
+                    }
+                    return true;
+                  },
+                }}
+                render={({ field: { value, onChange }, fieldState: { error } }) => (
+                  <MemoPhoneInput
+                    value={value}
+                    onChangeText={onChange}
+                    label=""
+                    required
+                    error={error?.message}
+                  />
+                )}
+              />
+            </View>
 
             <RHFFormInput
               control={control}
@@ -204,6 +243,7 @@ const FormCreateSchedule: React.FC<IProps> = ({
               label="일정명"
               labelVariant="body6"
               placeholder="일정명을 입력하세요"
+              required
             />
 
             <RHFFormInput
@@ -213,6 +253,7 @@ const FormCreateSchedule: React.FC<IProps> = ({
               labelVariant="body6"
               placeholder="메모를 입력하세요"
               multiline
+              required
             />
           </View>
         )}

@@ -7,6 +7,7 @@ export type TScheduleEvent = {
   type?: string;
   scheduleName?: string;
   description?: string;
+  memo?: string;
   startTime?: string;
 };
 

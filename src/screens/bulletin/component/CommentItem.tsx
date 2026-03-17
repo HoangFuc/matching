@@ -205,7 +205,7 @@ const CommentItem: React.FC<IProps> = ({
           !isReply ? (
             <Pressable onPress={handleReply}>
               <AppText variant="pretendard" color={AppColors.gray100}>
-                댓글 남기기
+                답글
               </AppText>
             </Pressable>
           ) : undefined

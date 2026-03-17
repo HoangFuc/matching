@@ -7,6 +7,7 @@ import { ms, s } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { MemoBottomSheetModal } from '@/src/component/BottomSheetModal';
+import { stripDashes } from '@/src/component/PhoneInput';
 import { SCHEDULE_LABEL_TO_ENUM } from '@/src/constants/schedule';
 import { useCreateScheduleMutation } from '@/src/store/api/schedule.api';
 
@@ -42,6 +43,7 @@ const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
     useForm<ISchedulePayload>({
       defaultValues: {
         scheduleType: '일반일정',
+        customerPhone: '',
       },
     });
 
@@ -103,6 +105,9 @@ const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
             .add(1, 'day')
             .toISOString(),
           startTime,
+          customerPhone: data.customerPhone
+            ? stripDashes(data.customerPhone)
+            : data.customerPhone,
         };
 
         await createSchedule(payload).unwrap();

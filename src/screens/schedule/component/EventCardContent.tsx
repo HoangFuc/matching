@@ -1,5 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { ArrowLeft2 } from '@/src/constants/icons';
 import { ms } from 'react-native-size-matters';
@@ -20,7 +26,8 @@ const EventCardContent: React.FC<IProps> = props => {
   const { handlePressBack, dateKey } = props;
 
   //---------------------------------------
-  const { data: schedules = [], isLoading } = useGetSchedulesByDateQuery(dateKey);
+  const { data: schedules = [], isLoading } =
+    useGetSchedulesByDateQuery(dateKey);
 
   //---------------------------------------
   const events = React.useMemo(() => {

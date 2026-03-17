@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { CommonActions, NavigationContainer } from '@react-navigation/native';
+import { CommonActions, NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
@@ -10,6 +10,7 @@ import Toast from 'react-native-toast-message';
 import { toastConfig } from '@/src/component/toastConfig';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
 import { AppColor, AppColors } from '@/src/constants/colors';
 import type {
   RootStackParamList,
@@ -39,8 +40,28 @@ import { MemoQuickActionFAB } from '../screens/dashboard/component/calendarActio
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
-const ContractScreen = () => <View style={styles.placeholder} />;
-const DraftScreen = () => <View style={styles.placeholder} />;
+const PlaceholderScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const [showModal, setShowModal] = useState(true);
+
+  //---------------------------------------
+  const handleClose = useCallback(() => {
+    setShowModal(false);
+    navigation.goBack();
+  }, [navigation]);
+
+  //---------------------------------------
+  useFocusEffect(
+    useCallback(() => {
+      setShowModal(true);
+    }, []),
+  );
+
+  return (
+    <View style={styles.placeholder}>
+      <MemoUnderDevelopmentModal visible={showModal} onClose={handleClose} />
+    </View>
+  );
+};
 
 const TabBarLabel: React.FC<{
   routeName: string;
@@ -166,9 +187,9 @@ const MainTabs: React.FC = () => {
 
           <Tab.Screen name="MeetingMinutes" component={MeetingMinutesStack} />
 
-          <Tab.Screen name="Contract" component={ContractScreen} />
+          <Tab.Screen name="Contract" component={PlaceholderScreen} />
 
-          <Tab.Screen name="Draft" component={DraftScreen} />
+          <Tab.Screen name="Draft" component={PlaceholderScreen} />
         </Tab.Navigator>
       </View>
 

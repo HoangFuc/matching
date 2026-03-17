@@ -8,7 +8,7 @@ import { MemoAppButton } from '@/src/component/AppButton';
 import { MemoBottomSheetModal } from '@/src/component/BottomSheetModal';
 import { MemoChip } from '@/src/component/Chip';
 import { AppColors } from '@/src/constants/colors';
-import { TScheduleType } from './ScheduleTypePicker';
+import { ALL_SCHEDULE_TYPES, TScheduleType } from './ScheduleTypePicker';
 
 const SCHEDULE_TYPES: {
   label: TScheduleType;
@@ -57,7 +57,7 @@ const ScheduleFilterModal: React.FC<IProps> = ({
 
   //---------------------------------------
   const handleReset = React.useCallback(() => {
-    setLocalSelected([]);
+    setLocalSelected(ALL_SCHEDULE_TYPES);
   }, []);
 
   //---------------------------------------

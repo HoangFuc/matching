@@ -187,12 +187,6 @@ const CreateMeetingMinutesScreen: React.FC = () => {
     async (data: IFormData) => {
       if (!data.date) return;
 
-      const phone = stripDashes(data.phone);
-      if (!phone.startsWith('010') || phone.length < 10) {
-        Alert.alert('알림', '연락처는 010으로 시작해야 합니다.');
-        return;
-      }
-
       const firstFile = uploadFiles.find(f => f.status === 'done');
       const meetingDate = data.date.replace(/\./g, '-');
 
@@ -385,11 +379,24 @@ const CreateMeetingMinutesScreen: React.FC = () => {
           <Controller
             control={control}
             name="phone"
-            render={({ field: { value, onChange } }) => (
+            rules={{
+              validate: (val?: string) => {
+                if (!val) {
+                  return true;
+                }
+                const phone = stripDashes(val);
+                if (!phone.startsWith('010') || phone.length < 10) {
+                  return '연락처는 010으로 시작해야 합니다.';
+                }
+                return true;
+              },
+            }}
+            render={({ field: { value, onChange }, fieldState: { error } }) => (
               <MemoPhoneInput
                 value={value}
                 onChangeText={onChange}
                 required
+                error={error?.message}
               />
             )}
           />

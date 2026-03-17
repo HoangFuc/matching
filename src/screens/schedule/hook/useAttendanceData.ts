@@ -40,7 +40,7 @@ export const useAttendanceData = (
     if (Array.isArray(attendanceData?.records)) {
       for (const record of attendanceData.records) {
         const date = dayjs(record.checkInDate).format('YYYY-MM-DD');
-        const time = dayjs(record.checkInTime).format('HH:mm');
+        const time = record.checkInTime?.slice(11, 16) ?? '';
         map[date] = { time, isLate: record.isLate };
       }
     }

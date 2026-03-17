@@ -9,7 +9,6 @@ import {
   useCheckinMutation,
   useGetAttendanceTodayQuery,
 } from '@/src/store/api/checkin.api';
-import dayjs from 'dayjs';
 import { MemoCheckin } from '../calendarAction/Checkin';
 import { MemoSchedule } from '../calendarAction/Schedule';
 
@@ -21,7 +20,7 @@ const CalendarAction: React.FC = () => {
   const checkinTime = React.useMemo(
     () =>
       attendance?.data?.checkedIn
-        ? dayjs(attendance.data?.checkInTime).format('HH:mm')
+        ? (attendance.data?.checkInTime?.slice(11, 16) ?? null)
         : null,
     [attendance?.data?.checkedIn, attendance?.data?.checkInTime],
   );

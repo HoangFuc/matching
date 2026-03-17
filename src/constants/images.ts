@@ -18,4 +18,9 @@ export const AppImages = {
   avatar: require('@/src/assets/images/avatar.jpg'),
   news: require('@/src/assets/images/news.jpg'),
   headerBg: require('@/src/assets/images/header_bg.png'),
+  gifIllustration: require('@/src/assets/gif/effect.gif'),
+  logoDefault: require('@/src/assets/images/logoDefault.png'),
+  kakao: require('@/src/assets/images/kakao.png'),
+  naver: require('@/src/assets/images/naver.png'),
+  google: require('@/src/assets/images/google.png'),
 };

@@ -30,6 +30,7 @@ export {
   Send,
   Sort,
   TickCircle,
+  TickSquare,
   Trash,
   Microphone2,
 } from 'iconsax-react-nativejs';

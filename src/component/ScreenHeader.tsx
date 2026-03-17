@@ -11,12 +11,19 @@ import { ArrowLeft2 } from '../constants/icons';
 interface IProps {
   title: string;
   rightElement?: React.ReactNode;
+  icon?: React.ReactNode;
   onPressBack?: () => void;
 }
 
-const ScreenHeader: React.FC<IProps> = ({ title, rightElement, onPressBack }) => {
+const ScreenHeader: React.FC<IProps> = ({
+  title,
+  rightElement,
+  icon,
+  onPressBack,
+}) => {
   const navigation = useNavigation();
 
+  //---------------------------------------
   const handlePressBack = React.useCallback(() => {
     if (onPressBack) {
       onPressBack();
@@ -25,13 +32,32 @@ const ScreenHeader: React.FC<IProps> = ({ title, rightElement, onPressBack }) =>
     }
   }, [navigation, onPressBack]);
 
+  if (icon) {
+    return (
+      <View style={styles.iconContainer}>
+        <Pressable
+          hitSlop={8}
+          onPress={handlePressBack}
+          style={styles.iconBackButton}
+        >
+          <ArrowLeft2
+            size={`${ms(24)}`}
+            color={AppColors.white}
+            variant="Linear"
+          />
+        </Pressable>
+        {icon}
+
+        <AppText variant="heading1" color={AppColors.white}>
+          {title}
+        </AppText>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <AppText
-        variant="heading3"
-        color={AppColors.white}
-        style={styles.title}
-      >
+      <AppText variant="heading3" color={AppColors.white} style={styles.title}>
         {title}
       </AppText>
 
@@ -56,9 +82,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: ms(16),
-    paddingBottom: ms(24),
     backgroundColor: AppColors.purple,
-    height: ms(49),
+  },
+  iconContainer: {
+    alignItems: 'center',
+    backgroundColor: AppColors.purple,
+    gap: ms(16),
+    marginBottom: ms(24),
+  },
+  iconBackButton: {
+    position: 'absolute',
+    left: ms(16),
+    top: ms(16),
+    zIndex: 1,
   },
   title: {
     position: 'absolute',

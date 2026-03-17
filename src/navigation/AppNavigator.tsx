@@ -23,6 +23,7 @@ import { MemoMeetingScheduleManagementScreen } from '../screens/meetingScheduleM
 import { MemoCreateMeetingScheduleScreen } from '../screens/meetingScheduleManagement/screens/CreateMeetingScheduleScreen';
 import { MemoMeetingScheduleDetailScreen } from '../screens/meetingScheduleManagement/screens/MeetingScheduleDetailScreen';
 import { MemoScheduleCalendarView } from '../screens/schedule/screens/ScheduleCalendarView';
+import AuthStack from './AuthStack';
 import HomeStack from './HomeStack';
 import MeetingMinutesStack from './MeetingMinutesStack';
 import ScheduleStack from './ScheduleStack';
@@ -204,6 +205,7 @@ const AppNavigator: React.FC = () => {
     <>
       <NavigationContainer>
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          <RootStack.Screen name="Auth" component={AuthStack} />
           <RootStack.Screen name="MainTabs" component={MainTabs} />
           <RootStack.Screen name="DataRoom" component={DataRoomStack} />
           <RootStack.Screen

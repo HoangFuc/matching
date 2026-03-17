@@ -9,7 +9,14 @@ import { TScheduleMode } from '../screens/schedule/type';
 import type { TMeetingMinutes } from './meetingMinutes.interface';
 import type { IMeetingScheduleManagement } from './meetingScheduleManagement.interface';
 
+export type AuthStackParamList = {
+  Welcome: undefined;
+  Login: undefined;
+  JoinOrganization: undefined;
+};
+
 export type RootStackParamList = {
+  Auth: NavigatorScreenParams<AuthStackParamList> | undefined;
   MainTabs: NavigatorScreenParams<RootTabParamList> | undefined;
   DataRoom: undefined;
   BulletinBoard: undefined;

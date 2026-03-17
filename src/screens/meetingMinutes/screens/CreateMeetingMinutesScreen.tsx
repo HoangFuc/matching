@@ -187,6 +187,12 @@ const CreateMeetingMinutesScreen: React.FC = () => {
     async (data: IFormData) => {
       if (!data.date) return;
 
+      const phone = stripDashes(data.phone);
+      if (!phone.startsWith('010') || phone.length < 10) {
+        Alert.alert('알림', '연락처는 010으로 시작해야 합니다.');
+        return;
+      }
+
       const firstFile = uploadFiles.find(f => f.status === 'done');
       const meetingDate = data.date.replace(/\./g, '-');
 

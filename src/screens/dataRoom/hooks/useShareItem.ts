@@ -6,7 +6,11 @@ import Share from 'react-native-share';
 
 import { IFile } from '@/src/store/api/dataRoom.api';
 
-export function useShareItem() {
+interface UseShareItemOptions {
+  onShareSuccess?: () => void;
+}
+
+export function useShareItem(options?: UseShareItemOptions) {
   const [sharing, setSharing] = React.useState(false);
 
   //---------------------------------------
@@ -15,7 +19,6 @@ export function useShareItem() {
     setSharing(true);
 
     try {
-      const ext = file.originalName.split('.').pop() || '';
       const filePath = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${file.originalName}`;
 
       const res = await ReactNativeBlobUtil.config({
@@ -28,11 +31,16 @@ export function useShareItem() {
           ? `file://${res.path()}`
           : res.path();
 
-      await Share.open({
+      const result = await Share.open({
         url: path,
         type: file.mimeType || 'application/octet-stream',
         filename: file.originalName,
       });
+
+      // Share completed successfully - user shared and returned to app
+      if (result?.success) {
+        options?.onShareSuccess?.();
+      }
 
       // Clean up cache
       ReactNativeBlobUtil.fs.unlink(res.path()).catch(() => {});
@@ -45,19 +53,23 @@ export function useShareItem() {
     } finally {
       setSharing(false);
     }
-  }, [sharing]);
+  }, [sharing, options]);
 
   //---------------------------------------
   const shareFolder = React.useCallback(async (folderName: string) => {
     try {
-      await Share.open({
+      const result = await Share.open({
         message: `폴더: ${folderName}`,
       });
+
+      if (result?.success) {
+        options?.onShareSuccess?.();
+      }
     } catch (err: any) {
       if (err?.message?.includes?.('User did not share')) return;
       if (err?.code === 'ECANCELLED') return;
     }
-  }, []);
+  }, [options]);
 
   return { shareFile, shareFolder, sharing };
 }

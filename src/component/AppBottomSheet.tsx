@@ -5,11 +5,12 @@ import {
   StyleSheet,
   View,
   ViewStyle,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import { ms, s } from 'react-native-size-matters/extend';
 
@@ -50,46 +51,55 @@ const AppBottomSheet: React.FC<IProps> = ({
       <GestureHandlerRootView style={styles.flex}>
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior="padding"
         >
-          <Pressable style={styles.overlay} onPress={onClose}>
-            <Pressable
-              style={[styles.sheet, { maxHeight }]}
-              onPress={e => e.stopPropagation()}
-            >
-              {showHandle && <View style={styles.handleBar} />}
+        <Pressable style={styles.overlay} onPress={onClose}>
+          <Pressable
+            style={[styles.sheet, { maxHeight }]}
+            onPress={e => e.stopPropagation()}
+          >
+            {showHandle && <View style={styles.handleBar} />}
 
-              {title && (
-                <View style={styles.titleContainer}>
-                  <AppText variant="heading3" color={AppColors.gray100}>
-                    {title}
-                  </AppText>
-                </View>
-              )}
+            {title && (
+              <View style={styles.titleContainer}>
+                <AppText variant="heading3" color={AppColors.gray100}>
+                  {title}
+                </AppText>
+              </View>
+            )}
 
-              {scrollable ? (
-                <ScrollView
-                  contentContainerStyle={[
-                    styles.contentContainer,
-                    contentContainerStyle,
-                  ]}
-                  keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator={false}
-                  nestedScrollEnabled
-                >
-                  {children}
-                </ScrollView>
-              ) : (
-                <View
-                  style={[styles.contentContainer, contentContainerStyle]}
-                >
-                  {children}
-                </View>
-              )}
+            {scrollable ? (
+              <KeyboardAwareScrollView
+                contentContainerStyle={[
+                  styles.contentContainer,
+                  contentContainerStyle,
+                ]}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                enableOnAndroid
+                extraScrollHeight={ms(20)}
+              >
+                {children}
+              </KeyboardAwareScrollView>
+            ) : (
+              <KeyboardAwareScrollView
+                contentContainerStyle={[
+                  styles.contentContainer,
+                  contentContainerStyle,
+                ]}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                enableOnAndroid
+                extraScrollHeight={ms(20)}
+                scrollEnabled={false}
+              >
+                {children}
+              </KeyboardAwareScrollView>
+            )}
 
-              {footer && <View style={styles.footerContainer}>{footer}</View>}
-            </Pressable>
+            {footer && <View style={styles.footerContainer}>{footer}</View>}
           </Pressable>
+        </Pressable>
         </KeyboardAvoidingView>
       </GestureHandlerRootView>
     </Modal>

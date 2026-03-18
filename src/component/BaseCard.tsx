@@ -35,8 +35,6 @@ export const MemoBaseCard = React.memo(BaseCard);
 const styles = StyleSheet.create({
   card: {
     borderRadius: ms(16),
-    borderWidth: 1,
-    borderColor: AppColors.gray30,
     backgroundColor: AppColors.white,
     padding: ms(16),
     ...CardShadow,

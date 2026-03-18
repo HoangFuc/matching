@@ -133,7 +133,6 @@ const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
       <MemoBottomSheetModal
         visible={visible}
         onClose={handleClose}
-        overlayOpacity={0.7}
         sheetStyle={isKeyboardVisible ? undefined : styles.sheet}
       >
         <MemoFormCreateSchedule

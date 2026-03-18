@@ -1,13 +1,12 @@
+import { BlurView } from '@react-native-community/blur';
 import React from 'react';
 import {
+  KeyboardAvoidingView,
   Modal,
   Pressable,
   StyleSheet,
   View,
   ViewStyle,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -49,57 +48,56 @@ const AppBottomSheet: React.FC<IProps> = ({
       onRequestClose={onClose}
     >
       <GestureHandlerRootView style={styles.flex}>
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior="padding"
-        >
-        <Pressable style={styles.overlay} onPress={onClose}>
-          <Pressable
-            style={[styles.sheet, { maxHeight }]}
-            onPress={e => e.stopPropagation()}
-          >
-            {showHandle && <View style={styles.handleBar} />}
-
-            {title && (
-              <View style={styles.titleContainer}>
-                <AppText variant="heading3" color={AppColors.gray100}>
-                  {title}
-                </AppText>
-              </View>
-            )}
-
-            {scrollable ? (
-              <KeyboardAwareScrollView
-                contentContainerStyle={[
-                  styles.contentContainer,
-                  contentContainerStyle,
-                ]}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-                enableOnAndroid
-                extraScrollHeight={ms(20)}
+        <KeyboardAvoidingView style={styles.flex} behavior="padding">
+          <BlurView style={styles.overlay} blurType="dark" blurAmount={8}>
+            <Pressable style={styles.overlayPressable} onPress={onClose}>
+              <Pressable
+                style={[styles.sheet, { maxHeight }]}
+                onPress={e => e.stopPropagation()}
               >
-                {children}
-              </KeyboardAwareScrollView>
-            ) : (
-              <KeyboardAwareScrollView
-                contentContainerStyle={[
-                  styles.contentContainer,
-                  contentContainerStyle,
-                ]}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-                enableOnAndroid
-                extraScrollHeight={ms(20)}
-                scrollEnabled={false}
-              >
-                {children}
-              </KeyboardAwareScrollView>
-            )}
+                {showHandle && <View style={styles.handleBar} />}
 
-            {footer && <View style={styles.footerContainer}>{footer}</View>}
-          </Pressable>
-        </Pressable>
+                {title && (
+                  <View style={styles.titleContainer}>
+                    <AppText variant="heading3" color={AppColors.gray100}>
+                      {title}
+                    </AppText>
+                  </View>
+                )}
+
+                {scrollable ? (
+                  <KeyboardAwareScrollView
+                    contentContainerStyle={[
+                      styles.contentContainer,
+                      contentContainerStyle,
+                    ]}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    enableOnAndroid
+                    extraScrollHeight={ms(20)}
+                  >
+                    {children}
+                  </KeyboardAwareScrollView>
+                ) : (
+                  <KeyboardAwareScrollView
+                    contentContainerStyle={[
+                      styles.contentContainer,
+                      contentContainerStyle,
+                    ]}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    enableOnAndroid
+                    extraScrollHeight={ms(20)}
+                    scrollEnabled={false}
+                  >
+                    {children}
+                  </KeyboardAwareScrollView>
+                )}
+
+                {footer && <View style={styles.footerContainer}>{footer}</View>}
+              </Pressable>
+            </Pressable>
+          </BlurView>
         </KeyboardAvoidingView>
       </GestureHandlerRootView>
     </Modal>
@@ -114,7 +112,9 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  overlayPressable: {
+    flex: 1,
     justifyContent: 'flex-end',
   },
   sheet: {

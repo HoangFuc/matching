@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 
 import {
   errorCodes,
@@ -337,7 +338,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
                     statusBarTranslucent
                     onRequestClose={() => setShowPostcode(false)}
                   >
-                    <View style={styles.postcodeOverlay}>
+                    <BlurView style={styles.postcodeOverlay} blurType="dark" blurAmount={8}>
                       <Pressable
                         style={{ flex: 1 }}
                         onPress={() => setShowPostcode(false)}
@@ -361,7 +362,7 @@ const CreateMeetingMinutesScreen: React.FC = () => {
                           onError={() => setShowPostcode(false)}
                         />
                       </View>
-                    </View>
+                    </BlurView>
                   </Modal>
                 </>
               )}
@@ -478,7 +479,6 @@ const styles = StyleSheet.create({
   },
   postcodeOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },
   postcodeSheet: {

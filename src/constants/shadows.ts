@@ -8,6 +8,6 @@ export const CardShadow: ViewStyle = Platform.select({
     shadowRadius: 8,
   },
   default: {
-    elevation: 4,
+    boxShadow: '0px 2px 8px 0px #5329C224',
   },
 });

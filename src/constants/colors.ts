@@ -28,6 +28,10 @@ export const Primary = {
   lightLavendar: '#D3C2FF',
   amber: '#F6A101',
   black: '#000000',
+  pastelLavendar: '#EAE2FF',
+  warmIvory: '#FFF6ED',
+  burntOrange: '#FD5E19',
+  lightLime: '#ECFFE8',
 } as const;
 
 export const AppColors = {

@@ -23,4 +23,9 @@ export const AppImages = {
   kakao: require('@/src/assets/images/kakao.png'),
   naver: require('@/src/assets/images/naver.png'),
   google: require('@/src/assets/images/google.png'),
+  link: require('@/src/assets/images/link.png'),
+  unlink: require('@/src/assets/images/unlink.png'),
+  logoSquare: require('@/src/assets/images/logoSquare.png'),
+  addUser: require('@/src/assets/images/addUser.png'),
+  addGroup: require('@/src/assets/images/addGroup.png'),
 };

@@ -13,6 +13,9 @@ export type AuthStackParamList = {
   Welcome: undefined;
   Login: undefined;
   JoinOrganization: undefined;
+  ConfirmOrganizationInvitation: undefined;
+  JoinMembership: { withSteps?: boolean } | undefined;
+  CreateAgency: undefined;
 };
 
 export type RootStackParamList = {

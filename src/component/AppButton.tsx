@@ -18,16 +18,20 @@ interface IAppButtonProps
   extends Omit<TouchableOpacityProps, 'children' | 'style'> {
   label: string;
   icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right';
   variant?: ButtonVariant;
   textVariant?: TypographyVariant;
+  textColor?: string;
   style?: StyleProp<ViewStyle>;
 }
 
 const AppButton: React.FC<IAppButtonProps> = ({
   label,
   icon,
+  iconPosition = 'left',
   variant = 'primary',
   textVariant = 'body6',
+  textColor,
   disabled,
   style,
   ...rest
@@ -45,20 +49,23 @@ const AppButton: React.FC<IAppButtonProps> = ({
       disabled={disabled}
       {...rest}
     >
-      {icon}
+      {iconPosition === 'left' && icon}
 
       <AppText
         variant={textVariant}
         color={
-          disabled
+          textColor ??
+          (disabled
             ? AppColors.gray40
             : isPrimary
             ? AppColors.purple
-            : AppColors.gray90
+            : AppColors.gray90)
         }
       >
         {label}
       </AppText>
+
+      {iconPosition === 'right' && icon}
     </TouchableOpacity>
   );
 };

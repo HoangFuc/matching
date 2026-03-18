@@ -21,6 +21,7 @@ export {
   Home2,
   InfoCircle,
   Like1,
+  LoginCurve,
   Message,
   More,
   Notification,

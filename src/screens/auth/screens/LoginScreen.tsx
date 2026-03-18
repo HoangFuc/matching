@@ -321,6 +321,7 @@ const styles = StyleSheet.create({
   socialIcon: {
     width: ms(50),
     height: ms(50),
+    borderRadius: ms(25),
   },
   googleIcon: {
     width: ms(24),

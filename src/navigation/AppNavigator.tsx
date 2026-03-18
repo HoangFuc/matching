@@ -2,8 +2,14 @@ import React, { useCallback, useState, useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BlurView } from '@react-native-community/blur';
+
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { CommonActions, NavigationContainer, useFocusEffect } from '@react-navigation/native';
+import {
+  CommonActions,
+  NavigationContainer,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
@@ -91,10 +97,13 @@ const FullScreenOverlay: React.FC = () => {
   }
 
   return (
-    <Pressable
-      style={styles.overlay}
-      onPress={() => setOverlayVisible(false)}
-    />
+    <Pressable style={styles.overlay} onPress={() => setOverlayVisible(false)}>
+      <BlurView
+        style={StyleSheet.absoluteFill}
+        blurType="light"
+        blurAmount={8}
+      />
+    </Pressable>
   );
 };
 
@@ -172,11 +181,8 @@ const MainTabs: React.FC = () => {
                 navigation.dispatch(
                   CommonActions.reset({
                     ...state,
-                    routes: state.routes.map(
-                      (r: { name: string }) =>
-                        r.name === route.name
-                          ? { ...r, state: undefined }
-                          : r,
+                    routes: state.routes.map((r: { name: string }) =>
+                      r.name === route.name ? { ...r, state: undefined } : r,
                     ),
                   }),
                 );
@@ -262,7 +268,6 @@ export default AppNavigator;
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     zIndex: 1,
   },
   placeholder: {

@@ -1,8 +1,8 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { StatusBar, StyleSheet, View } from 'react-native';
 
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Link1, Link21 } from 'iconsax-react-nativejs';
+
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
@@ -11,75 +11,84 @@ import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
+import { MemoHasCodeOption } from '@/src/screens/auth/components/HasCodeOption';
+import { MemoNoCodeOption } from '@/src/screens/auth/components/NoCodeOption';
 
 type Props = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'JoinOrganization'>;
 };
 
 const JoinOrganizationScreen: React.FC<Props> = ({ navigation }) => {
+  const [selectedOption, setSelectedOption] = useState<
+    'hasCode' | 'noCode' | null
+  >(null);
+
   //---------------------------------------
   const handleHasInviteCode = () => {
-    // TODO: navigate to invite code input
+    setSelectedOption('hasCode');
   };
 
   //---------------------------------------
   const handleNoInviteCode = () => {
-    // TODO: navigate to create organization
+    setSelectedOption('noCode');
   };
 
   return (
     <AppSafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor={AppColors.purple} />
+
       <MemoScreenHeader title="조직 참여 방법" />
 
       <MemoScreenBody style={styles.body}>
         {/* Content */}
         <View style={styles.content}>
-          <AppText variant="body2" color={AppColors.gray100}>
+          <AppText
+            variant="body2"
+            color={AppColors.gray100}
+            style={{
+              textAlign: 'center',
+            }}
+          >
             어떻게 참여하시겠어요?
           </AppText>
 
-          {/* Option 1 - Has invite code */}
-          <TouchableOpacity style={styles.optionCard} onPress={handleHasInviteCode}>
-            <View style={styles.optionIconContainer}>
-              <Link1 size={ms(28)} color={AppColors.purple} variant="Linear" />
-            </View>
-            <View style={styles.optionTextContainer}>
-              <AppText variant="body2" color={AppColors.gray100}>
-                초대 코드가 있어요
-              </AppText>
-              <AppText variant="body8" color={AppColors.gray60} style={styles.optionDescription}>
-                전달받은 초대 코드를 입력하여 기존 조직에 바로 참여합니다.
-              </AppText>
-            </View>
-          </TouchableOpacity>
+          <MemoHasCodeOption
+            isSelected={selectedOption === 'hasCode'}
+            onSelect={handleHasInviteCode}
+          />
 
-          {/* Option 2 - No invite code */}
-          <TouchableOpacity style={styles.optionCard} onPress={handleNoInviteCode}>
-            <View style={styles.optionIconContainer}>
-              <Link21 size={ms(28)} color={AppColors.purple} variant="Linear" />
-            </View>
-            <View style={styles.optionTextContainer}>
-              <AppText variant="body2" color={AppColors.gray100}>
-                초대 코드가 없어요
-              </AppText>
-              <AppText variant="body8" color={AppColors.gray60} style={styles.optionDescription}>
-                새로운 대화시를 직접 만들고 팀원을 초대할 수 있습니다.
-              </AppText>
-            </View>
-          </TouchableOpacity>
+          <MemoNoCodeOption
+            isSelected={selectedOption === 'noCode'}
+            onSelect={handleNoInviteCode}
+          />
         </View>
 
-        {/* Bottom button */}
+        {/* Bottom */}
         <View style={styles.bottomContainer}>
-          <TouchableOpacity style={styles.joinButton}>
-            <AppText variant="body2" color={AppColors.white}>
-              조직 참여하기
+          <AppText
+            variant="body8"
+            color={AppColors.gray90}
+            style={styles.footer}
+          >
+            계속 진행함으로써{' '}
+            <AppText
+              variant="body8"
+              color={AppColors.gray90}
+              style={styles.underlineText}
+              onPress={() => {}}
+            >
+              서비스 이용약관
+            </AppText>{' '}
+            및{' '}
+            <AppText
+              variant="body8"
+              color={AppColors.gray90}
+              style={styles.underlineText}
+              onPress={() => {}}
+            >
+              개인정보처리방침
             </AppText>
-          </TouchableOpacity>
-
-          {/* Footer */}
-          <AppText variant="detail" color={AppColors.gray50} style={styles.footer}>
-            계속 진행함으로써 서비스 이용약관 및 개인정보처리방침에 동의하게 됩니다.
+            에 동의하게 됩니다.
           </AppText>
         </View>
       </MemoScreenBody>
@@ -99,45 +108,17 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingTop: ms(28),
-    gap: ms(16),
-  },
-  optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: ms(16),
-    borderRadius: ms(12),
-    borderWidth: 1,
-    borderColor: AppColors.gray20,
-    gap: ms(14),
-  },
-  optionIconContainer: {
-    width: ms(48),
-    height: ms(48),
-    borderRadius: ms(24),
-    backgroundColor: AppColors.lavendar,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  optionTextContainer: {
-    flex: 1,
-    gap: ms(4),
-  },
-  optionDescription: {
-    lineHeight: ms(18),
+    paddingTop: ms(16),
+    gap: ms(24),
   },
   bottomContainer: {
     paddingBottom: ms(32),
-  },
-  joinButton: {
-    backgroundColor: AppColors.purple,
-    borderRadius: ms(99),
-    paddingVertical: ms(14),
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: ms(12),
+    gap: ms(24),
   },
   footer: {
     textAlign: 'center',
+  },
+  underlineText: {
+    textDecorationLine: 'underline',
   },
 });

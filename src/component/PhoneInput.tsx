@@ -135,7 +135,11 @@ const PhoneInput: React.FC<IProps> = ({
       />
 
       {error && (
-        <AppText variant="body9" color={AppColors.negative} style={styles.errorText}>
+        <AppText
+          variant="body8"
+          color={AppColors.negative}
+          style={styles.errorText}
+        >
           {error}
         </AppText>
       )}

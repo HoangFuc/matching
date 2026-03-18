@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Image, ImageBackground, StyleSheet, View } from 'react-native';
 
-import { HamburgerMenu, Notification } from '@/src/constants/icons';
-import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { HamburgerMenu, Notification } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
 import { getUserInfo } from '@/src/services/tokenService';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 //---------------------------------------
 const DAYS_KR = [
@@ -104,10 +104,10 @@ const styles = StyleSheet.create({
   },
   background: {
     position: 'absolute',
-    top: ms(-60),
     right: 0,
     bottom: 0,
-    left: ms(20),
+    width: '120%',
+    height: '170%',
   },
   info: {
     flexDirection: 'row',

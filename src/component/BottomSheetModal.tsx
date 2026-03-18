@@ -7,6 +7,7 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 
 import { ms, s } from 'react-native-size-matters/extend';
 
@@ -17,7 +18,6 @@ interface IProps {
   visible: boolean;
   onClose: () => void;
   title?: string;
-  overlayOpacity?: number;
   sheetStyle?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }
@@ -26,7 +26,6 @@ const BottomSheetModal: React.FC<IProps> = ({
   visible,
   onClose,
   title,
-  overlayOpacity = 0.4,
   sheetStyle,
   children,
 }) => {
@@ -37,11 +36,9 @@ const BottomSheetModal: React.FC<IProps> = ({
       animationType="slide"
       onRequestClose={onClose}
     >
+      <BlurView style={styles.blur} blurType="dark" blurAmount={8}>
       <Pressable
-        style={[
-          styles.overlay,
-          { backgroundColor: `rgba(0,0,0,${overlayOpacity})` },
-        ]}
+        style={styles.overlay}
         onPress={onClose}
       >
         <Pressable
@@ -63,6 +60,7 @@ const BottomSheetModal: React.FC<IProps> = ({
           {children}
         </Pressable>
       </Pressable>
+      </BlurView>
     </Modal>
   );
 };
@@ -70,6 +68,9 @@ const BottomSheetModal: React.FC<IProps> = ({
 export const MemoBottomSheetModal = React.memo(BottomSheetModal);
 
 const styles = StyleSheet.create({
+  blur: {
+    flex: 1,
+  },
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',

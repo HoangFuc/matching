@@ -1,5 +1,6 @@
 import React from 'react';
-import {ActivityIndicator, Modal, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, Modal, StyleSheet} from 'react-native';
+import {BlurView} from '@react-native-community/blur';
 import {AppColors} from '../constants/colors';
 
 interface FullScreenLoadingProps {
@@ -11,9 +12,9 @@ const FullScreenLoading: React.FC<FullScreenLoadingProps> = ({visible}) => {
 
   return (
     <Modal transparent animationType="fade" visible={visible}>
-      <View style={styles.overlay}>
+      <BlurView style={styles.overlay} blurType="dark" blurAmount={8}>
         <ActivityIndicator size="large" color={AppColors.purple} />
-      </View>
+      </BlurView>
     </Modal>
   );
 };
@@ -23,7 +24,6 @@ export default React.memo(FullScreenLoading);
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },

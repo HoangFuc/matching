@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CommonActions, NavigationContainer, useFocusEffect } from '@react-navigation/native';
@@ -98,6 +99,18 @@ const FullScreenOverlay: React.FC = () => {
 
 const MainTabs: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState('Home');
+  const insets = useSafeAreaInsets();
+
+  //---------------------------------------
+
+  const tabBarStyle = useMemo(
+    () => ({
+      ...styles.tabBar,
+      height: ms(70) + insets.bottom,
+      paddingBottom: insets.bottom,
+    }),
+    [insets.bottom],
+  );
 
   //---------------------------------------
 
@@ -177,7 +190,7 @@ const MainTabs: React.FC = () => {
               getTabBarLabel(route.name, color, focused),
             tabBarActiveTintColor: AppColors.purple,
             tabBarInactiveTintColor: AppColors.gray50,
-            tabBarStyle: styles.tabBar,
+            tabBarStyle: tabBarStyle,
             tabBarItemStyle: styles.tabBarItem,
           })}
         >
@@ -255,7 +268,6 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
   },
   tabBar: {
-    height: ms(92),
     borderTopLeftRadius: ms(20),
     borderTopRightRadius: ms(20),
     backgroundColor: AppColors.white,
@@ -268,7 +280,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: ms(4),
-    paddingTop: ms(8),
-    paddingBottom: ms(24),
+    paddingVertical: ms(12),
   },
 });

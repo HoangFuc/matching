@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
@@ -206,7 +207,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
                     animationType="slide"
                     onRequestClose={() => setShowPostcode(false)}
                   >
-                    <View style={styles.postcodeContainer}>
+                    <BlurView style={styles.postcodeContainer} blurType="dark" blurAmount={8}>
                       <Pressable
                         style={styles.postcodeOverlay}
                         onPress={() => setShowPostcode(false)}
@@ -230,7 +231,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
                           onError={() => setShowPostcode(false)}
                         />
                       </View>
-                    </View>
+                    </BlurView>
                   </Modal>
                 </>
               )}
@@ -364,7 +365,6 @@ const styles = StyleSheet.create({
   },
   postcodeOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   postcodeSheet: {
     height: '80%',

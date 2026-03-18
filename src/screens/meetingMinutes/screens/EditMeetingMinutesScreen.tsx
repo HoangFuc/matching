@@ -6,6 +6,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
 import {
@@ -391,7 +392,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
               statusBarTranslucent
               onRequestClose={() => setShowPostcode(false)}
             >
-              <View style={styles.postcodeOverlay}>
+              <BlurView style={styles.postcodeOverlay} blurType="dark" blurAmount={8}>
                 <Pressable
                   style={{ flex: 1 }}
                   onPress={() => setShowPostcode(false)}
@@ -415,7 +416,7 @@ const EditMeetingMinutesScreen: React.FC = () => {
                     onError={() => setShowPostcode(false)}
                   />
                 </View>
-              </View>
+              </BlurView>
             </Modal>
           </View>
 
@@ -522,7 +523,6 @@ const styles = StyleSheet.create({
   },
   postcodeOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },
   postcodeSheet: {

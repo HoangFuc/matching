@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, ImageBackground, StyleSheet, View } from 'react-native';
 
 import { HamburgerMenu, Notification } from '@/src/constants/icons';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -47,13 +47,7 @@ const HeaderDashboard: React.FC = () => {
   }, []);
 
   return (
-    <View>
-      <Image
-        source={AppImages.headerBg}
-        style={styles.background}
-        resizeMode="cover"
-      />
-
+    <ImageBackground source={AppImages.headerBg} resizeMode="cover">
       <View style={styles.logo}>
         <Image
           style={{
@@ -91,7 +85,7 @@ const HeaderDashboard: React.FC = () => {
           </AppText>
         </View>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -110,7 +104,7 @@ const styles = StyleSheet.create({
   },
   background: {
     position: 'absolute',
-    top: ms(-45),
+    top: ms(-60),
     right: 0,
     bottom: 0,
     left: ms(20),

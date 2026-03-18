@@ -1,5 +1,11 @@
 import React from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -31,9 +37,12 @@ import { MemoMeetingScheduleCard } from '../components/MeetingScheduleCard';
 
 type TNav = NativeStackNavigationProp<RootStackParamList>;
 
+const LIMIT = 20;
+
 const MeetingScheduleManagementScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
   const now = new Date();
+  const [page, setPage] = React.useState(1);
   const [activeTab, setActiveTab] = React.useState<MeetingScheduleScopeEnum>(
     MeetingScheduleScopeEnum.COMPANY,
   );
@@ -49,11 +58,17 @@ const MeetingScheduleManagementScreen: React.FC = () => {
     )}`,
   );
 
-  const { data: meetingSchedules = [], refetch } = useGetMeetingSchedulesQuery({
+  const { data, isLoading, isFetching, refetch } = useGetMeetingSchedulesQuery({
+    page,
+    limit: LIMIT,
     startDate,
     endDate,
     scope: activeTab,
   });
+
+  //---------------------------------------
+  const meetingSchedules = data?.data ?? [];
+  const hasMore = page < (data?.meta?.totalPages ?? 0);
 
   //---------------------------------------
   useFocusEffect(
@@ -69,6 +84,7 @@ const MeetingScheduleManagementScreen: React.FC = () => {
       setEndDate(nextWeekStr);
       setActiveTab(MeetingScheduleScopeEnum.COMPANY);
       setShowDatePicker(false);
+      setPage(1);
       refetch();
     }, [refetch]),
   );
@@ -82,7 +98,23 @@ const MeetingScheduleManagementScreen: React.FC = () => {
   const handleDateConfirm = React.useCallback((start: string, end: string) => {
     setStartDate(start);
     setEndDate(end);
+    setPage(1);
   }, []);
+
+  //---------------------------------------
+  const handleLoadMore = React.useCallback(() => {
+    if (hasMore && !isFetching && !isLoading) {
+      setPage(prev => prev + 1);
+    }
+  }, [hasMore, isFetching, isLoading]);
+
+  //---------------------------------------
+  const renderFooter = React.useCallback(() => {
+    if (!isFetching || isLoading) return null;
+    return (
+      <ActivityIndicator style={styles.footerLoader} color={AppColors.purple} />
+    );
+  }, [isFetching, isLoading]);
 
   //---------------------------------------
   const handlePressItem = React.useCallback(
@@ -182,7 +214,7 @@ const MeetingScheduleManagementScreen: React.FC = () => {
             <Pressable
               key={tab}
               style={[styles.tab, activeTab === tab && styles.tabActive]}
-              onPress={() => setActiveTab(tab)}
+              onPress={() => { setActiveTab(tab); setPage(1); }}
             >
               <AppText
                 variant={activeTab === tab ? 'body5' : 'body7'}
@@ -216,13 +248,25 @@ const MeetingScheduleManagementScreen: React.FC = () => {
         </View>
 
         {/* List */}
-        <FlatList
-          data={meetingSchedules}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
+        {isLoading ? (
+          <ActivityIndicator
+            style={styles.centerLoader}
+            color={AppColors.purple}
+          />
+        ) : (
+          <FlatList
+            data={meetingSchedules}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
+            onRefresh={refetch}
+            refreshing={isLoading}
+          />
+        )}
       </MemoScreenBody>
 
       <MemoDateRangePickerModal
@@ -309,5 +353,13 @@ const styles = StyleSheet.create({
   list: {
     padding: ms(16),
     gap: ms(12),
+  },
+  centerLoader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerLoader: {
+    paddingVertical: ms(16),
   },
 });

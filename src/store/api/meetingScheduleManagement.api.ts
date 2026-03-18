@@ -1,10 +1,11 @@
-import { MeetingScheduleScopeEnum } from '@/src/constants/meetingSchedule';
 import {
   ICreateMeetingSchedulePayload,
+  IMeetingScheduleListParams,
+  IMeetingScheduleListResponse,
   IMeetingScheduleManagement,
 } from '@/src/interface/meetingScheduleManagement.interface';
-import { API_BASE_URL } from '@env';
 import { getToken } from '@/src/services/tokenService';
+import { API_BASE_URL } from '@env';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export interface ICreateMeetingLogPayload {
@@ -31,17 +32,32 @@ export const meetingScheduleManagementApi = createApi({
   tagTypes: ['MeetingScheduleManagement'],
   endpoints: builder => ({
     getMeetingSchedules: builder.query<
-      IMeetingScheduleManagement[],
-      {
-        startDate: string;
-        endDate: string;
-        scope: MeetingScheduleScopeEnum;
-      }
+      IMeetingScheduleListResponse,
+      IMeetingScheduleListParams
     >({
-      query: ({ startDate, endDate, scope }) =>
-        `/schedules?startDate=${startDate}&endDate=${endDate}&scheduleType=customer_meeting&scope=${scope}`,
-      transformResponse: (response: any) =>
-        Array.isArray(response) ? response : response?.data ?? [],
+      query: params => {
+        const searchParams = new URLSearchParams();
+        if (params.page) searchParams.append('page', String(params.page));
+        if (params.limit) searchParams.append('limit', String(params.limit));
+        searchParams.append('startDate', params.startDate);
+        searchParams.append('endDate', params.endDate);
+        searchParams.append('scope', params.scope);
+        searchParams.append('scheduleType', 'customer_meeting');
+        return `/schedules?${searchParams.toString()}`;
+      },
+      transformResponse: (response: any): IMeetingScheduleListResponse => {
+        const inner = response?.data;
+        return {
+          data: inner?.data ?? response?.data ?? [],
+          meta: inner?.meta ??
+            response?.meta ?? {
+              page: 1,
+              limit: 20,
+              total: 0,
+              totalPages: 0,
+            },
+        };
+      },
       providesTags: ['MeetingScheduleManagement'],
     }),
     //---------------------------------------

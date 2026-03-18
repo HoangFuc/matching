@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: ms(16),
     backgroundColor: AppColors.purple,
+    paddingBottom: ms(24),
   },
   iconContainer: {
     alignItems: 'center',

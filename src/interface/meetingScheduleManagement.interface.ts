@@ -36,3 +36,21 @@ export interface ICreateMeetingSchedulePayload {
 export interface ICreator {
   fullName: string;
 }
+
+export interface IMeetingScheduleListParams {
+  page?: number;
+  limit?: number;
+  startDate: string;
+  endDate: string;
+  scope: string;
+}
+
+export interface IMeetingScheduleListResponse {
+  data: IMeetingScheduleManagement[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}

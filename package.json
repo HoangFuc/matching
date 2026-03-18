@@ -13,7 +13,10 @@
     "start": "react-native start",
     "start:dev": "APP_ENV=development react-native start",
     "start:release": "APP_ENV=production react-native start",
-    "test": "jest"
+    "test": "jest",
+    "clean": "watchman watch-del-all && rm -rf node_modules/.cache && rm -rf /tmp/metro-* && rm -rf android/app/build && cd android && ./gradlew clean && cd ..",
+    "clean:all": "watchman watch-del-all && rm -rf node_modules/.cache && rm -rf /tmp/metro-* && rm -rf android/app/build && rm -rf node_modules && cd android && ./gradlew clean && cd .. && npm install",
+    "start:clean": "react-native start --reset-cache"
   },
   "dependencies": {
     "@actbase/react-daum-postcode": "1.0.4",

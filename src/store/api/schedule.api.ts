@@ -23,15 +23,19 @@ export const scheduleApi = createApi({
     >({
       query: ({ startDate, endDate }) =>
         `/schedules?startDate=${startDate}&endDate=${endDate}`,
-      transformResponse: (response: any) =>
-        Array.isArray(response) ? response : response?.data ?? [],
+      transformResponse: (response: any) => {
+        const data = response?.data?.data ?? response?.data ?? response;
+        return Array.isArray(data) ? data : [];
+      },
       providesTags: ['Schedule'],
     }),
     //---------------------------------------
     getSchedulesByDate: builder.query<ISchedule[], string>({
       query: date => `/schedules?startDate=${date}&endDate=${date}`,
-      transformResponse: (response: any) =>
-        Array.isArray(response) ? response : response?.data ?? [],
+      transformResponse: (response: any) => {
+        const data = response?.data?.data ?? response?.data ?? response;
+        return Array.isArray(data) ? data : [];
+      },
       providesTags: ['Schedule'],
     }),
     //---------------------------------------

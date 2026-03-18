@@ -1,57 +1,40 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import dayjs from 'dayjs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
 import { AppColors } from '@/src/constants/colors';
 import { AppImages } from '@/src/constants/images';
 import {
   RootStackParamList,
   RootTabParamList,
 } from '@/src/interface/tab.interface';
+import { MemoTemplateMeetingCard } from '../meetingSchedule/TemplateMeetingCard';
 
 type TNav = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList>,
   BottomTabNavigationProp<RootTabParamList>
 >;
-import { useGetSchedulesQuery } from '@/src/store/api';
-import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
-import { showGlobalToast } from '@/src/utils/toastDispatcher';
-import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
-import { MemoTemplateMeetingCard } from '../meetingSchedule/TemplateMeetingCard';
 
 const MeetingSchedule: React.FC = () => {
   const navigation = useNavigation<TNav>();
 
   //---------------------------------------
-  const today = dayjs().format('YYYY-MM-DD');
-  const { data: schedules = [] } = useGetSchedulesQuery({
-    startDate: today,
-    endDate: today,
-  });
+  const [showDevModal, setShowDevModal] = React.useState(false);
 
   //---------------------------------------
-  const todayEvents = React.useMemo(() => {
-    const events = convertSchedulesToEvents(schedules);
-    return events[today] ?? [];
-  }, [schedules, today]);
-
-  //---------------------------------------
-  const handlePressMeeting = useCallback(() => {
+  const handlePressMeeting = React.useCallback(() => {
     navigation.navigate('MeetingScheduleManagement');
   }, [navigation]);
 
   //---------------------------------------
-  const [showDevModal, setShowDevModal] = useState(false);
-
-  //---------------------------------------
-  const handlePressGeneral = useCallback(() => {
+  const handlePressGeneral = React.useCallback(() => {
     setShowDevModal(true);
   }, []);
 

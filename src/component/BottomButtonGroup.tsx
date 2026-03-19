@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ms } from 'react-native-size-matters/extend';
 
@@ -30,8 +31,21 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     gap: ms(8),
+    height: ms(76),
     paddingTop: ms(16),
     paddingHorizontal: ms(16),
+    backgroundColor: 'white',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#5329C2',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.14,
+        shadowRadius: 8,
+      },
+      default: {
+        boxShadow: '0px -2px 10px 0px #5353530D',
+      },
+    }),
   },
   buttonWrapper: {
     flex: 1,

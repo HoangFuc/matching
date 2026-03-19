@@ -12,6 +12,9 @@ interface IProps {
   textColor: string;
   selected?: boolean;
   textVariant?: TypographyVariant;
+  paddingHorizontal?: number;
+  paddingVertical?: number;
+  opacity?: number;
   onPress?: () => void;
 }
 
@@ -21,6 +24,9 @@ const Chip: React.FC<IProps> = ({
   textColor,
   selected,
   textVariant = 'body4',
+  paddingHorizontal,
+  paddingVertical,
+  opacity,
   onPress,
 }) => {
   return (
@@ -31,7 +37,13 @@ const Chip: React.FC<IProps> = ({
           backgroundColor: bgColor,
           borderWidth: 1,
           borderColor: selected ? textColor : 'transparent',
-          opacity: selected ? 1 : 0.6,
+          opacity: opacity ?? (selected ? 1 : 0.6),
+          ...(paddingHorizontal !== undefined && {
+            paddingHorizontal: ms(paddingHorizontal),
+          }),
+          ...(paddingVertical !== undefined && {
+            paddingVertical: ms(paddingVertical),
+          }),
         },
       ]}
       onPress={onPress}
@@ -47,6 +59,7 @@ export const MemoChip = React.memo(Chip);
 
 const styles = StyleSheet.create({
   chip: {
+    alignSelf: 'flex-start',
     borderRadius: ms(100),
     paddingHorizontal: ms(8),
     paddingVertical: ms(4),

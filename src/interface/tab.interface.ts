@@ -16,6 +16,8 @@ export type AuthStackParamList = {
   ConfirmOrganizationInvitation: undefined;
   JoinMembership: { withSteps?: boolean } | undefined;
   CreateAgency: undefined;
+  OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
+  InviteMember: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
 };
 
 export type RootStackParamList = {
@@ -29,6 +31,9 @@ export type RootStackParamList = {
   CreateMeetingSchedule: undefined;
   MeetingScheduleDetail: { item: IMeetingScheduleManagement };
   ScheduleCalendarView: { filterTypes?: TScheduleType[] };
+  OrganizationChart: undefined;
+  OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
+  InviteMember: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
 };
 
 export type MeetingMinutesStackParamList = {

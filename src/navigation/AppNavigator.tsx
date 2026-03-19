@@ -30,6 +30,9 @@ import { MemoMeetingScheduleManagementScreen } from '../screens/meetingScheduleM
 import { MemoCreateMeetingScheduleScreen } from '../screens/meetingScheduleManagement/screens/CreateMeetingScheduleScreen';
 import { MemoMeetingScheduleDetailScreen } from '../screens/meetingScheduleManagement/screens/MeetingScheduleDetailScreen';
 import { MemoScheduleCalendarView } from '../screens/schedule/screens/ScheduleCalendarView';
+import { MemoOrganizationChartScreen } from '../screens/organizationChart/screens/OrganizationChartScreen';
+import { MemoOrgChartSetupScreen } from '../screens/auth/screens/OrgChartSetupScreen';
+import { MemoInviteMemberScreen } from '../screens/auth/screens/InviteMemberScreen';
 import AuthStack from './AuthStack';
 import HomeStack from './HomeStack';
 import MeetingMinutesStack from './MeetingMinutesStack';
@@ -76,7 +79,10 @@ const TabBarLabel: React.FC<{
   color: string;
   focused: boolean;
 }> = ({ routeName, color, focused }) => (
-  <AppText variant={focused ? 'body6' : 'detail'} color={color}>
+  <AppText
+    variant="detail"
+    color={color}
+    style={focused ? styles.tabBarLabelFocused : undefined}>
     {routeName === 'Home'
       ? '홈'
       : routeName === 'Schedule'
@@ -255,6 +261,18 @@ const AppNavigator: React.FC = () => {
             name="ScheduleCalendarView"
             component={MemoScheduleCalendarView}
           />
+          <RootStack.Screen
+            name="OrganizationChart"
+            component={MemoOrganizationChartScreen}
+          />
+          <RootStack.Screen
+            name="OrgChartSetup"
+            component={MemoOrgChartSetupScreen}
+          />
+          <RootStack.Screen
+            name="InviteMember"
+            component={MemoInviteMemberScreen}
+          />
         </RootStack.Navigator>
       </NavigationContainer>
 
@@ -288,5 +306,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: ms(4),
     paddingVertical: ms(12),
+  },
+  tabBarLabelFocused: {
+    fontWeight: '600',
   },
 });

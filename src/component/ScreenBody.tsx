@@ -22,5 +22,6 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     borderTopLeftRadius: ms(20),
     borderTopRightRadius: ms(20),
+    overflow: 'hidden',
   },
 });

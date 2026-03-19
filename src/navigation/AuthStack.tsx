@@ -9,6 +9,8 @@ import { MemoJoinOrganizationScreen } from '../screens/auth/screens/JoinOrganiza
 import { MemoConfirmOrganizationInvitationScreen } from '../screens/auth/screens/ConfirmOrganizationInvitationScreen';
 import { MemoJoinMembershipScreen } from '../screens/auth/screens/JoinMembershipScreen';
 import { MemoCreateAgencyScreen } from '../screens/auth/screens/CreateAgencyScreen';
+import { MemoOrgChartSetupScreen } from '../screens/auth/screens/OrgChartSetupScreen';
+import { MemoInviteMemberScreen } from '../screens/auth/screens/InviteMemberScreen';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
@@ -21,6 +23,8 @@ const AuthStack: React.FC = () => {
       <Stack.Screen name="ConfirmOrganizationInvitation" component={MemoConfirmOrganizationInvitationScreen} />
       <Stack.Screen name="JoinMembership" component={MemoJoinMembershipScreen} />
       <Stack.Screen name="CreateAgency" component={MemoCreateAgencyScreen} />
+      <Stack.Screen name="OrgChartSetup" component={MemoOrgChartSetupScreen} />
+      <Stack.Screen name="InviteMember" component={MemoInviteMemberScreen} />
     </Stack.Navigator>
   );
 };

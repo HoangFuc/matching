@@ -98,7 +98,7 @@ const MoreActions: React.FC = () => {
           label="기안"
           style={styles.gridItem}
           image={<Image source={AppImages.phoneBook} style={styles.icon} />}
-          onPress={handleShowDevModal}
+          onPress={() => navigation.navigate('OrganizationChart')}
         />
       </View>
 

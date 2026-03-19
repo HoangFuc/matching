@@ -18,6 +18,7 @@ interface IProps extends Omit<TextInputProps, 'style'> {
   labelVariant?: TypographyVariant;
   multiline?: boolean;
   required?: boolean;
+  gap?: number;
 }
 
 const FormInput: React.FC<IProps> = ({
@@ -25,10 +26,11 @@ const FormInput: React.FC<IProps> = ({
   labelVariant = 'body7',
   multiline,
   required,
+  gap = 0,
   ...textInputProps
 }) => {
   return (
-    <View>
+    <View style={{ gap: ms(gap) }}>
       <AppText variant={labelVariant} color={AppColors.gray90}>
         {label}
         {required && (

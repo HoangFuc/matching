@@ -74,12 +74,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: ms(16),
     gap: ms(8),
   },
   stepCircle: {
-    width: ms(24),
-    height: ms(24),
+    width: ms(20),
+    height: ms(20),
     borderRadius: ms(100),
     alignItems: 'center',
     justifyContent: 'center',
@@ -96,9 +95,9 @@ const styles = StyleSheet.create({
     gap: ms(4),
   },
   dot: {
-    width: ms(5),
-    height: ms(5),
-    borderRadius: ms(2.5),
+    width: ms(4),
+    height: ms(4),
+    borderRadius: ms(2),
   },
   dotActive: {
     backgroundColor: AppColors.purple,

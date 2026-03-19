@@ -62,7 +62,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <AppSafeAreaView style={styles.safeArea}>
-      <MemoScreenHeader title="로그인" icon={<HeaderLogo />} />
+      <MemoScreenHeader
+        title="로그인"
+        icon={<HeaderLogo />}
+        onPressBack={() => navigation.navigate('Welcome')}
+      />
 
       <MemoScreenBody>
         <ScrollView

@@ -3,6 +3,7 @@ export {
   ArrowDown2,
   ArrowLeft2,
   ArrowRight2,
+  Buildings,
   Backward10Seconds,
   Calendar,
   Category,
@@ -33,6 +34,7 @@ export {
   TickCircle,
   TickSquare,
   Trash,
+  User,
   Microphone2,
 } from 'iconsax-react-nativejs';
 

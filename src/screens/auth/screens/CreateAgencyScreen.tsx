@@ -76,9 +76,12 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
   }, [navigation]);
 
   //---------------------------------------
-  const onSubmit = React.useCallback((_data: FormValues) => {
-    // TODO: navigate to step 3
-  }, []);
+  const onSubmit = React.useCallback(
+    (_data: FormValues) => {
+      navigation.navigate('OrgChartSetup', { managementType });
+    },
+    [navigation, managementType],
+  );
 
   return (
     <AppSafeAreaView style={styles.safeArea}>
@@ -92,6 +95,7 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <ScrollView
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -127,13 +131,15 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
 
             <Pressable style={styles.uploadArea}>
               <ExportCurve
-                size={`${ms(20)}`}
+                size={`${ms(25)}`}
                 color={AppColors.gray40}
                 variant="Linear"
               />
+
               <AppText variant="body8" color={AppColors.gray40}>
                 이미지 업로드
               </AppText>
+
               <AppText variant="detail" color={AppColors.gray40}>
                 최대 5MB, PNG/JPG 추천 (500x500px)
               </AppText>
@@ -182,7 +188,6 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
                         style={{
                           backgroundColor: AppColors.lavendar,
                           borderRadius: ms(100),
-                          borderColor: 'none',
                         }}
                       />
                     </View>
@@ -223,6 +228,11 @@ const styles = StyleSheet.create({
   stepBarContainer: {
     paddingHorizontal: ms(16),
     paddingTop: ms(16),
+    marginBottom: ms(8),
+  },
+  scrollView: {
+    flex: 1,
+    marginBottom: ms(16),
   },
   scrollContent: {
     flexGrow: 1,
@@ -238,13 +248,13 @@ const styles = StyleSheet.create({
   uploadArea: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: ms(24),
-    marginTop: ms(8),
+    padding: ms(16),
     borderWidth: 1,
     borderColor: AppColors.gray30,
     borderStyle: 'dashed',
-    borderRadius: ms(8),
-    gap: ms(4),
+    borderRadius: ms(14),
+    gap: ms(8),
+    height: ms(155),
   },
   managementSection: {
     gap: ms(12),

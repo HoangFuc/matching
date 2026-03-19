@@ -1,7 +1,7 @@
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
 import { API_BASE_URL } from '@env';
-import { getToken } from '@/src/services/tokenService';
+import { getCommonHeaders } from './apiHeaderService';
 
 type UploadFileInfo = {
   uri: string;
@@ -57,16 +57,17 @@ export const prepareUploadData = async (
  * @param path - API path (e.g. 'meeting-logs/uploads/abc123')
  * @param uploadData - Prepared multipart data from prepareUploadData()
  */
-export const fetchUpload = (
+export const fetchUpload = async (
   path: string,
   uploadData: { name: string; filename?: string; type?: string; data: string }[],
-  token: string,
+  _token?: string,
 ) => {
+  const commonHeaders = await getCommonHeaders();
   return ReactNativeBlobUtil.fetch(
     'POST',
     `${API_BASE_URL}/${path}`,
     {
-      Authorization: `Bearer ${token}`,
+      ...commonHeaders,
       'Content-Type': 'multipart/form-data',
     },
     uploadData,
@@ -83,7 +84,6 @@ export const uploadFile = async (
   file: UploadFileInfo,
   mode: UploadMode = 'stream',
 ) => {
-  const token = await getToken();
   const uploadData = await prepareUploadData(file, mode);
-  return fetchUpload(path, uploadData, token);
+  return fetchUpload(path, uploadData);
 };

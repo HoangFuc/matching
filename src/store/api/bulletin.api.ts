@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '@env';
-import { getToken } from '@/src/services/tokenService';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQuery } from './baseQuery';
+import { getCommonHeaders } from '@/src/services/apiHeaderService';
 
 import {
   IBulletinComment,
@@ -18,16 +19,7 @@ import {
 
 export const bulletinApi = createApi({
   reducerPath: 'bulletinApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/bulletins`,
-    prepareHeaders: async headers => {
-      const token = await getToken();
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQuery('/bulletins'),
   tagTypes: ['BulletinList', 'BulletinDetail', 'Comments'],
   endpoints: builder => ({
     //---------------------------------------
@@ -149,13 +141,12 @@ export const bulletinApi = createApi({
             }
           }
 
-          const token = await getToken();
+          const commonHeaders = await getCommonHeaders();
+          const { 'Content-Type': _ct, ...headersWithoutCT } = commonHeaders;
           const res = await fetch(`${API_BASE_URL}/bulletins`, {
             method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
+            headers: headersWithoutCT,
+            body: formData as unknown as BodyInit_,
           });
 
           if (!res.ok) {
@@ -163,7 +154,7 @@ export const bulletinApi = createApi({
             return { error: { status: res.status, data: errorData } };
           }
 
-          const data = await res.json();
+          const data: any = await res.json();
           return { data: data?.data ?? data };
         } catch (error: any) {
           return {

@@ -4,9 +4,8 @@ import {
   IMeetingScheduleListResponse,
   IMeetingScheduleManagement,
 } from '@/src/interface/meetingScheduleManagement.interface';
-import { getToken } from '@/src/services/tokenService';
-import { API_BASE_URL } from '@env';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQuery } from './baseQuery';
 
 export interface ICreateMeetingLogPayload {
   scheduleId: string;
@@ -19,16 +18,7 @@ export interface ICreateMeetingLogResponse {
 
 export const meetingScheduleManagementApi = createApi({
   reducerPath: 'meetingScheduleManagementApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}`,
-    prepareHeaders: async headers => {
-      const token = await getToken();
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQuery(),
   tagTypes: ['MeetingScheduleManagement'],
   endpoints: builder => ({
     getMeetingSchedules: builder.query<

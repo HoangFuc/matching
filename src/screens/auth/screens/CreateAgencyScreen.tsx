@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -16,6 +17,7 @@ import {
   TickCircle,
 } from 'iconsax-react-nativejs';
 import { useForm } from 'react-hook-form';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -30,6 +32,7 @@ import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
 import { AppColors } from '@/src/constants/colors';
 import { AppImages } from '@/src/constants/images';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
+import { useRegisterCompany } from '../context/RegisterCompanyContext';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'CreateAgency'>;
 
@@ -61,7 +64,9 @@ const MANAGEMENT_OPTIONS: {
 ];
 
 const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
-  const { control, handleSubmit } = useForm<FormValues>({
+  const { setStepData } = useRegisterCompany();
+
+  const { control, handleSubmit, watch } = useForm<FormValues>({
     defaultValues: {
       agencyName: '',
     },
@@ -69,6 +74,48 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
 
   const [managementType, setManagementType] =
     React.useState<ManagementType>('single');
+  const [companyLogo, setCompanyLogo] = React.useState<
+    { uri: string; type: string; name: string } | undefined
+  >();
+
+  const isSubmitEnabled =
+    watch('agencyName').trim().length > 0 &&
+    !!managementType &&
+    !!companyLogo;
+
+  //---------------------------------------
+  const handlePickImage = React.useCallback(() => {
+    launchImageLibrary(
+      { mediaType: 'photo', quality: 0.8, maxWidth: 500, maxHeight: 500 },
+      response => {
+        if (response.didCancel || response.errorCode) {
+          return;
+        }
+        const asset = response.assets?.[0];
+        if (!asset?.uri) {
+          return;
+        }
+
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        if (asset.type && !allowedTypes.includes(asset.type)) {
+          Alert.alert('', 'PNG 또는 JPG 형식의 이미지만 업로드할 수 있습니다.');
+          return;
+        }
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (asset.fileSize && asset.fileSize > maxSize) {
+          Alert.alert('', '이미지 크기는 최대 5MB까지 업로드할 수 있습니다.');
+          return;
+        }
+
+        setCompanyLogo({
+          uri: asset.uri,
+          type: asset.type || 'image/jpeg',
+          name: asset.fileName || 'logo.jpg',
+        });
+      },
+    );
+  }, []);
 
   //---------------------------------------
   const handleCancel = React.useCallback(() => {
@@ -77,10 +124,17 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
 
   //---------------------------------------
   const onSubmit = React.useCallback(
-    (_data: FormValues) => {
+    (data: FormValues) => {
+      const stepData = {
+        companyName: data.agencyName,
+        directorCount: managementType === 'single' ? 1 : 2,
+        companyLogo,
+      };
+      console.log('[CreateAgency] Step 2 data:', stepData);
+      setStepData(stepData);
       navigation.navigate('OrgChartSetup', { managementType });
     },
-    [navigation, managementType],
+    [navigation, managementType, setStepData, companyLogo],
   );
 
   return (
@@ -108,6 +162,7 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
               label="대행사명"
               placeholder="대행사명을 입력하세요"
               required
+              gap={4}
             />
 
             <View style={styles.infoRow}>
@@ -124,25 +179,34 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
           </MemoBaseCard>
 
           {/* 대행사 로고 */}
-          <MemoBaseCard>
+          <MemoBaseCard style={{ gap: ms(8) }}>
             <AppText variant="body6" color={AppColors.gray90}>
               대행사 로고 (선택)
             </AppText>
 
-            <Pressable style={styles.uploadArea}>
-              <ExportCurve
-                size={`${ms(25)}`}
-                color={AppColors.gray40}
-                variant="Linear"
-              />
+            <Pressable style={styles.uploadArea} onPress={handlePickImage}>
+              {companyLogo ? (
+                <Image
+                  source={{ uri: companyLogo.uri }}
+                  style={styles.logoPreview}
+                />
+              ) : (
+                <>
+                  <ExportCurve
+                    size={`${ms(25)}`}
+                    color={AppColors.gray40}
+                    variant="Linear"
+                  />
 
-              <AppText variant="body8" color={AppColors.gray40}>
-                이미지 업로드
-              </AppText>
+                  <AppText variant="body8" color={AppColors.gray40}>
+                    이미지 업로드
+                  </AppText>
 
-              <AppText variant="detail" color={AppColors.gray40}>
-                최대 5MB, PNG/JPG 추천 (500x500px)
-              </AppText>
+                  <AppText variant="detail" color={AppColors.gray40}>
+                    최대 5MB, PNG/JPG 추천 (500x500px)
+                  </AppText>
+                </>
+              )}
             </Pressable>
           </MemoBaseCard>
 
@@ -184,11 +248,7 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
                       <TickCircle
                         size={`${ms(24)}`}
                         color={AppColors.purple}
-                        variant="Linear"
-                        style={{
-                          backgroundColor: AppColors.lavendar,
-                          borderRadius: ms(100),
-                        }}
+                        variant="Bulk"
                       />
                     </View>
                   )}
@@ -210,6 +270,7 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
             label="다음"
             variant="primary"
             textVariant="body6"
+            disabled={!isSubmitEnabled}
             onPress={handleSubmit(onSubmit)}
           />
         </MemoBottomButtonGroup>
@@ -255,9 +316,16 @@ const styles = StyleSheet.create({
     borderRadius: ms(14),
     gap: ms(8),
     height: ms(155),
+    overflow: 'hidden',
+  },
+  logoPreview: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+    borderRadius: ms(14),
   },
   managementSection: {
-    gap: ms(12),
+    gap: ms(8),
   },
   optionCard: {
     flexDirection: 'row',

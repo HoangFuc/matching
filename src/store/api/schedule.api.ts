@@ -1,20 +1,10 @@
 import { ISchedule, ISchedulePayload } from '@/src/screens/schedule/type';
-import { API_BASE_URL } from '@env';
-import { getToken } from '@/src/services/tokenService';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQuery } from './baseQuery';
 
 export const scheduleApi = createApi({
   reducerPath: 'scheduleApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}`,
-    prepareHeaders: async headers => {
-      const token = await getToken();
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQuery(),
   tagTypes: ['Schedule', 'Calendar'],
   endpoints: builder => ({
     getSchedules: builder.query<

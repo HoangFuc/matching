@@ -8,19 +8,21 @@ import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
 import type { TInviteLink } from '../../type';
 import { MemoGeneratedLinkRow } from './GeneratedLinkRow';
-import { MemoInviteDropdownField } from './InviteDropdownField';
+import {
+  MemoInviteDropdownField,
+  type TDropdownOption,
+} from './InviteDropdownField';
 
 interface IProps {
   invite: TInviteLink;
-  roleOptions: string[];
-  locationOptions: string[];
-  expiryOptions: string[];
-  onSelectRole: (id: string, value: string) => void;
-  onSelectLocation: (id: string, value: string) => void;
-  onSelectExpiry: (id: string, value: string) => void;
+  roleOptions: TDropdownOption[];
+  locationOptions: TDropdownOption[];
+  locationDisabled: boolean;
+  expiryOptions: TDropdownOption[];
+  onSelectRole: (id: string, option: TDropdownOption) => void;
+  onSelectLocation: (id: string, option: TDropdownOption) => void;
+  onSelectExpiry: (id: string, option: TDropdownOption) => void;
   onGenerateLink: (id: string) => void;
-  onCopy: (id: string) => void;
-  onShare: (id: string) => void;
 }
 
 //---------------------------------------
@@ -28,13 +30,12 @@ const InviteCard: React.FC<IProps> = ({
   invite,
   roleOptions,
   locationOptions,
+  locationDisabled,
   expiryOptions,
   onSelectRole,
   onSelectLocation,
   onSelectExpiry,
   onGenerateLink,
-  onCopy,
-  onShare,
 }) => {
   const canGenerate = invite.role !== '' && invite.expiry !== '';
   const hasLink = invite.generatedLink !== '';
@@ -47,14 +48,15 @@ const InviteCard: React.FC<IProps> = ({
           value={invite.role}
           placeholder="직책 선택"
           options={roleOptions}
-          onSelect={value => onSelectRole(invite.id, value)}
+          onSelect={option => onSelectRole(invite.id, option)}
         />
 
         <MemoInviteDropdownField
           label="소속 위치"
           value={invite.location}
           options={locationOptions}
-          onSelect={value => onSelectLocation(invite.id, value)}
+          disabled={locationDisabled}
+          onSelect={option => onSelectLocation(invite.id, option)}
         />
 
         <MemoInviteDropdownField
@@ -62,7 +64,7 @@ const InviteCard: React.FC<IProps> = ({
           value={invite.expiry}
           placeholder="만료 기간 선택"
           options={expiryOptions}
-          onSelect={value => onSelectExpiry(invite.id, value)}
+          onSelect={option => onSelectExpiry(invite.id, option)}
         />
 
         <MemoAppButton
@@ -76,11 +78,7 @@ const InviteCard: React.FC<IProps> = ({
 
       {hasLink && (
         <View style={styles.linkContainer}>
-          <MemoGeneratedLinkRow
-            link={invite.generatedLink}
-            onCopy={() => onCopy(invite.id)}
-            onShare={() => onShare(invite.id)}
-          />
+          <MemoGeneratedLinkRow link={invite.generatedLink} />
         </View>
       )}
     </View>

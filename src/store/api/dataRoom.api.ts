@@ -1,8 +1,7 @@
 import { prepareUploadData, fetchUpload } from '@/src/services/uploadService';
 import { TDataRoomTabType } from '@/src/screens/dataRoom/constants';
-import { API_BASE_URL } from '@env';
-import { getToken } from '@/src/services/tokenService';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQuery } from './baseQuery';
 export interface IFolder {
   id: string;
   companyId: string;
@@ -67,17 +66,7 @@ export interface IRenamePayload {
 
 export const dataRoomApi = createApi({
   reducerPath: 'dataRoomApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/data-room`,
-    prepareHeaders: async headers => {
-      const token = await getToken();
-
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQuery('/data-room'),
   tagTypes: ['Folders', 'Files'],
   endpoints: builder => ({
     getFolders: builder.query<ISearchResponse, TDataRoomTabType>({
@@ -150,12 +139,10 @@ export const dataRoomApi = createApi({
     uploadFileById: builder.mutation<null, IUploadFilePayload>({
       async queryFn({ uploadId, file }) {
         try {
-          const token = await getToken();
           const uploadData = await prepareUploadData(file, 'stream');
           const response = await fetchUpload(
             `data-room/uploads/${uploadId}`,
             uploadData,
-            token,
           );
           const status = response.info().status;
           if (status < 200 || status >= 300) {

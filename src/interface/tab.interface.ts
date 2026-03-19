@@ -6,6 +6,10 @@ import type {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { TScheduleType } from '../screens/schedule/component/ScheduleTypePicker';
 import { TScheduleMode } from '../screens/schedule/type';
+import type {
+  ICompanyResponse,
+  IInvitationDetailResponse,
+} from './auth.interface';
 import type { TMeetingMinutes } from './meetingMinutes.interface';
 import type { IMeetingScheduleManagement } from './meetingScheduleManagement.interface';
 
@@ -13,11 +17,11 @@ export type AuthStackParamList = {
   Welcome: undefined;
   Login: undefined;
   JoinOrganization: undefined;
-  ConfirmOrganizationInvitation: undefined;
+  ConfirmOrganizationInvitation: { invitation: IInvitationDetailResponse };
   JoinMembership: { withSteps?: boolean } | undefined;
   CreateAgency: undefined;
   OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
-  InviteMember: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
+  InviteMember: { company: ICompanyResponse; hideStepBar?: boolean } | undefined;
 };
 
 export type RootStackParamList = {
@@ -33,7 +37,7 @@ export type RootStackParamList = {
   ScheduleCalendarView: { filterTypes?: TScheduleType[] };
   OrganizationChart: undefined;
   OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
-  InviteMember: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
+  InviteMember: { company: ICompanyResponse; hideStepBar?: boolean } | undefined;
 };
 
 export type MeetingMinutesStackParamList = {

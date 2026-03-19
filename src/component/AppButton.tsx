@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  ActivityIndicator,
   StyleProp,
   StyleSheet,
   TouchableOpacity,
@@ -22,6 +23,7 @@ interface IAppButtonProps
   variant?: ButtonVariant;
   textVariant?: TypographyVariant;
   textColor?: string;
+  loading?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -32,6 +34,7 @@ const AppButton: React.FC<IAppButtonProps> = ({
   variant = 'primary',
   textVariant = 'body6',
   textColor,
+  loading = false,
   disabled,
   style,
   ...rest
@@ -46,26 +49,35 @@ const AppButton: React.FC<IAppButtonProps> = ({
         disabled && styles.disabled,
         style,
       ]}
-      disabled={disabled}
+      disabled={disabled || loading}
       {...rest}
     >
-      {iconPosition === 'left' && icon}
+      {loading ? (
+        <ActivityIndicator
+          size="small"
+          color={isPrimary ? AppColors.purple : AppColors.gray90}
+        />
+      ) : (
+        <>
+          {iconPosition === 'left' && icon}
 
-      <AppText
-        variant={textVariant}
-        color={
-          textColor ??
-          (disabled
-            ? AppColors.gray40
-            : isPrimary
-            ? AppColors.purple
-            : AppColors.gray90)
-        }
-      >
-        {label}
-      </AppText>
+          <AppText
+            variant={textVariant}
+            color={
+              textColor ??
+              (disabled
+                ? AppColors.gray40
+                : isPrimary
+                ? AppColors.purple
+                : AppColors.gray90)
+            }
+          >
+            {label}
+          </AppText>
 
-      {iconPosition === 'right' && icon}
+          {iconPosition === 'right' && icon}
+        </>
+      )}
     </TouchableOpacity>
   );
 };

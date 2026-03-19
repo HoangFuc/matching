@@ -7,22 +7,12 @@ import {
   IUpdateMeetingLogPayload,
   TMeetingMinutes,
 } from '@/src/interface/meetingMinutes.interface';
-import { API_BASE_URL } from '@env';
-import { getToken } from '@/src/services/tokenService';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQuery } from './baseQuery';
 
 export const meetingLogApi = createApi({
   reducerPath: 'meetingLogApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/meeting-logs`,
-    prepareHeaders: async headers => {
-      const token = await getToken();
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQuery('/meeting-logs'),
   tagTypes: ['MeetingLogList', 'MeetingLogDetail'],
   endpoints: builder => ({
     //---------------------------------------

@@ -1,35 +1,28 @@
 import React from 'react';
-import {
-  Platform,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Eye, EyeSlash, TickSquare } from 'iconsax-react-nativejs';
 import { Controller, useForm } from 'react-hook-form';
 import { ms } from 'react-native-size-matters/extend';
 
+import { MemoAgreementCheckbox } from '@/src/component/AgreementCheckbox';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppText } from '@/src/component/AppText';
+import { MemoBaseCard } from '@/src/component/BaseCard';
+import { MemoBottomButtonGroup } from '@/src/component/BottomButtonGroup';
+import { MemoPasswordInput } from '@/src/component/PasswordInput';
 import { MemoPhoneInput } from '@/src/component/PhoneInput';
 import { RHFFormInput } from '@/src/component/RHFFormInput';
-import { MemoBottomButtonGroup } from '@/src/component/BottomButtonGroup';
-import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
-import { MemoBaseCard } from '@/src/component/BaseCard';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
+import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
 import { MemoVerificationCodeSection } from '@/src/component/VerificationCodeSection';
-import { useVerificationCode } from '@/src/hooks/useVerificationCode';
 import { AppColors } from '@/src/constants/colors';
-import { FontWeight } from '@/src/constants/typography';
+import { useVerificationCode } from '@/src/hooks/useVerificationCode';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
+import { useSendOtpMutation, useVerifyOtpMutation } from '@/src/store/api';
+import { useRegisterCompany } from '../context/RegisterCompanyContext';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'JoinMembership'>;
 
@@ -44,6 +37,9 @@ type FormValues = {
 
 const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
   const withSteps = route.params?.withSteps ?? false;
+  const { setStepData } = useRegisterCompany();
+  const [sendOtp, { isLoading: isSendingOtp }] = useSendOtpMutation();
+  const [verifyOtp] = useVerifyOtpMutation();
 
   const { control, handleSubmit, watch } = useForm<FormValues>({
     defaultValues: {
@@ -54,24 +50,45 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
     },
   });
 
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [phoneError, setPhoneError] = React.useState('');
-
-  const verification = useVerificationCode({
-    onSendCode: async (_phone: string) => {
-      // TODO: call API to send verification code
-    },
-    onVerifyCode: async (_phone: string, _code: string) => {
-      // TODO: call API to verify code, return true if valid
-      return false;
-    },
-  });
   const [agreements, setAgreements] = React.useState({
     all: false,
     terms: false,
     privacy: false,
     marketing: false,
+  });
+
+  const watchedFields = watch(['name', 'phone', 'password', 'confirmPassword']);
+
+  const [passwordError, setPasswordError] = React.useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = React.useState('');
+
+  const [verificationToken, setVerificationToken] = React.useState('');
+
+  const isSubmitEnabled =
+    watchedFields.every(field => field.trim().length > 0) &&
+    agreements.terms &&
+    agreements.privacy &&
+    verificationToken !== '';
+
+  //---------------------------------------
+  const verification = useVerificationCode({
+    onSendCode: async (phone: string) => {
+      const cleaned = phone.replace(/[^0-9]/g, '');
+      await sendOtp({ phone: cleaned, purpose: 'register' }).unwrap();
+    },
+    onVerifyCode: async (phone: string, code: string) => {
+      try {
+        const cleaned = phone.replace(/[^0-9]/g, '');
+        const response = await verifyOtp({ phone: cleaned, code }).unwrap();
+        console.log('[JoinMembership] verifyOtp response:', JSON.stringify(response));
+        setVerificationToken(response.phoneVerificationToken);
+        return true;
+      } catch (error) {
+        console.log('[JoinMembership] verifyOtp error:', error);
+        return false;
+      }
+    },
   });
 
   //---------------------------------------
@@ -105,63 +122,54 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [watch, verification]);
 
   //---------------------------------------
-  const togglePasswordVisibility = React.useCallback(() => {
-    setShowPassword(prev => !prev);
-  }, []);
-
-  //---------------------------------------
-  const toggleConfirmPasswordVisibility = React.useCallback(() => {
-    setShowConfirmPassword(prev => !prev);
-  }, []);
-
-  //---------------------------------------
   const handleCancel = React.useCallback(() => {
     navigation.goBack();
   }, [navigation]);
 
   //---------------------------------------
   const onSubmit = React.useCallback(
-    (_data: FormValues) => {
+    (data: FormValues) => {
+      let hasError = false;
+
+      if (data.password.length < 6) {
+        setPasswordError('비밀번호는 최소 6자 이상이어야 합니다.');
+        hasError = true;
+      } else {
+        setPasswordError('');
+      }
+
+      if (data.password !== data.confirmPassword) {
+        setConfirmPasswordError('비밀번호가 일치하지 않습니다.');
+        hasError = true;
+      } else {
+        setConfirmPasswordError('');
+      }
+
+      if (hasError) {
+        return;
+      }
+
+      const stepData = {
+        fullName: data.name,
+        phone: data.phone,
+        password: data.password,
+        passwordConfirm: data.confirmPassword,
+        phoneVerificationToken: verificationToken,
+        termsAgreed: agreements.terms,
+        privacyAgreed: agreements.privacy,
+        marketingAgreed: agreements.marketing,
+      };
+      console.log('[JoinMembership] Step 1 data:', stepData);
+
       if (withSteps) {
+        setStepData(stepData);
         navigation.navigate('CreateAgency');
       } else {
         // TODO: implement registration logic
         navigation.navigate('Login');
       }
     },
-    [navigation, withSteps],
-  );
-
-  //---------------------------------------
-  const renderCheckbox = React.useCallback(
-    (key: AgreementKey, label: string) => (
-      <Pressable
-        key={key}
-        testID={`checkbox-${key}`}
-        accessibilityLabel={label}
-        style={styles.checkboxItem}
-        onPress={() => toggleAgreement(key)}
-      >
-        <View style={styles.checkboxWrapper}>
-          {agreements[key] ? (
-            <TickSquare
-              size={`${ms(20)}`}
-              color={AppColors.purple}
-              variant="Bold"
-            />
-          ) : (
-            <View style={styles.checkboxEmpty} />
-          )}
-        </View>
-        <AppText
-          variant={key === 'all' ? 'body6' : 'body8'}
-          color={AppColors.gray90}
-        >
-          {label}
-        </AppText>
-      </Pressable>
-    ),
-    [agreements, toggleAgreement],
+    [navigation, withSteps, setStepData, agreements, verificationToken],
   );
 
   return (
@@ -189,7 +197,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
           showsVerticalScrollIndicator={false}
         >
           {/* 이름 & 휴대폰 번호 */}
-          <MemoBaseCard>
+          <MemoBaseCard style={{ gap: ms(16) }}>
             <RHFFormInput
               control={control}
               name="name"
@@ -221,10 +229,12 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
                   label="인증코드 전송"
                   textVariant="body6"
                   style={styles.verifyButton}
-                  disabled={!watch('phone')}
+                  disabled={!watch('phone') || isSendingOtp}
+                  loading={isSendingOtp}
                   onPress={handleSendCode}
                 />
               </View>
+
               {phoneError ? (
                 <AppText variant="detail" color={AppColors.negative}>
                   {phoneError}
@@ -246,106 +256,64 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
           </MemoBaseCard>
 
           {/* 비밀번호 & 비밀번호 확인 */}
-          <MemoBaseCard>
-            {/* 비밀번호 */}
+          <MemoBaseCard style={{ gap: ms(16) }}>
             <Controller
               control={control}
               name="password"
               render={({ field: { value, onChange } }) => (
-                <View style={styles.inputGroup}>
-                  <AppText variant="body7" color={AppColors.gray90}>
-                    비밀번호
-                  </AppText>
-                  <View style={styles.passwordContainer}>
-                    <TextInput
-                      style={styles.passwordInput}
-                      placeholder="비밀번호를 입력하세요"
-                      placeholderTextColor={AppColors.gray40}
-                      value={value}
-                      onChangeText={onChange}
-                      secureTextEntry={!showPassword}
-                    />
-
-                    <TouchableOpacity
-                      onPress={togglePasswordVisibility}
-                      style={styles.eyeIcon}
-                    >
-                      {showPassword ? (
-                        <Eye
-                          size={ms(16)}
-                          color={AppColors.gray50}
-                          variant="Linear"
-                        />
-                      ) : (
-                        <EyeSlash
-                          size={ms(16)}
-                          color={AppColors.gray50}
-                          variant="Linear"
-                        />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                <MemoPasswordInput
+                  label="비밀번호"
+                  placeholder="비밀번호를 입력하세요"
+                  value={value}
+                  onChangeText={onChange}
+                  error={passwordError}
+                />
               )}
             />
 
-            {/* 비밀번호 확인 */}
             <Controller
               control={control}
               name="confirmPassword"
               render={({ field: { value, onChange } }) => (
-                <View style={styles.inputGroup}>
-                  <AppText variant="body7" color={AppColors.gray90}>
-                    비밀번호 확인{' '}
-                    <AppText variant="body7" color={AppColors.negative}>
-                      *
-                    </AppText>
-                  </AppText>
-                  <View style={styles.passwordContainer}>
-                    <TextInput
-                      style={styles.passwordInput}
-                      placeholder="비밀번호를 다시 입력하세요"
-                      placeholderTextColor={AppColors.gray40}
-                      value={value}
-                      onChangeText={onChange}
-                      secureTextEntry={!showConfirmPassword}
-                    />
-                    <TouchableOpacity
-                      onPress={toggleConfirmPasswordVisibility}
-                      style={styles.eyeIcon}
-                    >
-                      {showConfirmPassword ? (
-                        <Eye
-                          size={ms(16)}
-                          color={AppColors.gray50}
-                          variant="Linear"
-                        />
-                      ) : (
-                        <EyeSlash
-                          size={ms(16)}
-                          color={AppColors.gray50}
-                          variant="Linear"
-                        />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                <MemoPasswordInput
+                  label="비밀번호 확인"
+                  placeholder="비밀번호를 다시 입력하세요"
+                  value={value}
+                  onChangeText={onChange}
+                  required
+                  error={confirmPasswordError}
+                />
               )}
             />
           </MemoBaseCard>
 
           {/* Agreements */}
           <View style={styles.agreementSection}>
-            {renderCheckbox('all', '아래의 모든 약관에 동의')}
-            {renderCheckbox('terms', '(필수) 이용 약관에 대한 동의')}
-            {renderCheckbox(
-              'privacy',
-              '(필수) 개인정보 수집 및 이용에 대한 동의',
-            )}
-            {renderCheckbox(
-              'marketing',
-              '(선택) 광고성 정보 수신 이용에 대한 동의',
-            )}
+            <MemoAgreementCheckbox
+              testID="checkbox-all"
+              label="아래의 모든 약관에 동의"
+              checked={agreements.all}
+              bold
+              onPress={() => toggleAgreement('all')}
+            />
+            <MemoAgreementCheckbox
+              testID="checkbox-terms"
+              label="(필수) 이용 약관에 대한 동의"
+              checked={agreements.terms}
+              onPress={() => toggleAgreement('terms')}
+            />
+            <MemoAgreementCheckbox
+              testID="checkbox-privacy"
+              label="(필수) 개인정보 수집 및 이용에 대한 동의"
+              checked={agreements.privacy}
+              onPress={() => toggleAgreement('privacy')}
+            />
+            <MemoAgreementCheckbox
+              testID="checkbox-marketing"
+              label="(선택) 광고성 정보 수신 이용에 대한 동의"
+              checked={agreements.marketing}
+              onPress={() => toggleAgreement('marketing')}
+            />
           </View>
         </ScrollView>
 
@@ -362,6 +330,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
             label={withSteps ? '다음' : '회원 가입 및 조직 참여'}
             variant="primary"
             textVariant="body6"
+            disabled={!isSubmitEnabled}
             onPress={handleSubmit(onSubmit)}
           />
         </MemoBottomButtonGroup>
@@ -399,52 +368,9 @@ const styles = StyleSheet.create({
     borderRadius: ms(8),
     gap: ms(10),
   },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: ms(8),
-    backgroundColor: AppColors.gray10,
-  },
-  passwordInput: {
-    flex: 1,
-    paddingHorizontal: ms(16),
-    paddingVertical: ms(10),
-    fontSize: 14,
-    fontWeight: FontWeight.regular,
-    color: AppColors.gray100,
-    ...Platform.select({
-      ios: {},
-      default: { paddingVertical: ms(8) },
-    }),
-  },
-  eyeIcon: {
-    paddingHorizontal: ms(12),
-  },
   agreementSection: {
     gap: ms(12),
     marginTop: ms(8),
-  },
-  divider: {
-    height: 1,
-    backgroundColor: AppColors.gray20,
-  },
-  checkboxItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: ms(8),
-  },
-  checkboxWrapper: {
-    width: ms(20),
-    height: ms(20),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxEmpty: {
-    width: ms(20),
-    height: ms(20),
-    borderRadius: ms(4),
-    borderWidth: 1.5,
-    borderColor: AppColors.gray30,
   },
   stepBarContainer: {
     paddingHorizontal: ms(16),

@@ -21,6 +21,7 @@ interface IProps<T extends FieldValues>
   multiline?: boolean;
   required?: boolean;
   rules?: RegisterOptions<T, FieldPath<T>>;
+  gap?: number;
 }
 
 const RHFFormInputInner = <T extends FieldValues>({

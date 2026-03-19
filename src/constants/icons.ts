@@ -36,6 +36,7 @@ export {
   Trash,
   User,
   Microphone2,
+  DocumentCopy,
 } from 'iconsax-react-nativejs';
 
 export { default as DotsVertical } from '@/src/assets/icons/dots_vertical.svg';

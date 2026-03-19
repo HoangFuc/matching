@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -12,20 +12,20 @@ import { MemoBaseCard } from '@/src/component/BaseCard';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
-import { ArrowRight2, Calendar, TickCircle } from '@/src/constants/icons';
+import { Calendar, TickCircle } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
 
-type Props = {
-  navigation: NativeStackNavigationProp<
-    AuthStackParamList,
-    'ConfirmOrganizationInvitation'
-  >;
-};
+type Props = NativeStackScreenProps<
+  AuthStackParamList,
+  'ConfirmOrganizationInvitation'
+>;
 
 const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
   navigation,
+  route,
 }) => {
+  const { invitation } = route.params;
   //---------------------------------------
   const handleReject = React.useCallback(() => {
     navigation.goBack();
@@ -72,74 +72,23 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
 
             <View style={styles.orgInfo}>
               <AppText variant="heading3" color={AppColors.gray90}>
-                에이전트 시너지
-              </AppText>
-
-              <AppText variant="body8" color={AppColors.gray90}>
-                종합 광고 대행사
+                {invitation.company.name}
               </AppText>
             </View>
           </MemoBaseCard>
 
           {/* 소속 위치 */}
-          <MemoBaseCard style={styles.section}>
-            <AppText variant="body6" color={AppColors.gray90}>
-              소속 위치
-            </AppText>
+          {invitation.nodePath && (
+            <MemoBaseCard style={styles.section}>
+              <AppText variant="body6" color={AppColors.gray90}>
+                소속 위치
+              </AppText>
 
-            <View style={styles.breadcrumbRow}>
-              <View
-                style={[
-                  styles.breadcrumbTag,
-                  { backgroundColor: AppColors.warmIvory },
-                ]}
-              >
-                <View style={{ flexDirection: 'row' }}>
-                  <AppText variant="body8" color={AppColors.burntOrange}>
-                    총괄{' '}
-                  </AppText>
-
-                  <AppText variant="body6" color={AppColors.burntOrange}>
-                    A
-                  </AppText>
-                </View>
-              </View>
-
-              <ArrowRight2
-                size={ms(14)}
-                color={AppColors.gray50}
-                variant="Linear"
-              />
-
-              <View
-                style={[
-                  styles.breadcrumbTag,
-                  { backgroundColor: AppColors.lightLime },
-                ]}
-              >
-                <AppText variant="body6" color={AppColors.green}>
-                  3본부
-                </AppText>
-              </View>
-
-              <ArrowRight2
-                size={ms(14)}
-                color={AppColors.gray50}
-                variant="Linear"
-              />
-
-              <View
-                style={[
-                  styles.breadcrumbTag,
-                  { backgroundColor: AppColors.lightBlue },
-                ]}
-              >
-                <AppText variant="body6" color={AppColors.strongBlue}>
-                  12팀
-                </AppText>
-              </View>
-            </View>
-          </MemoBaseCard>
+              <AppText variant="body8" color={AppColors.gray90}>
+                {invitation.nodePath}
+              </AppText>
+            </MemoBaseCard>
+          )}
 
           {/* 부여된 직책 */}
           <MemoBaseCard style={styles.section}>
@@ -147,11 +96,12 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
               부여된 직책
             </AppText>
 
-            <AppText variant="body8" color={AppColors.gray90}>
-              <AppText variant="body5" color={AppColors.gray90}>
-                팀원:
-              </AppText>{' '}
-              실제 고객을 만나고 계약을 만들어내는 실무 영업의 주체입니다.
+            <AppText variant="body5" color={AppColors.gray90}>
+              {invitation.role.name}
+            </AppText>
+
+            <AppText variant="body8" color={AppColors.gray80}>
+              {invitation.role.description}
             </AppText>
           </MemoBaseCard>
 
@@ -169,13 +119,17 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
 
                 <View style={styles.personRow}>
                   <Image
-                    source={AppImages.avatar}
+                    source={
+                      invitation.inviter.avatarUrl
+                        ? { uri: invitation.inviter.avatarUrl }
+                        : AppImages.avatar
+                    }
                     style={styles.avatar}
                     resizeMode="cover"
                   />
 
                   <AppText variant="body6" color={AppColors.gray90}>
-                    김철수 팀장
+                    {invitation.inviter.fullName} {invitation.inviter.roleName}
                   </AppText>
                 </View>
               </MemoBaseCard>
@@ -193,7 +147,7 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
                   />
 
                   <AppText variant="body6" color={AppColors.gray90}>
-                    2024.12.31
+                    {new Date(invitation.expiresAt).toLocaleDateString('ko-KR')}
                   </AppText>
                 </View>
               </MemoBaseCard>
@@ -227,6 +181,7 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
             onPress={handleReject}
             textColor={AppColors.negative}
           />
+
           <MemoAppButton
             label="조직 참여하기"
             variant="primary"

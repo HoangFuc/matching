@@ -1,42 +1,58 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, Share, StyleSheet, View } from 'react-native';
 
-import { Copy, ExportSquare } from 'iconsax-react-nativejs';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { DocumentCopy } from '@/src/constants/icons';
+import { ShareIcon } from 'react-native-heroicons/solid';
 
 interface IProps {
   link: string;
-  onCopy: () => void;
-  onShare: () => void;
 }
 
 //---------------------------------------
-const GeneratedLinkRow: React.FC<IProps> = ({ link, onCopy, onShare }) => {
+const GeneratedLinkRow: React.FC<IProps> = ({ link }) => {
+  //---------------------------------------
+  const handleCopy = React.useCallback(() => {
+    Clipboard.setString(link);
+  }, [link]);
+
+  //---------------------------------------
+  const handleShare = React.useCallback(async () => {
+    try {
+      await Share.share({ message: link });
+    } catch (error) {
+      console.error('Failed to share:', error);
+    }
+  }, [link]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.linkRow}>
-        <AppText
-          variant="body8"
-          color={AppColors.gray80}
-          numberOfLines={1}
-          style={styles.linkText}
-        >
-          {link}
-        </AppText>
+      <View style={styles.row}>
+        <View style={styles.linkRow}>
+          <AppText
+            variant="body8"
+            color={AppColors.gray80}
+            numberOfLines={1}
+            style={styles.linkText}
+          >
+            {link}
+          </AppText>
 
-        <Pressable hitSlop={8} onPress={onCopy}>
-          <Copy size={`${ms(18)}`} color={AppColors.gray60} variant="Linear" />
-        </Pressable>
+          <Pressable hitSlop={8} onPress={handleCopy}>
+            <DocumentCopy
+              size={`${ms(18)}`}
+              color={AppColors.gray90}
+              variant="Linear"
+            />
+          </Pressable>
+        </View>
 
-        <Pressable hitSlop={8} onPress={onShare}>
-          <ExportSquare
-            size={`${ms(18)}`}
-            color={AppColors.gray60}
-            variant="Linear"
-          />
+        <Pressable hitSlop={8} onPress={handleShare}>
+          <ShareIcon width={ms(20)} height={ms(20)} stroke={AppColors.white} />
         </Pressable>
       </View>
 
@@ -53,7 +69,13 @@ const styles = StyleSheet.create({
   container: {
     gap: ms(8),
   },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ms(8),
+  },
   linkRow: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: ms(8),

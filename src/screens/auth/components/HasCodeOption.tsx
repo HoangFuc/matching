@@ -13,6 +13,7 @@ import { AppColors } from '@/src/constants/colors';
 import { InfoCircle, LoginCurve, TickCircle } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
+import { useLazyGetInvitationByCodeQuery } from '@/src/store/api/auth.api';
 
 type Props = {
   isSelected: boolean;
@@ -23,19 +24,39 @@ type FormValues = {
   inviteCode: string;
 };
 
+const extractCode = (input: string): string => {
+  const trimmed = input.trim();
+  if (trimmed.includes('/')) {
+    return trimmed.substring(trimmed.lastIndexOf('/') + 1);
+  }
+  return trimmed;
+};
+
+//---------------------------------------
 const HasCodeOption: React.FC<Props> = ({ isSelected, onSelect }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
   const { control, watch } = useForm<FormValues>({
     defaultValues: { inviteCode: '' },
   });
+  const [getInvitation, { isLoading }] = useLazyGetInvitationByCodeQuery();
 
   const inviteCode = watch('inviteCode');
 
   //---------------------------------------
-  const handleConnect = React.useCallback(() => {
-    navigation.navigate('ConfirmOrganizationInvitation');
-  }, [navigation]);
+  const handleConnect = React.useCallback(async () => {
+    const code = extractCode(inviteCode);
+    if (!code) {
+      return;
+    }
+
+    try {
+      const invitation = await getInvitation(code).unwrap();
+      navigation.navigate('ConfirmOrganizationInvitation', { invitation });
+    } catch (error) {
+      console.error('Failed to fetch invitation:', error);
+    }
+  }, [inviteCode, getInvitation, navigation]);
 
   return (
     <View style={styles.hasCodeWrapper}>
@@ -99,7 +120,8 @@ const HasCodeOption: React.FC<Props> = ({ isSelected, onSelect }) => {
               textVariant="body6"
               style={styles.connectButton}
               onPress={handleConnect}
-              // disabled={!inviteCode}
+              disabled={!inviteCode || isLoading}
+              loading={isLoading}
             />
           </View>
 

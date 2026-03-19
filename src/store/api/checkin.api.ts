@@ -2,22 +2,12 @@ import {
   IAttendanceToday,
   IMyAttendanceResponse,
 } from '@/src/interface/checkin.interface';
-import { API_BASE_URL } from '@env';
-import { getToken } from '@/src/services/tokenService';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQuery } from './baseQuery';
 
 export const checkinApi = createApi({
   reducerPath: 'checkinApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}`,
-    prepareHeaders: async headers => {
-      const token = await getToken();
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQuery(),
   tagTypes: ['Attendance'],
   endpoints: builder => ({
     getAttendanceToday: builder.query<IAttendanceToday, void>({

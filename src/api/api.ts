@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import _ from 'lodash';
 
 import { API_BASE_URL } from '@env';
-import { _retrieveData } from './async.storage';
+import { getCommonHeaders } from '@/src/services/apiHeaderService';
 
 const API_URL = API_BASE_URL;
 
@@ -31,27 +31,9 @@ export const apiGet = async (
   headers: Record<string, string> = {},
   timeout = TIME_OUT_API,
 ): Promise<any> => {
-  const auth = await _retrieveData('auth');
-  let token = _.get(JSON.parse(auth || '{}'), 'accessToken');
-  headers.Authorization = `Bearer ${token}`;
+  const commonHeaders = await getCommonHeaders();
 
-  const queries = _(params)
-    .entries()
-    .reduce((acc, [key, value]) => {
-      let type = typeof value;
-      if (type !== 'undefined') {
-        let val = type === 'object' ? JSON.stringify(value) : (value as string);
-        acc.push(`${key}=${encodeURI(val)}`);
-      }
-      return acc;
-    }, [] as string[]);
-
-  const query = _.isEmpty(queries) ? '' : `?${queries.join('&')}`;
-  // console.log(
-  //   `API LIBS: \n url: ${API_URL}/${path}${query} \n method: GET \n headers: ${JSON.stringify(
-  //     headers,
-  //   )}`,
-  // )
+  const query = buildQuies(params || {});
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -61,7 +43,7 @@ export const apiGet = async (
       method: 'get',
       mode: 'cors',
       headers: {
-        'Content-Type': 'application/json',
+        ...commonHeaders,
         ...headers,
       },
       signal: controller.signal,
@@ -108,18 +90,9 @@ export const apiRest = async (
   headers: Record<string, string> = {},
   timeout = TIME_OUT_API,
 ): Promise<any> => {
-  const auth = await _retrieveData('auth');
-  let token = _.get(JSON.parse(auth || '{}'), 'accessToken');
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
+  const commonHeaders = await getCommonHeaders();
 
   const body = JSON.stringify(params);
-  // console.log(
-  //   `API LIBS: \n url: ${API_URL}/${path} \n method: ${method} \n body: ${body} \n headers: ${JSON.stringify(
-  //     headers,
-  //   )}`,
-  // )
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -129,7 +102,7 @@ export const apiRest = async (
       method,
       mode: 'cors',
       headers: {
-        'Content-Type': 'application/json',
+        ...commonHeaders,
         ...headers,
       },
       body,

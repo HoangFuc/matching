@@ -7,12 +7,19 @@ import { ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 
+export type TDropdownOption = {
+  label: string;
+  value: string;
+  departmentId?: string;
+  teamId?: string;
+};
+
 interface IProps {
   label: string;
   value: string;
   placeholder?: string;
-  options: string[];
-  onSelect: (option: string) => void;
+  options: TDropdownOption[];
+  onSelect: (option: TDropdownOption) => void;
   disabled?: boolean;
 }
 
@@ -55,7 +62,7 @@ const InviteDropdownField: React.FC<IProps> = ({
         <View style={styles.dropdownList}>
           {options.map(option => (
             <Pressable
-              key={option}
+              key={option.value}
               style={styles.dropdownItem}
               onPress={() => {
                 onSelect(option);
@@ -65,10 +72,10 @@ const InviteDropdownField: React.FC<IProps> = ({
               <AppText
                 variant="body8"
                 color={
-                  value === option ? AppColors.purple : AppColors.gray80
+                  value === option.label ? AppColors.purple : AppColors.gray80
                 }
               >
-                {option}
+                {option.label}
               </AppText>
             </Pressable>
           ))}

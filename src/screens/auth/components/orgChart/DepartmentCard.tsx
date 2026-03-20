@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Trash } from 'iconsax-react-nativejs';
+import { Add, Trash } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -35,6 +35,7 @@ const DepartmentCard: React.FC<IDepartmentCardProps> = ({
   onTeamNameChange,
   onToggleDefault,
 }) => {
+  const hasTeams = dept.teams.length > 0;
   const canDeleteTeam = dept.teams.length > 1;
 
   return (
@@ -50,7 +51,7 @@ const DepartmentCard: React.FC<IDepartmentCardProps> = ({
 
       {/* Department card */}
       <View>
-        <View style={styles.infoSection}>
+        <View style={[styles.infoSection, !hasTeams && styles.infoSectionNoTeams]}>
           <View style={styles.header}>
             <MemoChip
               label={`본부 ${deptIndex + 1}`}
@@ -83,6 +84,22 @@ const DepartmentCard: React.FC<IDepartmentCardProps> = ({
             onChangeText={(value: string) => onDeptNameChange(dept.id, value)}
             gap={4}
           />
+
+          {!hasTeams && (
+            <Pressable
+              style={styles.addTeamButton}
+              onPress={() => onAddTeam(dept.id)}
+            >
+              <Add
+                size={`${ms(16)}`}
+                color={AppColors.gray90}
+                variant="Linear"
+              />
+              <AppText variant="body7" color={AppColors.gray90}>
+                팀 추가
+              </AppText>
+            </Pressable>
+          )}
         </View>
 
         {dept.teams.map((team, teamIndex) => (
@@ -134,6 +151,19 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 0,
     padding: ms(12),
     gap: ms(12),
+  },
+  infoSectionNoTeams: {
+    borderBottomLeftRadius: ms(12),
+    borderBottomRightRadius: ms(12),
+  },
+  addTeamButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: ms(4),
+    paddingVertical: ms(8),
+    borderTopWidth: 1,
+    borderTopColor: AppColors.gray20,
   },
   header: {
     flexDirection: 'row',

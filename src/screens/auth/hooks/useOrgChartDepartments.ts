@@ -28,7 +28,7 @@ const createTeam = (isDefault = false): Team => ({
 const createDepartment = (): Department => ({
   id: uniqueId('dept'),
   name: '',
-  teams: [createTeam(true)],
+  teams: [],
 });
 
 export const useOrgChartDepartments = () => {
@@ -50,7 +50,6 @@ export const useOrgChartDepartments = () => {
   const isValid = departments.every(
     dept =>
       dept.name.trim() !== '' &&
-      dept.teams.length > 0 &&
       dept.teams.every(team => team.name.trim() !== ''),
   );
 

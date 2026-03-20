@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Pressable,
-  ScrollView,
   StatusBar,
   StyleSheet,
   View,
@@ -10,6 +9,7 @@ import {
 import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Add, InfoCircle } from 'iconsax-react-nativejs';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -21,11 +21,18 @@ import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
 import { AppColors } from '@/src/constants/colors';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
-import { useRegisterCompanyMutation, useCreateCompanyMutation } from '@/src/store/api/auth.api';
-import { saveTokens, saveUserInfo, saveCompanyInfo } from '@/src/services/tokenService';
+import { useToast } from '@/src/providers/ToastProvider';
+import {
+  saveCompanyInfo,
+  saveTokens,
+  saveUserInfo,
+} from '@/src/services/tokenService';
+import {
+  useCreateCompanyMutation,
+  useRegisterCompanyMutation,
+} from '@/src/store/api/auth.api';
 import { MemoDepartmentCard } from '../components/orgChart/DepartmentCard';
 import { MemoOrgChartPreview } from '../components/orgChart/OrgChartPreview';
-import { useToast } from '@/src/providers/ToastProvider';
 import { useRegisterCompany } from '../context/RegisterCompanyContext';
 import { useOrgChartDepartments } from '../hooks/useOrgChartDepartments';
 
@@ -34,7 +41,6 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'OrgChartSetup'>;
 const TIMELINE_WIDTH = ms(28);
 
 const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
-  const managementType = route.params?.managementType;
   const hideStepBar = route.params?.hideStepBar;
   const fromSocialLogin = route.params?.fromSocialLogin;
   const { setStepData, getFormData, resetFormData } = useRegisterCompany();
@@ -70,7 +76,6 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
 
     try {
       const formData = getFormData();
-      console.log('[OrgChartSetup] Step 3 data:', formData);
 
       let response;
       if (fromSocialLogin) {
@@ -128,15 +133,20 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
       <MemoScreenBody>
         {!hideStepBar && (
           <View style={styles.stepBarContainer}>
-            <MemoStepProgressBar currentStep={fromSocialLogin ? 2 : 3} totalSteps={fromSocialLogin ? 2 : 4} />
+            <MemoStepProgressBar
+              currentStep={fromSocialLogin ? 2 : 3}
+              totalSteps={fromSocialLogin ? 2 : 4}
+            />
           </View>
         )}
 
-        <ScrollView
+        <KeyboardAwareScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          extraScrollHeight={ms(120)}
         >
           {/* 안내 문구 */}
           {!hideStepBar && (
@@ -227,7 +237,7 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
               직관적인 이름을 사용하는 것을 권장합니다.
             </AppText>
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         <MemoBottomButtonGroup>
           <MemoAppButton

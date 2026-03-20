@@ -1,8 +1,9 @@
 import React from 'react';
-import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { StatusBar, StyleSheet, View } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAgreementCheckbox } from '@/src/component/AgreementCheckbox';
@@ -205,10 +206,12 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
           </View>
         )}
 
-        <ScrollView
+        <KeyboardAwareScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          extraScrollHeight={ms(120)}
         >
           {/* 이름 & 휴대폰 번호 */}
           <MemoBaseCard style={{ gap: ms(16) }}>
@@ -330,7 +333,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
               onPress={() => toggleAgreement('marketing')}
             />
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         {/* Bottom buttons */}
         <MemoBottomButtonGroup>

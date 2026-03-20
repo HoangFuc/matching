@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ArrowDown2, Edit2 } from 'iconsax-react-nativejs';
+import { Edit2 } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -41,17 +41,19 @@ const HqSelector: React.FC<IHqSelectorProps> = ({
           <AppText variant="body7" color={AppColors.gray50}>
             {`(${departments.length})`}
           </AppText>
-
-          <ArrowDown2
-            size={`${ms(16)}`}
-            color={AppColors.gray90}
-            variant="Linear"
-          />
         </Pressable>
 
         {showEditButton && (
-          <Pressable hitSlop={8} onPress={onPressEdit} style={styles.editButton}>
-            <Edit2 size={`${ms(20)}`} color={AppColors.gray90} variant="Linear" />
+          <Pressable
+            hitSlop={8}
+            onPress={onPressEdit}
+            style={styles.editButton}
+          >
+            <Edit2
+              size={`${ms(20)}`}
+              color={AppColors.gray90}
+              variant="Linear"
+            />
           </Pressable>
         )}
       </View>
@@ -70,9 +72,7 @@ const HqSelector: React.FC<IHqSelectorProps> = ({
               <AppText
                 variant="body7"
                 color={
-                  index === selectedIndex
-                    ? AppColors.purple
-                    : AppColors.gray90
+                  index === selectedIndex ? AppColors.purple : AppColors.gray90
                 }
               >
                 {dept.name}

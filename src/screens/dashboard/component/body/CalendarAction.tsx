@@ -9,11 +9,16 @@ import {
   useCheckinMutation,
   useGetAttendanceTodayQuery,
 } from '@/src/store/api/checkin.api';
+import { useHasCompany } from '@/src/hooks/useHasCompany';
 import { MemoCheckin } from '../calendarAction/Checkin';
 import { MemoSchedule } from '../calendarAction/Schedule';
 
 const CalendarAction: React.FC = () => {
-  const { data: attendance } = useGetAttendanceTodayQuery();
+  const hasCompany = useHasCompany();
+
+  const { data: attendance } = useGetAttendanceTodayQuery(undefined, {
+    skip: !hasCompany,
+  });
   const [checkin, { isLoading }] = useCheckinMutation();
 
   //---------------------------------------

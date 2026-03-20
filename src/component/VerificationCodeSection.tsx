@@ -25,6 +25,7 @@ interface IVerificationCodeSectionProps {
   onConfirm: () => void;
   onResend: () => void;
   remainingSeconds: number;
+  errorMessage?: string;
 }
 
 //---------------------------------------
@@ -45,6 +46,7 @@ const VerificationCodeSection: React.FC<IVerificationCodeSectionProps> = ({
   onConfirm,
   onResend,
   remainingSeconds,
+  errorMessage,
 }) => {
   const isVerified = status === 'verified';
   const isError = status === 'error';
@@ -139,17 +141,11 @@ const VerificationCodeSection: React.FC<IVerificationCodeSectionProps> = ({
           </View>
         )}
 
-        {isError && (
+        {(isError || isExpired) && errorMessage ? (
           <AppText variant="body8" color={AppColors.negative}>
-            잘못된 인증코드입니다. 다시 시도하세요.
+            {errorMessage}
           </AppText>
-        )}
-
-        {isExpired && (
-          <AppText variant="body8" color={AppColors.negative}>
-            잘못된 인증코드입니다. 다시 시도하세요.
-          </AppText>
-        )}
+        ) : null}
 
         {/* Resend row */}
         <View style={styles.resendRow}>

@@ -21,7 +21,7 @@ import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
 import { AppColors } from '@/src/constants/colors';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
 import { useRegisterCompanyMutation } from '@/src/store/api/auth.api';
-import { saveTokens, saveUserInfo } from '@/src/services/tokenService';
+import { saveTokens, saveUserInfo, saveCompanyInfo } from '@/src/services/tokenService';
 import { MemoDepartmentCard } from '../components/orgChart/DepartmentCard';
 import { MemoOrgChartPreview } from '../components/orgChart/OrgChartPreview';
 import { useRegisterCompany } from '../context/RegisterCompanyContext';
@@ -69,9 +69,10 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
       const response = await registerCompany(formData as any).unwrap();
       await saveTokens(response.accessToken, response.refreshToken);
       await saveUserInfo(response.user);
+      await saveCompanyInfo(response.companies);
       resetFormData();
       navigation.navigate('InviteMember', {
-        company: response.company,
+        company: response.companies?.[0],
         hideStepBar,
       });
     } catch (error) {

@@ -23,6 +23,7 @@ interface IAppButtonProps
   variant?: ButtonVariant;
   textVariant?: TypographyVariant;
   textColor?: string;
+  backgroundColor?: string;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
 }
@@ -34,6 +35,7 @@ const AppButton: React.FC<IAppButtonProps> = ({
   variant = 'primary',
   textVariant = 'body6',
   textColor,
+  backgroundColor,
   loading = false,
   disabled,
   style,
@@ -47,6 +49,7 @@ const AppButton: React.FC<IAppButtonProps> = ({
         styles.base,
         isPrimary ? styles.primary : styles.secondary,
         disabled && styles.disabled,
+        backgroundColor != null && { backgroundColor },
         style,
       ]}
       disabled={disabled || loading}

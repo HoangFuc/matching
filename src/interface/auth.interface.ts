@@ -19,7 +19,7 @@ export interface IOtpVerifyResponse {
 
 // ── Login ────────────────────────────────────────────
 export interface ILoginParams {
-  phoneNumber: string;
+  phone: string;
   password: string;
 }
 
@@ -27,8 +27,14 @@ export interface IAuthTokenResponse {
   accessToken: string;
   refreshToken: string;
   expiresIn: string;
+  isNewUser?: boolean;
   user: IAuthUser;
-  company: ICompanyResponse;
+  companies: ICompanyResponse[];
+}
+
+// ── Join Company ─────────────────────────────────────
+export interface IJoinCompanyParams {
+  inviteCode: string;
 }
 
 export interface IAuthUser {
@@ -84,9 +90,14 @@ export interface IRegisterCompanyParams {
 // ── Register with Invite ─────────────────────────────
 export interface IRegisterWithInviteParams {
   inviteCode: string;
-  name: string;
-  phoneNumber: string;
+  fullName: string;
+  phone: string;
   password: string;
+  passwordConfirm: string;
+  phoneVerificationToken: string;
+  termsAgreed: boolean;
+  privacyAgreed: boolean;
+  marketingAgreed: boolean;
 }
 
 // ── Role Slugs ──────────────────────────────────────

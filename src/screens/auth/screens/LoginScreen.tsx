@@ -15,7 +15,22 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Eye, EyeSlash, TickSquare } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
+import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { MemoAppButton } from '@/src/component/AppButton';
+import {
+  saveTokens,
+  saveUserInfo,
+  saveCompanyInfo,
+  setKeepLoggedIn as persistKeepLoggedIn,
+  setSavedPhone,
+  getSavedPhone,
+} from '@/src/services/tokenService';
+import { useLoginMutation } from '@/src/store/api/auth.api';
+import { useSocialLogin } from '@/src/hooks/useSocialLogin';
+import {
+  configureGoogleSignIn,
+  configureNaverLogin,
+} from '@/src/services/socialLoginService';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppText } from '@/src/component/AppText';
 import { MemoPhoneInput } from '@/src/component/PhoneInput';
@@ -44,16 +59,44 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [keepLoggedIn, setKeepLoggedIn] = React.useState(false);
   const [saveId, setSaveId] = React.useState(false);
+  const [login, { isLoading }] = useLoginMutation();
+  const { handleSocialLogin, isSocialLoading } = useSocialLogin();
 
   //---------------------------------------
-  const handleLogin = React.useCallback(() => {
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'MainTabs' }],
-      }),
-    );
-  }, [navigation]);
+  React.useEffect(() => {
+    configureGoogleSignIn();
+    configureNaverLogin();
+  }, []);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    getSavedPhone().then(savedPhone => {
+      if (savedPhone) {
+        setPhone(savedPhone);
+        setSaveId(true);
+      }
+    });
+  }, []);
+
+  //---------------------------------------
+  const handleLogin = React.useCallback(async () => {
+    try {
+      const result = await login({ phone, password }).unwrap();
+      await saveTokens(result.accessToken, result.refreshToken);
+      await saveUserInfo(result.user);
+      await saveCompanyInfo(result.companies);
+      await persistKeepLoggedIn(keepLoggedIn);
+      await setSavedPhone(saveId ? phone : null);
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs' }],
+        }),
+      );
+    } catch {
+      // Error toast handled by toastMiddleware
+    }
+  }, [navigation, login, phone, password, keepLoggedIn, saveId]);
 
   //---------------------------------------
   const togglePasswordVisibility = React.useCallback(() => {
@@ -62,6 +105,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <AppSafeAreaView style={styles.safeArea}>
+      <FullScreenLoading visible={isSocialLoading} />
       <MemoScreenHeader
         title="로그인"
         icon={<HeaderLogo />}
@@ -87,6 +131,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <AppText variant="body7" color={AppColors.gray90}>
               비밀번호
             </AppText>
+
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
@@ -166,6 +211,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             textVariant="body6"
             style={styles.loginButton}
             onPress={handleLogin}
+            loading={isLoading}
+            disabled={isLoading || !phone || !password}
           />
 
           {/* Divider */}
@@ -183,22 +230,34 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Social login */}
           <View style={styles.socialRow}>
-            <TouchableOpacity style={[styles.socialButton]}>
+            <TouchableOpacity
+              style={[styles.socialButton]}
+              onPress={() => handleSocialLogin('kakao')}
+              disabled={isSocialLoading}
+            >
               <Image
                 source={AppImages.kakao}
                 style={styles.socialIcon}
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton]}>
+
+            <TouchableOpacity
+              style={[styles.socialButton]}
+              onPress={() => handleSocialLogin('naver')}
+              disabled={isSocialLoading}
+            >
               <Image
                 source={AppImages.naver}
                 style={styles.socialIcon}
                 resizeMode="contain"
               />
             </TouchableOpacity>
+
             <TouchableOpacity
               style={[styles.socialButton, styles.googleButton]}
+              onPress={() => handleSocialLogin('google')}
+              disabled={isSocialLoading}
             >
               <Image
                 source={AppImages.google}

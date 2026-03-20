@@ -13,6 +13,7 @@ import { ms } from 'react-native-size-matters';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { useGetSchedulesByDateQuery } from '@/src/store/api/schedule.api';
+import { useHasCompany } from '@/src/hooks/useHasCompany';
 import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
 import { formatDateHeader } from '@/src/utils/calendar.helper';
 import { MemoEventCard } from './EventCard';
@@ -25,9 +26,11 @@ interface IProps {
 const EventCardContent: React.FC<IProps> = props => {
   const { handlePressBack, dateKey } = props;
 
+  const hasCompany = useHasCompany();
+
   //---------------------------------------
   const { data: schedules = [], isLoading } =
-    useGetSchedulesByDateQuery(dateKey);
+    useGetSchedulesByDateQuery(dateKey, { skip: !hasCompany });
 
   //---------------------------------------
   const events = React.useMemo(() => {

@@ -1,12 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { Image, ImageBackground, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  Image,
+  ImageBackground,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
+
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { HamburgerMenu, Notification } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
-import { getUserInfo } from '@/src/services/tokenService';
+import { RootStackParamList } from '@/src/interface/tab.interface';
+import { getUserInfo, removeToken } from '@/src/services/tokenService';
+import { _retrieveData } from '@/src/api/async.storage';
+import { useLogoutMutation } from '@/src/store/api/auth.api';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
+import Toast from 'react-native-toast-message';
 
 //---------------------------------------
 const DAYS_KR = [
@@ -31,7 +44,11 @@ const formatDateKR = (timestamp?: string | number): string => {
 
 //---------------------------------------
 const HeaderDashboard: React.FC = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [logout] = useLogoutMutation();
   const [fullName, setFullName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [timestamp, setTimestamp] = useState<string | number | undefined>();
 
   //---------------------------------------
@@ -40,11 +57,28 @@ const HeaderDashboard: React.FC = () => {
       const user = await getUserInfo();
       if (user) {
         setFullName(user.fullName ?? '');
+        setAvatarUrl(user.avatarUrl ?? null);
         setTimestamp(user.timestamp ?? user.createdAt);
       }
     };
     loadUserInfo();
   }, []);
+
+  //---------------------------------------
+  const handleLogout = useCallback(async () => {
+    try {
+      const refreshToken = await _retrieveData('refresh_token');
+      if (refreshToken) {
+        await logout({ refreshToken }).unwrap();
+      }
+    } catch {
+      // Continue with local logout even if API call fails
+    } finally {
+      await removeToken();
+      Toast.show({ type: 'success', text1: '로그아웃되었습니다' });
+      navigation.reset({ index: 0, routes: [{ name: 'Auth' }] });
+    }
+  }, [logout, navigation]);
 
   return (
     <ImageBackground source={AppImages.headerBg} resizeMode="cover">
@@ -66,14 +100,16 @@ const HeaderDashboard: React.FC = () => {
       </View>
 
       <View style={styles.info}>
-        <Image
-          source={AppImages.avatar}
-          style={{
-            width: ms(40),
-            height: ms(40),
-            borderRadius: ms(20),
-          }}
-        />
+        <Pressable onPress={handleLogout}>
+          {avatarUrl ? (
+            <Image
+              source={{ uri: avatarUrl }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={[styles.avatar, styles.avatarPlaceholder]} />
+          )}
+        </Pressable>
 
         <View>
           <AppText variant="detail" color={AppColors.white}>
@@ -108,6 +144,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '120%',
     height: '170%',
+  },
+  avatar: {
+    width: ms(40),
+    height: ms(40),
+    borderRadius: ms(20),
+  },
+  avatarPlaceholder: {
+    backgroundColor: AppColors.gray20,
   },
   info: {
     flexDirection: 'row',

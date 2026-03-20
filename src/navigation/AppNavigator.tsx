@@ -226,10 +226,41 @@ const MainTabs: React.FC = () => {
 };
 
 const AppNavigator: React.FC = () => {
+  const [initialRoute, setInitialRoute] = React.useState<
+    'Auth' | 'MainTabs' | null
+  >(null);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { getKeepLoggedIn, getToken } = await import(
+          '@/src/services/tokenService'
+        );
+        const keepLoggedIn = await getKeepLoggedIn();
+        if (keepLoggedIn) {
+          const token = await getToken();
+          if (token) {
+            setInitialRoute('MainTabs');
+            return;
+          }
+        }
+      } catch {}
+      setInitialRoute('Auth');
+    };
+    checkAuth();
+  }, []);
+
+  if (initialRoute === null) {
+    return null;
+  }
+
   return (
     <>
       <NavigationContainer>
-        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        <RootStack.Navigator
+          initialRouteName={initialRoute}
+          screenOptions={{ headerShown: false }}>
           <RootStack.Screen name="Auth" component={AuthStack} />
           <RootStack.Screen name="MainTabs" component={MainTabs} />
           <RootStack.Screen name="DataRoom" component={DataRoomStack} />

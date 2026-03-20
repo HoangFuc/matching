@@ -8,6 +8,7 @@ import { API_BASE_URL } from '@env';
 const ACCESS_TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 const USER_KEY = 'user_info';
+const COMPANY_KEY = 'company_info';
 
 //---------------------------------------
 const decodeBase64 = (str: string): string => {
@@ -117,6 +118,7 @@ export const getToken = async (): Promise<string | null> => {
 export const removeToken = async (): Promise<void> => {
   await _removeData(ACCESS_TOKEN_KEY);
   await _removeData(REFRESH_TOKEN_KEY);
+  await _removeData(COMPANY_KEY);
 };
 
 //---------------------------------------
@@ -141,4 +143,68 @@ export const getUserInfo = async () => {
  */
 export const saveUserInfo = async (user: any): Promise<void> => {
   await _storeData(USER_KEY, JSON.stringify(user));
+};
+
+//---------------------------------------
+/**
+ * Save company info to AsyncStorage.
+ */
+export const saveCompanyInfo = async (company: any): Promise<void> => {
+  if (company) {
+    await _storeData(COMPANY_KEY, JSON.stringify(company));
+  } else {
+    await _removeData(COMPANY_KEY);
+  }
+};
+
+//---------------------------------------
+/**
+ * Get stored company info from AsyncStorage.
+ */
+export const getCompanyInfo = async () => {
+  const raw = await _retrieveData(COMPANY_KEY);
+  if (raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
+//---------------------------------------
+const KEEP_LOGGED_IN_KEY = 'keep_logged_in';
+const SAVED_PHONE_KEY = 'saved_phone';
+
+//---------------------------------------
+export const setKeepLoggedIn = async (value: boolean): Promise<void> => {
+  if (value) {
+    await _storeData(KEEP_LOGGED_IN_KEY, 'true');
+  } else {
+    await _removeData(KEEP_LOGGED_IN_KEY);
+  }
+};
+
+//---------------------------------------
+export const getKeepLoggedIn = async (): Promise<boolean> => {
+  const value = await _retrieveData(KEEP_LOGGED_IN_KEY);
+  return value === 'true';
+};
+
+//---------------------------------------
+export const setSavedPhone = async (
+  phone: string | null,
+): Promise<void> => {
+  if (phone) {
+    await _storeData(SAVED_PHONE_KEY, phone);
+  } else {
+    await _removeData(SAVED_PHONE_KEY);
+  }
+};
+
+//---------------------------------------
+export const getSavedPhone = async (): Promise<string | null> => {
+  const value = await _retrieveData(SAVED_PHONE_KEY);
+  return value || null;
 };

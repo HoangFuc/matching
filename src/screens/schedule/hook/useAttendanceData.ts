@@ -3,6 +3,7 @@ import React from 'react';
 import dayjs from 'dayjs';
 
 import { useGetMyAttendanceQuery } from '@/src/store/api';
+import { useHasCompany } from '@/src/hooks/useHasCompany';
 import { TScheduleMode } from '../type';
 
 export type TCheckinInfo = { time: string; isLate: boolean };
@@ -18,9 +19,12 @@ export const useAttendanceData = (
   const isFutureRange = effectiveEndDate < startDate;
 
   //---------------------------------------
+  const hasCompany = useHasCompany();
+
+  //---------------------------------------
   const { data: attendanceData } = useGetMyAttendanceQuery(
     { startDate, endDate: effectiveEndDate },
-    { skip: mode !== 'attendance' || isFutureRange },
+    { skip: !hasCompany || mode !== 'attendance' || isFutureRange },
   );
 
   //---------------------------------------

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -7,6 +7,7 @@ import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
+import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
 import { AppColors } from '@/src/constants/colors';
 import { TickCircle } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
@@ -15,16 +16,22 @@ import type { AuthStackParamList } from '@/src/interface/tab.interface';
 type Props = {
   isSelected: boolean;
   onSelect: () => void;
+  fromSocialLogin?: boolean;
 };
 
-const NoCodeOption: React.FC<Props> = ({ isSelected, onSelect }) => {
+const NoCodeOption: React.FC<Props> = ({ isSelected, onSelect, fromSocialLogin }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+  const [showModal, setShowModal] = useState(false);
 
   //---------------------------------------
   const handleJoin = React.useCallback(() => {
-    navigation.navigate('JoinMembership', { withSteps: true });
-  }, [navigation]);
+    if (fromSocialLogin) {
+      setShowModal(true);
+    } else {
+      navigation.navigate('JoinMembership', { withSteps: true });
+    }
+  }, [navigation, fromSocialLogin]);
 
   return (
     <>
@@ -71,6 +78,11 @@ const NoCodeOption: React.FC<Props> = ({ isSelected, onSelect }) => {
           onPress={handleJoin}
         />
       </View>
+
+      <MemoUnderDevelopmentModal
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+      />
     </>
   );
 };

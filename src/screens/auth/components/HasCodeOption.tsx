@@ -18,6 +18,7 @@ import { useLazyGetInvitationByCodeQuery } from '@/src/store/api/auth.api';
 type Props = {
   isSelected: boolean;
   onSelect: () => void;
+  fromSocialLogin?: boolean;
 };
 
 type FormValues = {
@@ -33,7 +34,7 @@ const extractCode = (input: string): string => {
 };
 
 //---------------------------------------
-const HasCodeOption: React.FC<Props> = ({ isSelected, onSelect }) => {
+const HasCodeOption: React.FC<Props> = ({ isSelected, onSelect, fromSocialLogin }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
   const { control, watch } = useForm<FormValues>({
@@ -52,7 +53,7 @@ const HasCodeOption: React.FC<Props> = ({ isSelected, onSelect }) => {
 
     try {
       const invitation = await getInvitation(code).unwrap();
-      navigation.navigate('ConfirmOrganizationInvitation', { invitation });
+      navigation.navigate('ConfirmOrganizationInvitation', { invitation, inviteCode: code, fromSocialLogin });
     } catch (error) {
       console.error('Failed to fetch invitation:', error);
     }

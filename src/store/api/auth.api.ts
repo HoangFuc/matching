@@ -8,6 +8,7 @@ import {
   ICreateInvitationParams,
   IInvitationDetailResponse,
   IInvitationLink,
+  IJoinCompanyParams,
   ILoginParams,
   ILogoutParams,
   IOtpSendParams,
@@ -50,13 +51,23 @@ export const authApi = createApi({
 
     //---------------------------------------
     login: builder.mutation<IAuthTokenResponse, ILoginParams>({
-      query: body => ({
-        url: '/login',
-        method: 'POST',
-        body,
-      }),
-      transformResponse: (response: any): IAuthTokenResponse =>
-        response?.data ?? response,
+      async queryFn(body) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            return { error: { status: res.status, data: errorData } };
+          }
+          const json: any = await res.json();
+          return { data: (json?.data ?? json) as IAuthTokenResponse };
+        } catch (error: any) {
+          return { error: { status: 'FETCH_ERROR', error: error.message } };
+        }
+      },
     }),
 
     //---------------------------------------
@@ -125,6 +136,17 @@ export const authApi = createApi({
     }),
 
     //---------------------------------------
+    joinCompany: builder.mutation<IAuthTokenResponse, IJoinCompanyParams>({
+      query: body => ({
+        url: '/join-company',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: any): IAuthTokenResponse =>
+        response?.data ?? response,
+    }),
+
+    //---------------------------------------
     registerWithInvite: builder.mutation<IAuthTokenResponse, IRegisterWithInviteParams>({
       query: body => ({
         url: '/register-with-invite',
@@ -181,6 +203,7 @@ export const {
   useVerifyOtpMutation,
   useLoginMutation,
   useSocialLoginMutation,
+  useJoinCompanyMutation,
   useRegisterCompanyMutation,
   useRegisterWithInviteMutation,
   useCreateInvitationMutation,

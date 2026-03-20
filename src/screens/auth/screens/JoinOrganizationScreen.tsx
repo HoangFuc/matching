@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
 
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ms } from 'react-native-size-matters/extend';
 
@@ -14,11 +14,10 @@ import type { AuthStackParamList } from '@/src/interface/tab.interface';
 import { MemoHasCodeOption } from '@/src/screens/auth/components/HasCodeOption';
 import { MemoNoCodeOption } from '@/src/screens/auth/components/NoCodeOption';
 
-type Props = {
-  navigation: NativeStackNavigationProp<AuthStackParamList, 'JoinOrganization'>;
-};
+type Props = NativeStackScreenProps<AuthStackParamList, 'JoinOrganization'>;
 
-const JoinOrganizationScreen: React.FC<Props> = ({ navigation }) => {
+const JoinOrganizationScreen: React.FC<Props> = ({ navigation, route }) => {
+  const fromSocialLogin = route.params?.fromSocialLogin;
   const [selectedOption, setSelectedOption] = useState<
     'hasCode' | 'noCode' | null
   >(null);
@@ -55,11 +54,13 @@ const JoinOrganizationScreen: React.FC<Props> = ({ navigation }) => {
           <MemoHasCodeOption
             isSelected={selectedOption === 'hasCode'}
             onSelect={handleHasInviteCode}
+            fromSocialLogin={fromSocialLogin}
           />
 
           <MemoNoCodeOption
             isSelected={selectedOption === 'noCode'}
             onSelect={handleNoInviteCode}
+            fromSocialLogin={fromSocialLogin}
           />
         </View>
 

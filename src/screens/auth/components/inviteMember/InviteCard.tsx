@@ -23,6 +23,7 @@ interface IProps {
   onSelectLocation: (id: string, option: TDropdownOption) => void;
   onSelectExpiry: (id: string, option: TDropdownOption) => void;
   onGenerateLink: (id: string) => void;
+  isGeneratingLink: boolean;
 }
 
 //---------------------------------------
@@ -36,6 +37,7 @@ const InviteCard: React.FC<IProps> = ({
   onSelectLocation,
   onSelectExpiry,
   onGenerateLink,
+  isGeneratingLink,
 }) => {
   const canGenerate = invite.role !== '' && invite.expiry !== '';
   const hasLink = invite.generatedLink !== '';
@@ -72,6 +74,7 @@ const InviteCard: React.FC<IProps> = ({
           variant="primary"
           textVariant="body6"
           disabled={!canGenerate}
+          loading={isGeneratingLink}
           onPress={() => onGenerateLink(invite.id)}
         />
       </MemoBaseCard>

@@ -6,12 +6,23 @@ import { setUploadProgress } from '../slices/dataRoomSlice';
 const ToastSuccessMap: Record<string, string> = {
   // 게시판
   createBulletin: '게시글이 등록되었습니다.',
+  // 회원가입
+  registerWithInvite: '회원가입이 완료되었습니다.',
 };
 
 // 에러 toast를 표시하지 않을 action type 목록
 const ToastErrorSilentSet = new Set<string>([
   'checkinApi/executeMutation/rejected',
 ]);
+
+// endpointName → 에러 toast를 표시하지 않을 endpoint 목록
+const ToastErrorSilentEndpoints = new Set<string>(['verifyOtp']);
+
+// errorCode → 한국어 에러 메시지
+const ToastErrorCodeMap: Record<string, string> = {
+  AUTH_PHONE_EXISTS: '이미 사용 중인 아이디입니다.',
+  AUTH_INVALID_CREDENTIALS: '전화번호 또는 비밀번호가 올바르지 않습니다.',
+};
 
 export const toastMiddleware: Middleware = () => next => action => {
   const result = next(action);
@@ -47,16 +58,25 @@ export const toastMiddleware: Middleware = () => next => action => {
     if ((action.error as any)?.name === 'ConditionError') {
       return result;
     }
-    if (silent || ToastErrorSilentSet.has(action.type)) {
+    const endpointName = (action as any)?.meta?.arg?.endpointName;
+    if (
+      silent ||
+      ToastErrorSilentSet.has(action.type) ||
+      ToastErrorSilentEndpoints.has(endpointName)
+    ) {
       return result;
     }
 
+    const errorCode = (action.payload as any)?.data?.errorCode;
+    const mappedMessage = errorCode ? ToastErrorCodeMap[errorCode] : undefined;
+
     const message =
-      typeof action.payload === 'string'
+      mappedMessage ||
+      (typeof action.payload === 'string'
         ? action.payload
         : (action.payload as any)?.data?.message ||
           (action.error as any)?.message ||
-          '오류가 발생했습니다.';
+          '오류가 발생했습니다.');
 
     showGlobalToast({ type: 'error', message });
   }

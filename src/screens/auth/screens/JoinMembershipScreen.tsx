@@ -21,7 +21,8 @@ import { MemoVerificationCodeSection } from '@/src/component/VerificationCodeSec
 import { AppColors } from '@/src/constants/colors';
 import { useVerificationCode } from '@/src/hooks/useVerificationCode';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
-import { useSendOtpMutation, useVerifyOtpMutation } from '@/src/store/api';
+import { saveTokens, saveUserInfo, saveCompanyInfo } from '@/src/services/tokenService';
+import { useSendOtpMutation, useVerifyOtpMutation, useRegisterWithInviteMutation } from '@/src/store/api';
 import { useRegisterCompany } from '../context/RegisterCompanyContext';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'JoinMembership'>;
@@ -37,9 +38,11 @@ type FormValues = {
 
 const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
   const withSteps = route.params?.withSteps ?? false;
+  const inviteCode = route.params?.inviteCode ?? '';
   const { setStepData } = useRegisterCompany();
   const [sendOtp, { isLoading: isSendingOtp }] = useSendOtpMutation();
   const [verifyOtp] = useVerifyOtpMutation();
+  const [registerWithInvite, { isLoading: isRegistering }] = useRegisterWithInviteMutation();
 
   const { control, handleSubmit, watch } = useForm<FormValues>({
     defaultValues: {
@@ -84,9 +87,10 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
         console.log('[JoinMembership] verifyOtp response:', JSON.stringify(response));
         setVerificationToken(response.phoneVerificationToken);
         return true;
-      } catch (error) {
+      } catch (error: any) {
         console.log('[JoinMembership] verifyOtp error:', error);
-        return false;
+        const code = error?.data?.code ?? error?.code ?? '';
+        return typeof code === 'string' && code ? code : false;
       }
     },
   });
@@ -128,7 +132,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const onSubmit = React.useCallback(
-    (data: FormValues) => {
+    async (data: FormValues) => {
       let hasError = false;
 
       if (data.password.length < 6) {
@@ -151,7 +155,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
 
       const stepData = {
         fullName: data.name,
-        phone: data.phone,
+        phone: data.phone.replace(/[^0-9]/g, ''),
         password: data.password,
         passwordConfirm: data.confirmPassword,
         phoneVerificationToken: verificationToken,
@@ -165,11 +169,21 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
         setStepData(stepData);
         navigation.navigate('CreateAgency');
       } else {
-        // TODO: implement registration logic
-        navigation.navigate('Login');
+        try {
+          const result = await registerWithInvite({
+            inviteCode,
+            ...stepData,
+          }).unwrap();
+          await saveTokens(result.accessToken, result.refreshToken);
+          await saveUserInfo(result.user);
+          await saveCompanyInfo(result.companies);
+          navigation.navigate('Login');
+        } catch (error) {
+          console.log('[JoinMembership] registerWithInvite error:', error);
+        }
       }
     },
-    [navigation, withSteps, setStepData, agreements, verificationToken],
+    [navigation, withSteps, setStepData, agreements, verificationToken, inviteCode, registerWithInvite],
   );
 
   return (
@@ -251,6 +265,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
                 onConfirm={() => verification.verifyCode(watch('phone'))}
                 onResend={() => verification.resend(watch('phone'))}
                 remainingSeconds={verification.remainingSeconds}
+                errorMessage={verification.errorMessage}
               />
             )}
           </MemoBaseCard>
@@ -330,7 +345,8 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
             label={withSteps ? '다음' : '회원 가입 및 조직 참여'}
             variant="primary"
             textVariant="body6"
-            disabled={!isSubmitEnabled}
+            disabled={!isSubmitEnabled || isRegistering}
+            loading={isRegistering}
             onPress={handleSubmit(onSubmit)}
           />
         </MemoBottomButtonGroup>

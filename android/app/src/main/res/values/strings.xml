@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Matching</string>
+    <string name="kakao_app_key">7975835cb6e09c5403cc007f59c46511</string>
 </resources>

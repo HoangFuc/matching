@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 
+import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ms } from 'react-native-size-matters/extend';
 
@@ -12,8 +13,10 @@ import { MemoBaseCard } from '@/src/component/BaseCard';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
-import { Calendar, TickCircle } from '@/src/constants/icons';
+import { ArrowRight2, Calendar, TickCircle } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
+import { saveTokens, saveUserInfo, saveCompanyInfo } from '@/src/services/tokenService';
+import { useJoinCompanyMutation } from '@/src/store/api/auth.api';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
 
 type Props = NativeStackScreenProps<
@@ -21,20 +24,84 @@ type Props = NativeStackScreenProps<
   'ConfirmOrganizationInvitation'
 >;
 
+const BREADCRUMB_COLORS = [
+  AppColors.lightCream,
+  AppColors.lightGreen,
+  AppColors.lightBlue,
+];
+
 const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
   navigation,
   route,
 }) => {
-  const { invitation } = route.params;
+  const { invitation, inviteCode, fromSocialLogin } = route.params;
+  const [joinCompany, { isLoading: isJoining }] = useJoinCompanyMutation();
+
+  console.log('======================nodePath', invitation.nodePath);
+
+  //---------------------------------------
+  const breadcrumbs = React.useMemo(() => {
+    const items: { label: string; bgColor: string; textColor: string }[] = [];
+
+    if (invitation.directors?.[0]?.fullName) {
+      items.push({
+        label: `총괄 ${invitation.directors[0].fullName}`,
+        bgColor: BREADCRUMB_COLORS[0],
+        textColor: AppColors.burntOrange,
+      });
+    }
+
+    if (invitation.department?.name) {
+      items.push({
+        label: `${invitation.department.name}본부`,
+        bgColor: BREADCRUMB_COLORS[1],
+        textColor: AppColors.green,
+      });
+    }
+
+    if (invitation.team?.name) {
+      items.push({
+        label: `${invitation.team.name}팀`,
+        bgColor: BREADCRUMB_COLORS[2],
+        textColor: AppColors.strongBlue,
+      });
+    }
+
+    return items;
+  }, [invitation.directors, invitation.department, invitation.team]);
+
   //---------------------------------------
   const handleReject = React.useCallback(() => {
-    navigation.goBack();
+    navigation.navigate('Welcome');
   }, [navigation]);
 
   //---------------------------------------
-  const handleJoin = React.useCallback(() => {
-    navigation.navigate('JoinMembership');
-  }, [navigation]);
+  const handleJoin = React.useCallback(async () => {
+    if (fromSocialLogin) {
+      try {
+        const result = await joinCompany({ inviteCode }).unwrap();
+        if (result.accessToken) {
+          await saveTokens(result.accessToken, result.refreshToken);
+        }
+        if (result.user) {
+          await saveUserInfo(result.user);
+        }
+        if (result.companies) {
+          await saveCompanyInfo(result.companies);
+        }
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'MainTabs' }],
+          }),
+        );
+      } catch (error) {
+        console.error('Failed to join company:', error);
+      }
+    } else {
+      navigation.navigate('JoinMembership', { inviteCode });
+    }
+  }, [navigation, fromSocialLogin, inviteCode, joinCompany]);
 
   return (
     <AppSafeAreaView style={styles.safeArea}>
@@ -68,7 +135,14 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
 
           {/* Organization card */}
           <MemoBaseCard style={styles.orgCard}>
-            <Image source={AppImages.logoSquare} style={styles.orgLogo} />
+            <Image
+              source={
+                invitation.company.logoUrl
+                  ? { uri: invitation.company.logoUrl }
+                  : AppImages.logoSquare
+              }
+              style={styles.orgLogo}
+            />
 
             <View style={styles.orgInfo}>
               <AppText variant="heading3" color={AppColors.gray90}>
@@ -78,15 +152,36 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
           </MemoBaseCard>
 
           {/* 소속 위치 */}
-          {invitation.nodePath && (
+          {breadcrumbs.length > 0 && (
             <MemoBaseCard style={styles.section}>
               <AppText variant="body6" color={AppColors.gray90}>
                 소속 위치
               </AppText>
 
-              <AppText variant="body8" color={AppColors.gray90}>
-                {invitation.nodePath}
-              </AppText>
+              <View style={styles.breadcrumbRow}>
+                {breadcrumbs.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <View
+                      style={[
+                        styles.breadcrumbTag,
+                        { backgroundColor: item.bgColor },
+                      ]}
+                    >
+                      <AppText variant="body6" color={item.textColor}>
+                        {item.label}
+                      </AppText>
+                    </View>
+
+                    {index < breadcrumbs.length - 1 && (
+                      <ArrowRight2
+                        size={ms(14)}
+                        color={AppColors.gray50}
+                        variant="Linear"
+                      />
+                    )}
+                  </React.Fragment>
+                ))}
+              </View>
             </MemoBaseCard>
           )}
 
@@ -96,11 +191,10 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
               부여된 직책
             </AppText>
 
-            <AppText variant="body5" color={AppColors.gray90}>
-              {invitation.role.name}
-            </AppText>
-
-            <AppText variant="body8" color={AppColors.gray80}>
+            <AppText variant="body8" color={AppColors.gray90}>
+              <AppText variant="body5" color={AppColors.gray90}>
+                {invitation.role.name}:
+              </AppText>{' '}
               {invitation.role.description}
             </AppText>
           </MemoBaseCard>
@@ -147,7 +241,12 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
                   />
 
                   <AppText variant="body6" color={AppColors.gray90}>
-                    {new Date(invitation.expiresAt).toLocaleDateString('ko-KR')}
+                    {(() => {
+                      const d = new Date(invitation.expiresAt);
+                      return `${d.getFullYear()}.${
+                        d.getMonth() + 1
+                      }.${d.getDate()}`;
+                    })()}
                   </AppText>
                 </View>
               </MemoBaseCard>
@@ -180,12 +279,15 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
             textVariant="body6"
             onPress={handleReject}
             textColor={AppColors.negative}
+            backgroundColor={AppColors.pastelPink}
           />
 
           <MemoAppButton
             label="조직 참여하기"
             variant="primary"
             onPress={handleJoin}
+            loading={isJoining}
+            disabled={isJoining}
           />
         </MemoBottomButtonGroup>
       </MemoScreenBody>
@@ -236,14 +338,12 @@ const styles = StyleSheet.create({
   breadcrumbRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: ms(6),
   },
   breadcrumbTag: {
-    paddingHorizontal: ms(8),
+    flex: 1,
     paddingVertical: ms(4),
     borderRadius: ms(100),
-    width: ms(87),
     alignItems: 'center',
   },
   roleCard: {
@@ -262,6 +362,8 @@ const styles = StyleSheet.create({
     gap: ms(8),
     padding: ms(8),
     borderRadius: ms(8),
+    borderWidth: 1,
+    borderColor: AppColors.gray20,
   },
   inviteDivider: {
     width: 1,
@@ -282,7 +384,6 @@ const styles = StyleSheet.create({
     borderRadius: ms(10),
     gap: ms(6),
     alignItems: 'center',
-    backgroundColor: AppColors.pastelPink,
   },
   noticeText: {
     flex: 1,

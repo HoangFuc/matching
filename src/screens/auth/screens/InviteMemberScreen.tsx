@@ -63,7 +63,11 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const departments = company?.departments ?? [];
   const directorCount = company?.directorCount ?? 1;
-  const [createInvitation] = useCreateInvitationMutation();
+  const [createInvitation, { isLoading: isCreatingInvitation }] =
+    useCreateInvitationMutation();
+  const [generatingInviteId, setGeneratingInviteId] = React.useState<
+    string | null
+  >(null);
 
   //---------------------------------------
   const roleOptions = React.useMemo<TDropdownOption[]>(() => {
@@ -232,6 +236,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         return;
       }
 
+      setGeneratingInviteId(inviteId);
       try {
         const params: {
           roleSlug: TRoleSlug;
@@ -258,6 +263,8 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         );
       } catch (error) {
         console.error('Failed to create invitation:', error);
+      } finally {
+        setGeneratingInviteId(null);
       }
     },
     [invites, createInvitation],
@@ -332,6 +339,9 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
               onSelectLocation={handleSelectLocation}
               onSelectExpiry={handleSelectExpiry}
               onGenerateLink={handleGenerateLink}
+              isGeneratingLink={
+                isCreatingInvitation && generatingInviteId === invite.id
+              }
             />
           ))}
         </ScrollView>

@@ -8,7 +8,8 @@
       "mcp__claude_ai_Figma__get_metadata",
       "Bash(find /c/matchingBare/src/store -type f -name *.ts -o -name *.tsx)",
       "Bash(npm install:*)",
-      "Bash(yarn clean:all)"
+      "Bash(yarn clean:all)",
+      "Bash(npx jest:*)"
     ]
   }
 }

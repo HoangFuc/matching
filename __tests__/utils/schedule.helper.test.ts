@@ -51,7 +51,7 @@ describe('convertSchedulesToEvents', () => {
     const result = convertSchedulesToEvents(schedules);
     const event = result['2025-03-15'][0];
     expect(event.title).toBe('Test Schedule');
-    expect(event.type).toBe('지방출장');
+    expect(event.type).toBe('일반일정');
     expect(event.color).toBe(AppColors.purple);
     expect(event.backgroundColor).toBe(AppColors.lavendar);
   });

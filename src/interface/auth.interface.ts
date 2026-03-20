@@ -87,6 +87,14 @@ export interface IRegisterCompanyParams {
   departments: string; // JSON string
 }
 
+// ── Create Company (Social Login) ────────────────────
+export interface ICreateCompanyParams {
+  companyName: string;
+  directorCount: number;
+  companyLogo?: { uri: string; type: string; name: string };
+  departments: string; // JSON string
+}
+
 // ── Register with Invite ─────────────────────────────
 export interface IRegisterWithInviteParams {
   inviteCode: string;

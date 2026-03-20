@@ -13,14 +13,28 @@ const MemberItem: React.FC<{ member: TMember }> = ({ member }) => {
     <View style={styles.memberItem}>
       <View style={styles.avatarCircle}>
         <AppText variant="body7" color={AppColors.white}>
-          {member.name.charAt(0)}
+          {member.fullName.charAt(0)}
         </AppText>
       </View>
 
       <View style={styles.memberInfo}>
-        <AppText variant="body7" color={AppColors.gray90}>
-          {member.name}
-        </AppText>
+        <View style={styles.nameRow}>
+          <AppText variant="body7" color={AppColors.gray90}>
+            {member.fullName}
+          </AppText>
+
+          {member.isMe && (
+            <>
+              <View style={styles.dot} />
+
+              <View style={styles.meBadge}>
+                <AppText variant="detail" color={AppColors.purple}>
+                  저
+                </AppText>
+              </View>
+            </>
+          )}
+        </View>
 
         <AppText variant="detail" color={AppColors.gray60}>
           {member.role}
@@ -50,5 +64,22 @@ const styles = StyleSheet.create({
   },
   memberInfo: {
     gap: ms(1),
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ms(4),
+  },
+  dot: {
+    width: ms(2),
+    height: ms(2),
+    borderRadius: ms(1),
+    backgroundColor: AppColors.gray80,
+  },
+  meBadge: {
+    backgroundColor: AppColors.lavendar,
+    borderRadius: ms(100),
+    paddingHorizontal: ms(4),
+    paddingVertical: ms(2),
   },
 });

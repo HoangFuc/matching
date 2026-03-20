@@ -8,6 +8,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ToastProvider } from './src/providers/ToastProvider';
+import { MemoUpdateRequiredProvider } from './src/providers/UpdateRequiredProvider';
 import { store, persistor } from './src/store';
 const queryClient = new QueryClient();
 
@@ -22,7 +23,9 @@ export default function App() {
             <SafeAreaProvider>
               <BottomSheetModalProvider>
                 <ToastProvider>
-                  <AppNavigator />
+                  <MemoUpdateRequiredProvider>
+                    <AppNavigator />
+                  </MemoUpdateRequiredProvider>
                 </ToastProvider>
               </BottomSheetModalProvider>
             </SafeAreaProvider>

@@ -4,6 +4,7 @@ import _ from 'lodash';
 
 import { API_BASE_URL } from '@env';
 import { getCommonHeaders } from '@/src/services/apiHeaderService';
+import { showUpdateRequired } from '@/src/utils/updateRequiredDispatcher';
 
 const API_URL = API_BASE_URL;
 
@@ -61,6 +62,9 @@ export const apiGet = async (
 
     if (responseStatus >= 400) {
       let message = _.get(json, 'error.message', result.status);
+      if (responseStatus === 403 && json?.data) {
+        showUpdateRequired(json.data);
+      }
       if (responseStatus === 401) {
         Alert.alert('Phiên đăng nhập hết hạn', 'Vui lòng đăng nhập lại!');
       }
@@ -125,6 +129,9 @@ export const apiRest = async (
         'error.message',
         `${responseStatus}: ${JSON.stringify(json)}`,
       );
+      if (responseStatus === 403 && json?.data) {
+        showUpdateRequired(json.data);
+      }
       if (responseStatus === 401) {
         Alert.alert('Phiên đăng nhập hết hạn', 'Vui lòng đăng nhập lại!');
       }

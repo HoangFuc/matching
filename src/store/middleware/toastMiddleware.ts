@@ -1,4 +1,5 @@
 import { showGlobalToast } from '@/src/utils/toastDispatcher';
+import { showUpdateRequired } from '@/src/utils/updateRequiredDispatcher';
 import { isFulfilled, isRejected, Middleware } from '@reduxjs/toolkit';
 import { setUploadProgress } from '../slices/dataRoomSlice';
 
@@ -64,6 +65,16 @@ export const toastMiddleware: Middleware = () => next => action => {
       ToastErrorSilentSet.has(action.type) ||
       ToastErrorSilentEndpoints.has(endpointName)
     ) {
+      return result;
+    }
+
+    // 403 업데이트 필요 — UpdateRequiredProvider에서 처리
+    const errorStatus = (action.payload as any)?.status;
+    if (errorStatus === 403) {
+      const updateUrl = (action.payload as any)?.data?.data;
+      if (updateUrl) {
+        showUpdateRequired(updateUrl);
+      }
       return result;
     }
 

@@ -63,7 +63,8 @@ const MANAGEMENT_OPTIONS: {
   },
 ];
 
-const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
+const CreateAgencyScreen: React.FC<Props> = ({ navigation, route }) => {
+  const fromSocialLogin = route.params?.fromSocialLogin;
   const { setStepData } = useRegisterCompany();
 
   const { control, handleSubmit, watch } = useForm<FormValues>({
@@ -132,7 +133,7 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
       };
       console.log('[CreateAgency] Step 2 data:', stepData);
       setStepData(stepData);
-      navigation.navigate('OrgChartSetup', { managementType });
+      navigation.navigate('OrgChartSetup', { managementType, fromSocialLogin });
     },
     [navigation, managementType, setStepData, companyLogo],
   );
@@ -145,7 +146,7 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation }) => {
 
       <MemoScreenBody>
         <View style={styles.stepBarContainer}>
-          <MemoStepProgressBar currentStep={2} totalSteps={4} />
+          <MemoStepProgressBar currentStep={fromSocialLogin ? 1 : 2} totalSteps={fromSocialLogin ? 2 : 4} />
         </View>
 
         <ScrollView

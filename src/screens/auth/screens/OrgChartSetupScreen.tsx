@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 
+import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Add, InfoCircle } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
@@ -20,10 +21,11 @@ import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
 import { AppColors } from '@/src/constants/colors';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
-import { useRegisterCompanyMutation } from '@/src/store/api/auth.api';
+import { useRegisterCompanyMutation, useCreateCompanyMutation } from '@/src/store/api/auth.api';
 import { saveTokens, saveUserInfo, saveCompanyInfo } from '@/src/services/tokenService';
 import { MemoDepartmentCard } from '../components/orgChart/DepartmentCard';
 import { MemoOrgChartPreview } from '../components/orgChart/OrgChartPreview';
+import { useToast } from '@/src/providers/ToastProvider';
 import { useRegisterCompany } from '../context/RegisterCompanyContext';
 import { useOrgChartDepartments } from '../hooks/useOrgChartDepartments';
 
@@ -34,8 +36,11 @@ const TIMELINE_WIDTH = ms(28);
 const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
   const managementType = route.params?.managementType;
   const hideStepBar = route.params?.hideStepBar;
+  const fromSocialLogin = route.params?.fromSocialLogin;
   const { setStepData, getFormData, resetFormData } = useRegisterCompany();
   const [registerCompany] = useRegisterCompanyMutation();
+  const [createCompany] = useCreateCompanyMutation();
+  const { showToast } = useToast();
   const directorName = getFormData().fullName || '나';
 
   const {
@@ -66,15 +71,38 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
     try {
       const formData = getFormData();
       console.log('[OrgChartSetup] Step 3 data:', formData);
-      const response = await registerCompany(formData as any).unwrap();
+
+      let response;
+      if (fromSocialLogin) {
+        response = await createCompany({
+          companyName: formData.companyName!,
+          directorCount: formData.directorCount!,
+          companyLogo: formData.companyLogo,
+          departments: formData.departments!,
+        }).unwrap();
+      } else {
+        response = await registerCompany(formData as any).unwrap();
+      }
+
       await saveTokens(response.accessToken, response.refreshToken);
       await saveUserInfo(response.user);
       await saveCompanyInfo(response.companies);
       resetFormData();
-      navigation.navigate('InviteMember', {
-        company: response.companies?.[0],
-        hideStepBar,
-      });
+
+      if (fromSocialLogin) {
+        showToast({ type: 'success', message: '생성이 완료되었습니다' });
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'MainTabs' }],
+          }),
+        );
+      } else {
+        navigation.navigate('InviteMember', {
+          company: response.companies?.[0],
+          hideStepBar,
+        });
+      }
     } catch (error) {
       console.error('Registration failed:', error);
     }
@@ -84,6 +112,9 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
     getFormData,
     resetFormData,
     registerCompany,
+    createCompany,
+    fromSocialLogin,
+    showToast,
     navigation,
     hideStepBar,
   ]);
@@ -97,7 +128,7 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
       <MemoScreenBody>
         {!hideStepBar && (
           <View style={styles.stepBarContainer}>
-            <MemoStepProgressBar currentStep={3} totalSteps={4} />
+            <MemoStepProgressBar currentStep={fromSocialLogin ? 2 : 3} totalSteps={fromSocialLogin ? 2 : 4} />
           </View>
         )}
 

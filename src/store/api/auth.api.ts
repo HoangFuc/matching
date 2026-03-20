@@ -5,6 +5,7 @@ import { getCommonHeaders } from '@/src/services/apiHeaderService';
 
 import {
   IAuthTokenResponse,
+  ICreateCompanyParams,
   ICreateInvitationParams,
   IInvitationDetailResponse,
   IInvitationLink,
@@ -21,6 +22,7 @@ import {
   IRegisterWithInviteParams,
   ISocialLoginParams,
 } from '@/src/interface/auth.interface';
+import type { TStructure } from '@/src/screens/organizationChart/type';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -82,7 +84,10 @@ export const authApi = createApi({
     }),
 
     //---------------------------------------
-    registerCompany: builder.mutation<IAuthTokenResponse, IRegisterCompanyParams>({
+    registerCompany: builder.mutation<
+      IAuthTokenResponse,
+      IRegisterCompanyParams
+    >({
       async queryFn(params) {
         try {
           const formData = new FormData();
@@ -92,7 +97,10 @@ export const authApi = createApi({
           formData.append('phone', params.phone);
           formData.append('password', params.password);
           formData.append('passwordConfirm', params.passwordConfirm);
-          formData.append('phoneVerificationToken', params.phoneVerificationToken);
+          formData.append(
+            'phoneVerificationToken',
+            params.phoneVerificationToken,
+          );
           formData.append('termsAgreed', String(params.termsAgreed));
           formData.append('privacyAgreed', String(params.privacyAgreed));
           formData.append('marketingAgreed', String(params.marketingAgreed));
@@ -136,6 +144,51 @@ export const authApi = createApi({
     }),
 
     //---------------------------------------
+    createCompany: builder.mutation<
+      IAuthTokenResponse,
+      ICreateCompanyParams
+    >({
+      async queryFn(params) {
+        try {
+          const formData = new FormData();
+
+          formData.append('companyName', params.companyName);
+          formData.append('directorCount', String(params.directorCount));
+
+          if (params.companyLogo) {
+            formData.append('companyLogo', {
+              uri: params.companyLogo.uri,
+              type: params.companyLogo.type || 'image/jpeg',
+              name: params.companyLogo.name || 'logo.jpg',
+            } as any);
+          }
+
+          formData.append('departments', params.departments);
+
+          const commonHeaders = await getCommonHeaders();
+          const { 'Content-Type': _ct, ...headersWithoutCT } = commonHeaders;
+          const res = await fetch(`${API_BASE_URL}/auth/create-company`, {
+            method: 'POST',
+            headers: headersWithoutCT,
+            body: formData as unknown as BodyInit_,
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            return { error: { status: res.status, data: errorData } };
+          }
+
+          const data: any = await res.json();
+          return { data: data?.data ?? data };
+        } catch (error: any) {
+          return {
+            error: { status: 'FETCH_ERROR', error: error.message },
+          };
+        }
+      },
+    }),
+
+    //---------------------------------------
     joinCompany: builder.mutation<IAuthTokenResponse, IJoinCompanyParams>({
       query: body => ({
         url: '/join-company',
@@ -147,7 +200,10 @@ export const authApi = createApi({
     }),
 
     //---------------------------------------
-    registerWithInvite: builder.mutation<IAuthTokenResponse, IRegisterWithInviteParams>({
+    registerWithInvite: builder.mutation<
+      IAuthTokenResponse,
+      IRegisterWithInviteParams
+    >({
       query: body => ({
         url: '/register-with-invite',
         method: 'POST',
@@ -158,7 +214,10 @@ export const authApi = createApi({
     }),
 
     //---------------------------------------
-    createInvitation: builder.mutation<IInvitationLink, ICreateInvitationParams>({
+    createInvitation: builder.mutation<
+      IInvitationLink,
+      ICreateInvitationParams
+    >({
       query: body => ({
         url: '/invitations',
         method: 'POST',
@@ -195,6 +254,15 @@ export const authApi = createApi({
         body,
       }),
     }),
+
+    //---------------------------------------
+    getStructure: builder.query<TStructure, void>({
+      query: () => '/company/structure',
+      transformResponse: (response: any) => {
+        const data = response?.data?.data ?? response?.data ?? response;
+        return data;
+      },
+    }),
   }),
 });
 
@@ -205,10 +273,12 @@ export const {
   useSocialLoginMutation,
   useJoinCompanyMutation,
   useRegisterCompanyMutation,
+  useCreateCompanyMutation,
   useRegisterWithInviteMutation,
   useCreateInvitationMutation,
   useGetInvitationByCodeQuery,
   useLazyGetInvitationByCodeQuery,
   useRefreshTokenMutation,
   useLogoutMutation,
+  useGetStructureQuery,
 } = authApi;

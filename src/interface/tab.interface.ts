@@ -19,8 +19,8 @@ export type AuthStackParamList = {
   JoinOrganization: { fromSocialLogin?: boolean } | undefined;
   ConfirmOrganizationInvitation: { invitation: IInvitationDetailResponse; inviteCode: string; fromSocialLogin?: boolean };
   JoinMembership: { withSteps?: boolean; inviteCode?: string } | undefined;
-  CreateAgency: undefined;
-  OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
+  CreateAgency: { fromSocialLogin?: boolean } | undefined;
+  OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean; fromSocialLogin?: boolean } | undefined;
   InviteMember: { company: ICompanyResponse; hideStepBar?: boolean } | undefined;
 };
 
@@ -36,7 +36,7 @@ export type RootStackParamList = {
   MeetingScheduleDetail: { item: IMeetingScheduleManagement };
   ScheduleCalendarView: { filterTypes?: TScheduleType[] };
   OrganizationChart: undefined;
-  OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean } | undefined;
+  OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean; fromSocialLogin?: boolean } | undefined;
   InviteMember: { company: ICompanyResponse; hideStepBar?: boolean } | undefined;
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -7,7 +7,6 @@ import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
-import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
 import { AppColors } from '@/src/constants/colors';
 import { TickCircle } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
@@ -22,12 +21,11 @@ type Props = {
 const NoCodeOption: React.FC<Props> = ({ isSelected, onSelect, fromSocialLogin }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
-  const [showModal, setShowModal] = useState(false);
 
   //---------------------------------------
   const handleJoin = React.useCallback(() => {
     if (fromSocialLogin) {
-      setShowModal(true);
+      navigation.navigate('CreateAgency', { fromSocialLogin: true });
     } else {
       navigation.navigate('JoinMembership', { withSteps: true });
     }
@@ -79,10 +77,6 @@ const NoCodeOption: React.FC<Props> = ({ isSelected, onSelect, fromSocialLogin }
         />
       </View>
 
-      <MemoUnderDevelopmentModal
-        visible={showModal}
-        onClose={() => setShowModal(false)}
-      />
     </>
   );
 };

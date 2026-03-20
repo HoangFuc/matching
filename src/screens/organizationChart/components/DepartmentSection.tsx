@@ -25,7 +25,7 @@ const DepartmentSection: React.FC<{ department: TDepartment }> = ({
       <Pressable style={styles.departmentHeader} onPress={handleToggle}>
         <View style={styles.departmentNameRow}>
           <AppText variant="body6" color={AppColors.gray90}>
-            {department.name}
+            {`${department.name}본부`}
           </AppText>
 
           <Pressable hitSlop={8} style={styles.editButton}>

@@ -14,7 +14,7 @@ const TeamSection: React.FC<{ team: TTeam }> = ({ team }) => {
   return (
     <View style={styles.teamSection}>
       <MemoChip
-        label={team.name}
+        label={`${team.name}팀`}
         bgColor={AppColors.lightBlue}
         textColor={AppColors.strongBlue}
         textVariant="body6"
@@ -22,16 +22,16 @@ const TeamSection: React.FC<{ team: TTeam }> = ({ team }) => {
         opacity={1}
       />
 
-      {team.members.length === 0 ? (
+      {team.members.length <= 0 ? (
         <View style={styles.emptyTeam}>
-          <AppText variant="body7" color={AppColors.gray50}>
+          <AppText variant="body6" color={AppColors.gray90}>
             등록된 구성원이 없습니다.
           </AppText>
         </View>
       ) : (
         <View style={styles.membersGrid}>
           {team.members.map(member => (
-            <MemoMemberItem key={member.id} member={member} />
+            <MemoMemberItem key={member.memberId} member={member} />
           ))}
         </View>
       )}

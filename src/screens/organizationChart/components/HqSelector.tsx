@@ -6,34 +6,40 @@ import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
-import type { THeadquarters } from '../type';
+import type { TDepartment } from '../type';
 
 interface IHqSelectorProps {
-  headquarters: THeadquarters[];
-  selectedHqIndex: number;
+  departments: TDepartment[];
+  selectedIndex: number;
   showPicker: boolean;
+  showEditButton?: boolean;
   onTogglePicker: () => void;
-  onSelectHq: (index: number) => void;
+  onSelect: (index: number) => void;
   onPressEdit: () => void;
 }
 
 //---------------------------------------
 const HqSelector: React.FC<IHqSelectorProps> = ({
-  headquarters,
-  selectedHqIndex,
+  departments,
+  selectedIndex,
   showPicker,
+  showEditButton = false,
   onTogglePicker,
-  onSelectHq,
+  onSelect,
   onPressEdit,
 }) => {
-  const currentHq = headquarters[selectedHqIndex];
+  const currentDept = departments[selectedIndex];
 
   return (
     <>
       <View style={styles.hqSelectorRow}>
         <Pressable style={styles.hqDropdown} onPress={onTogglePicker}>
           <AppText variant="body6" color={AppColors.gray90}>
-            {currentHq?.name ?? ''}
+            {currentDept?.name ?? ''}
+          </AppText>
+
+          <AppText variant="body7" color={AppColors.gray50}>
+            {`(${departments.length})`}
           </AppText>
 
           <ArrowDown2
@@ -43,31 +49,33 @@ const HqSelector: React.FC<IHqSelectorProps> = ({
           />
         </Pressable>
 
-        <Pressable hitSlop={8} onPress={onPressEdit} style={styles.editButton}>
-          <Edit2 size={`${ms(20)}`} color={AppColors.gray90} variant="Linear" />
-        </Pressable>
+        {showEditButton && (
+          <Pressable hitSlop={8} onPress={onPressEdit} style={styles.editButton}>
+            <Edit2 size={`${ms(20)}`} color={AppColors.gray90} variant="Linear" />
+          </Pressable>
+        )}
       </View>
 
       {showPicker && (
         <View style={styles.hqPickerDropdown}>
-          {headquarters.map((hq, index) => (
+          {departments.map((dept, index) => (
             <Pressable
-              key={hq.id}
+              key={dept.id}
               style={[
                 styles.hqPickerItem,
-                index === selectedHqIndex && styles.hqPickerItemActive,
+                index === selectedIndex && styles.hqPickerItemActive,
               ]}
-              onPress={() => onSelectHq(index)}
+              onPress={() => onSelect(index)}
             >
               <AppText
                 variant="body7"
                 color={
-                  index === selectedHqIndex
+                  index === selectedIndex
                     ? AppColors.purple
                     : AppColors.gray90
                 }
               >
-                {hq.name}
+                {dept.name}
               </AppText>
             </Pressable>
           ))}

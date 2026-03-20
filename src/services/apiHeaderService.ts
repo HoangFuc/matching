@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 import { getToken } from './tokenService';
 
-const APP_VERSION = '0.0.0';
+const APP_VERSION = '0.0.1';
 const APP_PLATFORM = Platform.OS; // 'ios' | 'android'
 
 //---------------------------------------

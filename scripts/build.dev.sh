@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Keep terminal open on exit
+trap 'echo ""; echo "Press Enter to close..."; read' EXIT
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -29,15 +32,19 @@ echo -e "${CYAN}========================================${NC}"
 
 cd android
 
-echo -e "${YELLOW}[1/4] Cleaning old build files...${NC}"
-rm -rf app/build app/.cxx .gradle
+echo -e "${YELLOW}[1/5] Stopping Gradle daemon...${NC}"
+./gradlew --stop 2>/dev/null || true
+echo -e "${GREEN}  ✔ Gradle daemon stopped${NC}"
+
+echo -e "${YELLOW}[2/5] Cleaning old build files...${NC}"
+rm -rf app/build app/.cxx .gradle 2>/dev/null || true
 echo -e "${GREEN}  ✔ Clean done${NC}"
 
-echo -e "${YELLOW}[2/4] Copying .env.development -> .env${NC}"
+echo -e "${YELLOW}[3/5] Copying .env.development -> .env${NC}"
 cp ../.env.development ../.env
 echo -e "${GREEN}  ✔ .env ready${NC}"
 
-echo -e "${YELLOW}[3/4] Building release APK...${NC}"
+echo -e "${YELLOW}[4/5] Building release APK...${NC}"
 ./gradlew assembleRelease
 
 if [ $? -eq 0 ]; then
@@ -50,7 +57,7 @@ if [ $? -eq 0 ]; then
   # Install APK to connected device
   APK_FILE="${APK_DIR}/app-release.apk"
   echo ""
-  echo -e "${YELLOW}[5/4] Installing APK to device...${NC}"
+  echo -e "${YELLOW}[5/5] Installing APK to device...${NC}"
   adb install -r "$APK_FILE"
 
   if [ $? -eq 0 ]; then

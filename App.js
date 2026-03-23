@@ -13,7 +13,6 @@ import { store, persistor } from './src/store';
 const queryClient = new QueryClient();
 
 export default function App() {
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar backgroundColor="#6B1FAD" barStyle="light-content" />

@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  Pressable,
-  StatusBar,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Pressable, StatusBar, StyleSheet, View } from 'react-native';
 
 import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -31,14 +26,34 @@ import {
   useCreateCompanyMutation,
   useRegisterCompanyMutation,
 } from '@/src/store/api/auth.api';
+import {
+  useGetDepartmentsQuery,
+  useUpdateDepartmentsMutation,
+  type TCompanyDepartment,
+} from '@/src/store/api/company.api';
 import { MemoDepartmentCard } from '../components/orgChart/DepartmentCard';
 import { MemoOrgChartPreview } from '../components/orgChart/OrgChartPreview';
 import { useRegisterCompany } from '../context/RegisterCompanyContext';
-import { useOrgChartDepartments } from '../hooks/useOrgChartDepartments';
+import {
+  useOrgChartDepartments,
+  type Department,
+} from '../hooks/useOrgChartDepartments';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'OrgChartSetup'>;
 
 const TIMELINE_WIDTH = ms(28);
+
+//---------------------------------------
+const mapApiDepartments = (apiDepts: TCompanyDepartment[]): Department[] =>
+  apiDepts.map(d => ({
+    id: d.id,
+    name: d.name,
+    teams: d.teams.map(t => ({
+      id: t.id,
+      name: t.name,
+      isDefault: t.isDefault,
+    })),
+  }));
 
 const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
   const hideStepBar = route.params?.hideStepBar;
@@ -46,8 +61,18 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
   const { setStepData, getFormData, resetFormData } = useRegisterCompany();
   const [registerCompany] = useRegisterCompanyMutation();
   const [createCompany] = useCreateCompanyMutation();
+  const [updateDepartments] = useUpdateDepartmentsMutation();
   const { showToast } = useToast();
   const directorName = getFormData().fullName || '나';
+
+  const { data: deptData } = useGetDepartmentsQuery(undefined, {
+    skip: !hideStepBar,
+  });
+
+  const initialDepartments = React.useMemo(
+    () => (deptData ? mapApiDepartments(deptData) : undefined),
+    [deptData],
+  );
 
   const {
     departments,
@@ -63,7 +88,24 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
     updateTeamName,
     toggleDefault,
     toJson,
-  } = useOrgChartDepartments();
+  } = useOrgChartDepartments(initialDepartments);
+
+  //---------------------------------------
+  const initialJson = React.useMemo(
+    () =>
+      initialDepartments
+        ? JSON.stringify(
+            initialDepartments.map(dept => ({
+              name: dept.name,
+              teams: dept.teams.map(team => ({
+                name: team.name,
+                isDefault: team.isDefault,
+              })),
+            })),
+          )
+        : null,
+    [initialDepartments],
+  );
 
   //---------------------------------------
   const handleCancel = React.useCallback(() => {
@@ -72,9 +114,30 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const handleNext = React.useCallback(async () => {
-    setStepData({ departments: toJson() });
-
     try {
+      if (hideStepBar) {
+        if (!(initialJson && toJson() === initialJson)) {
+          const isServerId = (id: string) =>
+            !id.startsWith('dept-') && !id.startsWith('team-');
+          const body = {
+            departments: departments.map(dept => ({
+              ...(isServerId(dept.id) && { id: dept.id }),
+              name: dept.name,
+              teams: dept.teams.map(team => ({
+                ...(isServerId(team.id) && { id: team.id }),
+                name: team.name,
+                isDefault: team.isDefault,
+              })),
+            })),
+          };
+          await updateDepartments(body).unwrap();
+          showToast({ type: 'success', message: '조직도가 수정되었습니다' });
+        }
+        navigation.navigate('InviteMember', { departments, hideStepBar: true });
+        return;
+      }
+
+      setStepData({ departments: toJson() });
       const formData = getFormData();
 
       let response;
@@ -89,11 +152,18 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
         response = await registerCompany(formData as any).unwrap();
       }
 
-      await saveTokens(response.accessToken, response.refreshToken);
-      await saveUserInfo(response.user);
-      await saveCompanyInfo(response.companies);
+      if (response.accessToken && response.refreshToken) {
+        await saveTokens(response.accessToken, response.refreshToken);
+      }
+      if (response.user) {
+        await saveUserInfo(response.user);
+      }
+      if (response.companies) {
+        await saveCompanyInfo(response.companies);
+      }
       resetFormData();
 
+      const company = response.companies?.[0];
       if (fromSocialLogin) {
         showToast({ type: 'success', message: '생성이 완료되었습니다' });
         navigation.dispatch(
@@ -104,7 +174,9 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
         );
       } else {
         navigation.navigate('InviteMember', {
-          company: response.companies?.[0],
+          company,
+          departments,
+          directorCount: formData.directorCount,
           hideStepBar,
         });
       }
@@ -112,6 +184,9 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
       console.error('Registration failed:', error);
     }
   }, [
+    departments,
+    hideStepBar,
+    updateDepartments,
     toJson,
     setStepData,
     getFormData,
@@ -121,7 +196,6 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
     fromSocialLogin,
     showToast,
     navigation,
-    hideStepBar,
   ]);
 
   return (

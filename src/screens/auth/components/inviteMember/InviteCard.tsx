@@ -56,6 +56,7 @@ const InviteCard: React.FC<IProps> = ({
         <MemoInviteDropdownField
           label="소속 위치"
           value={invite.location}
+          placeholder="소속 위치 선택"
           options={locationOptions}
           disabled={locationDisabled}
           onSelect={option => onSelectLocation(invite.id, option)}

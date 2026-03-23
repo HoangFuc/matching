@@ -60,31 +60,17 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [keepLoggedIn, setKeepLoggedIn] = React.useState(false);
   const [saveId, setSaveId] = React.useState(false);
   const [login, { isLoading }] = useLoginMutation();
+
   const { handleSocialLogin, isSocialLoading } = useSocialLogin();
-
-  //---------------------------------------
-  React.useEffect(() => {
-    configureGoogleSignIn();
-    configureNaverLogin();
-  }, []);
-
-  //---------------------------------------
-  React.useEffect(() => {
-    getSavedPhone().then(savedPhone => {
-      if (savedPhone) {
-        setPhone(savedPhone);
-        setSaveId(true);
-      }
-    });
-  }, []);
 
   //---------------------------------------
   const handleLogin = React.useCallback(async () => {
     try {
       const result = await login({ phone, password }).unwrap();
+
       await saveTokens(result.accessToken, result.refreshToken);
       await saveUserInfo(result.user);
-      await saveCompanyInfo(result.companies);
+      await saveCompanyInfo(result.companies[0]);
       await persistKeepLoggedIn(keepLoggedIn);
       await setSavedPhone(saveId ? phone : null);
       navigation.dispatch(
@@ -101,6 +87,22 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   //---------------------------------------
   const togglePasswordVisibility = React.useCallback(() => {
     setShowPassword(prev => !prev);
+  }, []);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    configureGoogleSignIn();
+    configureNaverLogin();
+  }, []);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    getSavedPhone().then(savedPhone => {
+      if (savedPhone) {
+        setPhone(savedPhone);
+        setSaveId(true);
+      }
+    });
   }, []);
 
   return (

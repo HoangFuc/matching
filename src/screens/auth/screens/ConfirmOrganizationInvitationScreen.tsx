@@ -37,8 +37,6 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
   const { invitation, inviteCode, fromSocialLogin } = route.params;
   const [joinCompany, { isLoading: isJoining }] = useJoinCompanyMutation();
 
-  console.log('======================nodePath', invitation.nodePath);
-
   //---------------------------------------
   const breadcrumbs = React.useMemo(() => {
     const items: { label: string; bgColor: string; textColor: string }[] = [];

@@ -15,13 +15,9 @@ export const useSocialLogin = () => {
   const handleSocialLogin = React.useCallback(
     async (provider: TSocialProvider) => {
       try {
-        console.log(`[SocialLogin] Starting ${provider} sign-in...`);
         const accessToken = await signInWithProvider(provider);
-        console.log(`[SocialLogin] Got ${provider} token:`, accessToken ? `${accessToken.substring(0, 20)}...` : 'EMPTY');
 
-        console.log(`[SocialLogin] Calling API with:`, { provider, accessToken });
         const result = await socialLogin({ provider, accessToken }).unwrap();
-        console.log(`[SocialLogin] API response:`, JSON.stringify(result));
 
         await saveTokens(result.accessToken, result.refreshToken);
         await saveUserInfo(result.user);
@@ -38,8 +34,7 @@ export const useSocialLogin = () => {
           );
         }
       } catch (error: any) {
-        console.error(`[SocialLogin] Error for ${provider}:`, error);
-        console.error(`[SocialLogin] Error details:`, JSON.stringify(error, null, 2));
+        // Error handled by toastMiddleware
       }
     },
     [navigation, socialLogin],

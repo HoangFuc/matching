@@ -150,6 +150,7 @@ export const saveUserInfo = async (user: any): Promise<void> => {
  * Save company info to AsyncStorage.
  */
 export const saveCompanyInfo = async (company: any): Promise<void> => {
+  console.log('======================company', company);
   if (company) {
     await _storeData(COMPANY_KEY, JSON.stringify(company));
   } else {
@@ -193,9 +194,7 @@ export const getKeepLoggedIn = async (): Promise<boolean> => {
 };
 
 //---------------------------------------
-export const setSavedPhone = async (
-  phone: string | null,
-): Promise<void> => {
+export const setSavedPhone = async (phone: string | null): Promise<void> => {
   if (phone) {
     await _storeData(SAVED_PHONE_KEY, phone);
   } else {

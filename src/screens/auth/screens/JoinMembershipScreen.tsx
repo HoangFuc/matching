@@ -85,11 +85,9 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
       try {
         const cleaned = phone.replace(/[^0-9]/g, '');
         const response = await verifyOtp({ phone: cleaned, code }).unwrap();
-        console.log('[JoinMembership] verifyOtp response:', JSON.stringify(response));
         setVerificationToken(response.phoneVerificationToken);
         return true;
       } catch (error: any) {
-        console.log('[JoinMembership] verifyOtp error:', error);
         const code = error?.data?.code ?? error?.code ?? '';
         return typeof code === 'string' && code ? code : false;
       }
@@ -164,8 +162,6 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
         privacyAgreed: agreements.privacy,
         marketingAgreed: agreements.marketing,
       };
-      console.log('[JoinMembership] Step 1 data:', stepData);
-
       if (withSteps) {
         setStepData(stepData);
         navigation.navigate('CreateAgency');
@@ -180,7 +176,6 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
           await saveCompanyInfo(result.companies);
           navigation.navigate('Login');
         } catch (error) {
-          console.log('[JoinMembership] registerWithInvite error:', error);
         }
       }
     },

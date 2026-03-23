@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
 
-import { getUserInfo } from '@/src/services/tokenService';
-import { TRoleSlug } from '@/src/interface/auth.interface';
+import { getCompanyInfo } from '@/src/services/tokenService';
+import type { TRoleSlug } from '@/src/interface/auth.interface';
 
 export const useUserRole = (): TRoleSlug | null => {
-  const [role, setRole] = useState<TRoleSlug | null>(null);
+  const [role, setRole] = React.useState<TRoleSlug | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const load = async () => {
-      const user = await getUserInfo();
-      if (user?.roleSlug) {
-        setRole(user.roleSlug);
+      const company = await getCompanyInfo();
+      if (company?.role) {
+        setRole(company.role);
       }
     };
     load();

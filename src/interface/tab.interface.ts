@@ -11,6 +11,7 @@ import type {
   IInvitationDetailResponse,
 } from './auth.interface';
 import type { TMeetingMinutes } from './meetingMinutes.interface';
+import type { Department } from '../screens/auth/hooks/useOrgChartDepartments';
 import type { IMeetingScheduleManagement } from './meetingScheduleManagement.interface';
 
 export type AuthStackParamList = {
@@ -21,7 +22,7 @@ export type AuthStackParamList = {
   JoinMembership: { withSteps?: boolean; inviteCode?: string } | undefined;
   CreateAgency: { fromSocialLogin?: boolean } | undefined;
   OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean; fromSocialLogin?: boolean } | undefined;
-  InviteMember: { company: ICompanyResponse; hideStepBar?: boolean } | undefined;
+  InviteMember: { company?: ICompanyResponse; departments?: Department[]; directorCount?: number; hideStepBar?: boolean } | undefined;
 };
 
 export type RootStackParamList = {
@@ -37,7 +38,7 @@ export type RootStackParamList = {
   ScheduleCalendarView: { filterTypes?: TScheduleType[] };
   OrganizationChart: undefined;
   OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean; fromSocialLogin?: boolean } | undefined;
-  InviteMember: { company: ICompanyResponse; hideStepBar?: boolean } | undefined;
+  InviteMember: { company?: ICompanyResponse; departments?: Department[]; directorCount?: number; hideStepBar?: boolean } | undefined;
 };
 
 export type MeetingMinutesStackParamList = {

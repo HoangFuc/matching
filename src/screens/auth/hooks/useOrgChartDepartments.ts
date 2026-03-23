@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import React from 'react';
 
 export type Team = {
   id: string;
@@ -31,14 +31,26 @@ const createDepartment = (): Department => ({
   teams: [],
 });
 
-export const useOrgChartDepartments = () => {
-  const [departments, setDepartments] = useState<Department[]>([
-    {
-      id: 'dept-1',
-      name: '',
-      teams: [{ id: 'team-1', name: '', isDefault: true }],
-    },
-  ]);
+export const useOrgChartDepartments = (initialDepartments?: Department[]) => {
+  const [departments, setDepartments] = React.useState<Department[]>(
+    initialDepartments ?? [
+      {
+        id: 'dept-1',
+        name: '',
+        teams: [{ id: 'team-1', name: '', isDefault: true }],
+      },
+    ],
+  );
+
+  const initializedRef = React.useRef(!!initialDepartments);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    if (initialDepartments && !initializedRef.current) {
+      setDepartments(initialDepartments);
+      initializedRef.current = true;
+    }
+  }, [initialDepartments]);
 
   //---------------------------------------
   const totalDepartments = departments.length;
@@ -54,17 +66,17 @@ export const useOrgChartDepartments = () => {
   );
 
   //---------------------------------------
-  const addDepartment = useCallback(() => {
+  const addDepartment = React.useCallback(() => {
     setDepartments(prev => [...prev, createDepartment()]);
   }, []);
 
   //---------------------------------------
-  const deleteDepartment = useCallback((deptId: string) => {
+  const deleteDepartment = React.useCallback((deptId: string) => {
     setDepartments(prev => prev.filter(dept => dept.id !== deptId));
   }, []);
 
   //---------------------------------------
-  const updateDeptName = useCallback((deptId: string, value: string) => {
+  const updateDeptName = React.useCallback((deptId: string, value: string) => {
     setDepartments(prev =>
       prev.map(dept =>
         dept.id === deptId ? { ...dept, name: value } : dept,
@@ -73,18 +85,18 @@ export const useOrgChartDepartments = () => {
   }, []);
 
   //---------------------------------------
-  const addTeam = useCallback((deptId: string) => {
+  const addTeam = React.useCallback((deptId: string) => {
     setDepartments(prev =>
       prev.map(dept =>
         dept.id === deptId
-          ? { ...dept, teams: [...dept.teams, createTeam()] }
+          ? { ...dept, teams: [...dept.teams, createTeam(dept.teams.length === 0)] }
           : dept,
       ),
     );
   }, []);
 
   //---------------------------------------
-  const deleteTeam = useCallback((deptId: string, teamId: string) => {
+  const deleteTeam = React.useCallback((deptId: string, teamId: string) => {
     setDepartments(prev =>
       prev.map(dept =>
         dept.id === deptId
@@ -95,7 +107,7 @@ export const useOrgChartDepartments = () => {
   }, []);
 
   //---------------------------------------
-  const updateTeamName = useCallback(
+  const updateTeamName = React.useCallback(
     (deptId: string, teamId: string, value: string) => {
       setDepartments(prev =>
         prev.map(dept =>
@@ -114,7 +126,7 @@ export const useOrgChartDepartments = () => {
   );
 
   //---------------------------------------
-  const toggleDefault = useCallback((deptId: string, teamId: string) => {
+  const toggleDefault = React.useCallback((deptId: string, teamId: string) => {
     setDepartments(prev => {
       const target = prev
         .find(d => d.id === deptId)
@@ -137,7 +149,7 @@ export const useOrgChartDepartments = () => {
   }, []);
 
   //---------------------------------------
-  const toJson = useCallback(
+  const toJson = React.useCallback(
     () =>
       JSON.stringify(
         departments.map(dept => ({

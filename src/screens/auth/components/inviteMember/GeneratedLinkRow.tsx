@@ -7,6 +7,7 @@ import { ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { DocumentCopy } from '@/src/constants/icons';
+import { useToast } from '@/src/providers/ToastProvider';
 import { ShareIcon } from 'react-native-heroicons/solid';
 
 interface IProps {
@@ -15,10 +16,13 @@ interface IProps {
 
 //---------------------------------------
 const GeneratedLinkRow: React.FC<IProps> = ({ link }) => {
+  const { showToast } = useToast();
+
   //---------------------------------------
   const handleCopy = React.useCallback(() => {
     Clipboard.setString(link);
-  }, [link]);
+    showToast({ type: 'success', message: '링크가 복사되었습니다' });
+  }, [link, showToast]);
 
   //---------------------------------------
   const handleShare = React.useCallback(async () => {

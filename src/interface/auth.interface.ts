@@ -41,25 +41,19 @@ export interface IAuthUser {
   id: string;
   fullName: string;
   phone: string;
+  avatarUrl: string | null;
 }
 
 export interface ICompanyResponse {
-  id: string;
-  name: string;
-  directorCount: number;
-  departments: ICompanyDepartment[];
-}
-
-export interface ICompanyDepartment {
-  id: string;
-  name: string;
-  teams: ICompanyTeam[];
-}
-
-export interface ICompanyTeam {
-  id: string;
-  name: string;
-  isDefault: boolean;
+  companyId: string;
+  companyName: string;
+  companyLogoUrl: string | null;
+  role: TRoleSlug;
+  roleName: string;
+  departmentId: string | null;
+  departmentName: string | null;
+  teamId: string | null;
+  teamName: string | null;
 }
 
 // ── Social Login ─────────────────────────────────────

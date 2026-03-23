@@ -131,7 +131,6 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation, route }) => {
         directorCount: managementType === 'single' ? 1 : 2,
         companyLogo,
       };
-      console.log('[CreateAgency] Step 2 data:', stepData);
       setStepData(stepData);
       navigation.navigate('OrgChartSetup', { managementType, fromSocialLogin });
     },

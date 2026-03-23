@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet } from 'react-native';
 
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Add } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
@@ -20,10 +21,18 @@ type Props = NativeStackScreenProps<RootStackParamList, 'OrganizationChart'>;
 //---------------------------------------
 const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
   const userRole = useUserRole();
+  console.log('======================user', userRole);
   const isDirector =
     userRole === ROLE_SLUGS.DIRECTOR || userRole === ROLE_SLUGS.DIRECTOR_2;
 
-  const { data: structure } = useGetStructureQuery();
+  const { data: structure, refetch } = useGetStructureQuery();
+
+  //---------------------------------------
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   //---------------------------------------
   const handlePressAdd = React.useCallback(() => {

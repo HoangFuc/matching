@@ -24,6 +24,22 @@ import {
 } from '@/src/interface/auth.interface';
 import type { TStructure } from '@/src/screens/organizationChart/type';
 
+export type TInvitableRole = {
+  slug: string;
+  name: string;
+};
+
+export type TInvitablePositionTeam = {
+  teamId: string;
+  teamName: string;
+};
+
+export type TInvitablePosition = {
+  departmentId: string;
+  departmentName: string;
+  teams: TInvitablePositionTeam[];
+};
+
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: createBaseQuery('/auth'),
@@ -55,10 +71,12 @@ export const authApi = createApi({
     login: builder.mutation<IAuthTokenResponse, ILoginParams>({
       async queryFn(body) {
         try {
+          const jsonBody = JSON.stringify(body);
+          console.log('[Login] Request body:', jsonBody);
           const res = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
+            body: jsonBody,
           });
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
@@ -74,13 +92,26 @@ export const authApi = createApi({
 
     //---------------------------------------
     socialLogin: builder.mutation<IAuthTokenResponse, ISocialLoginParams>({
-      query: body => ({
-        url: '/social-login',
-        method: 'POST',
-        body,
-      }),
-      transformResponse: (response: any): IAuthTokenResponse =>
-        response?.data ?? response,
+      async queryFn(body) {
+        try {
+          const jsonBody = JSON.stringify(body);
+          console.log('[SocialLogin] Request body:', jsonBody);
+          const commonHeaders = await getCommonHeaders();
+          const res = await fetch(`${API_BASE_URL}/auth/social-login`, {
+            method: 'POST',
+            headers: commonHeaders,
+            body: jsonBody,
+          });
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            return { error: { status: res.status, data: errorData } };
+          }
+          const json: any = await res.json();
+          return { data: (json?.data ?? json) as IAuthTokenResponse };
+        } catch (error: any) {
+          return { error: { status: 'FETCH_ERROR', error: error.message } };
+        }
+      },
     }),
 
     //---------------------------------------
@@ -133,8 +164,9 @@ export const authApi = createApi({
             return { error: { status: res.status, data: errorData } };
           }
 
-          const data: any = await res.json();
-          return { data: data?.data ?? data };
+          const json: any = await res.json();
+          const data = json?.data?.data ?? json?.data ?? json;
+          return { data: data as IAuthTokenResponse };
         } catch (error: any) {
           return {
             error: { status: 'FETCH_ERROR', error: error.message },
@@ -178,8 +210,10 @@ export const authApi = createApi({
             return { error: { status: res.status, data: errorData } };
           }
 
-          const data: any = await res.json();
-          return { data: data?.data ?? data };
+          const json: any = await res.json();
+          const data = json?.data?.data ?? json?.data ?? json;
+          console.log('[CreateCompany] API response keys:', Object.keys(data));
+          return { data: data as IAuthTokenResponse };
         } catch (error: any) {
           return {
             error: { status: 'FETCH_ERROR', error: error.message },
@@ -263,6 +297,24 @@ export const authApi = createApi({
         return data;
       },
     }),
+
+    //---------------------------------------
+    getInvitableRoles: builder.query<TInvitableRole[], void>({
+      query: () => '/company/invitable-roles',
+      transformResponse: (response: any): TInvitableRole[] => {
+        const data = response?.data ?? response;
+        return data;
+      },
+    }),
+
+    //---------------------------------------
+    getInvitablePositions: builder.query<TInvitablePosition[], void>({
+      query: () => '/company/invitable-positions',
+      transformResponse: (response: any): TInvitablePosition[] => {
+        const data = response?.data ?? response;
+        return data;
+      },
+    }),
   }),
 });
 
@@ -281,4 +333,6 @@ export const {
   useRefreshTokenMutation,
   useLogoutMutation,
   useGetStructureQuery,
+  useGetInvitableRolesQuery,
+  useGetInvitablePositionsQuery,
 } = authApi;

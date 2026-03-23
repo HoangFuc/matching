@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 
+import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Add, InfoCircle } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
@@ -21,7 +22,11 @@ import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
 import { AppColors } from '@/src/constants/colors';
 import { ROLE_SLUGS, type TRoleSlug } from '@/src/interface/auth.interface';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
-import { useCreateInvitationMutation } from '@/src/store/api/auth.api';
+import {
+  useCreateInvitationMutation,
+  useGetInvitableRolesQuery,
+  useGetInvitablePositionsQuery,
+} from '@/src/store/api/auth.api';
 import type { TDropdownOption } from '../components/inviteMember/InviteDropdownField';
 import { MemoInviteCard } from '../components/inviteMember/InviteCard';
 import type { TInviteLink } from '../type';
@@ -30,9 +35,9 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'InviteMember'>;
 
 const ROLE_SLUG_MAP: Record<string, TRoleSlug> = {
   '총괄 2': ROLE_SLUGS.DIRECTOR_2,
-  '본부장': ROLE_SLUGS.DEPARTMENT_HEAD,
-  '팀장': ROLE_SLUGS.TEAM_LEADER,
-  '팀원': ROLE_SLUGS.MEMBER,
+  본부장: ROLE_SLUGS.DEPARTMENT_HEAD,
+  팀장: ROLE_SLUGS.TEAM_LEADER,
+  팀원: ROLE_SLUGS.MEMBER,
 };
 
 const EXPIRY_OPTIONS: TDropdownOption[] = [
@@ -49,6 +54,7 @@ let nextId = 1;
 const createInviteCard = (): TInviteLink => ({
   id: `invite-${nextId++}`,
   role: '',
+  roleSlug: '',
   location: '',
   departmentId: '',
   teamId: '',
@@ -58,11 +64,20 @@ const createInviteCard = (): TInviteLink => ({
 
 //---------------------------------------
 const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
-  const company = route.params?.company;
   const hideStepBar = route.params?.hideStepBar;
+  const paramDepartments = route.params?.departments;
+  const directorCount = route.params?.directorCount ?? 1;
 
-  const departments = company?.departments ?? [];
-  const directorCount = company?.directorCount ?? 1;
+  const { data: invitableRoles } = useGetInvitableRolesQuery(undefined, {
+    skip: !hideStepBar,
+  });
+  const { data: invitablePositions } = useGetInvitablePositionsQuery(
+    undefined,
+    {
+      skip: !hideStepBar,
+    },
+  );
+
   const [createInvitation, { isLoading: isCreatingInvitation }] =
     useCreateInvitationMutation();
   const [generatingInviteId, setGeneratingInviteId] = React.useState<
@@ -71,6 +86,12 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const roleOptions = React.useMemo<TDropdownOption[]>(() => {
+    if (hideStepBar && invitableRoles) {
+      return invitableRoles.map(r => ({
+        label: r.name,
+        value: r.slug,
+      }));
+    }
     const options: TDropdownOption[] = [];
     if (directorCount === 2) {
       options.push({ label: '총괄 2', value: '총괄 2' });
@@ -81,40 +102,57 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
       { label: '팀원', value: '팀원' },
     );
     return options;
-  }, [directorCount]);
+  }, [hideStepBar, invitableRoles, directorCount]);
 
   //---------------------------------------
-  const deptLocationOptions = React.useMemo<TDropdownOption[]>(
-    () =>
-      departments.map(d => ({
-        label: d.name,
-        value: `dept-${d.id}`,
-        departmentId: d.id,
-      })),
-    [departments],
-  );
+  const deptLocationOptions = React.useMemo<TDropdownOption[]>(() => {
+    if (hideStepBar && invitablePositions) {
+      return invitablePositions.map(p => ({
+        label: `본부${p.departmentName}`,
+        value: `dept-${p.departmentId}`,
+        departmentId: p.departmentId,
+      }));
+    }
+
+    const departments = paramDepartments ?? [];
+    return departments.map(d => ({
+      label: `본부${d.name}`,
+      value: `dept-${d.id}`,
+      departmentId: d.id,
+    }));
+  }, [hideStepBar, invitablePositions, paramDepartments]);
 
   //---------------------------------------
-  const teamLocationOptions = React.useMemo<TDropdownOption[]>(
-    () =>
-      departments.flatMap(d =>
-        d.teams.map(t => ({
-          label: `본부${d.name} > 팀${t.name}`,
-          value: `team-${d.id}-${t.id}`,
-          departmentId: d.id,
-          teamId: t.id,
+  const teamLocationOptions = React.useMemo<TDropdownOption[]>(() => {
+    if (hideStepBar && invitablePositions) {
+      return invitablePositions.flatMap(p =>
+        p.teams.map(t => ({
+          label: `본부${p.departmentName} > 팀${t.teamName}`,
+          value: `team-${p.departmentId}-${t.teamId}`,
+          departmentId: p.departmentId,
+          teamId: t.teamId,
         })),
-      ),
-    [departments],
-  );
+      );
+    }
+
+    const departments = paramDepartments ?? [];
+    return departments.flatMap(d =>
+      d.teams.map(t => ({
+        label: `본부${d.name} > 팀${t.name}`,
+        value: `team-${d.id}-${t.id}`,
+        departmentId: d.id,
+        teamId: t.id,
+      })),
+    );
+  }, [hideStepBar, invitablePositions, paramDepartments]);
 
   //---------------------------------------
-  const getLocationOptionsForRole = React.useCallback(
-    (role: string): TDropdownOption[] => {
-      if (role === '본부장') {
+  const getLocationOptionsForRoleSlug = React.useCallback(
+    (roleSlug: string): TDropdownOption[] => {
+      if (roleSlug === ROLE_SLUGS.DEPARTMENT_HEAD) {
         return deptLocationOptions;
       }
-      if (role === '팀장' || role === '팀원') {
+      if (roleSlug === ROLE_SLUGS.TEAM_LEADER || roleSlug === ROLE_SLUGS.MEMBER) {
         return teamLocationOptions;
       }
       return [];
@@ -123,8 +161,8 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 
   //---------------------------------------
-  const isLocationDisabled = React.useCallback((role: string): boolean => {
-    return role === '총괄 2' || role === '';
+  const isLocationDisabledBySlug = React.useCallback((roleSlug: string): boolean => {
+    return roleSlug === ROLE_SLUGS.DIRECTOR_2 || roleSlug === ROLE_SLUGS.DIRECTOR || roleSlug === '';
   }, []);
 
   const [invites, setInvites] = React.useState<TInviteLink[]>([
@@ -138,16 +176,26 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const handleFinish = React.useCallback(() => {
+    if (hideStepBar) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs' }],
+        }),
+      );
+      return;
+    }
+
     navigation.reset({
       index: 0,
       routes: [{ name: 'Login' }],
     });
-  }, [navigation]);
+  }, [navigation, hideStepBar]);
 
   //---------------------------------------
   const handleLater = React.useCallback(() => {
-    // TODO: skip and navigate to main app
-  }, []);
+    navigation.goBack();
+  }, [navigation]);
 
   //---------------------------------------
   const handleAddInvite = React.useCallback(() => {
@@ -157,34 +205,27 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   //---------------------------------------
   const handleSelectRole = React.useCallback(
     (inviteId: string, option: TDropdownOption) => {
+      const slug = hideStepBar
+        ? option.value
+        : ROLE_SLUG_MAP[option.value] ?? option.value;
+
       setInvites(prev =>
         prev.map(inv => {
           if (inv.id !== inviteId) {
             return inv;
           }
-          const newRole = option.label;
-          // Clear location if role type changed (different location options)
-          const oldIsTeamLevel =
-            inv.role === '팀장' || inv.role === '팀원';
-          const newIsTeamLevel =
-            newRole === '팀장' || newRole === '팀원';
-          const oldIsDeptLevel = inv.role === '본부장';
-          const newIsDeptLevel = newRole === '본부장';
-          const locationCompatible =
-            (oldIsTeamLevel && newIsTeamLevel) ||
-            (oldIsDeptLevel && newIsDeptLevel);
-
           return {
             ...inv,
-            role: newRole,
-            location: locationCompatible ? inv.location : '',
-            departmentId: locationCompatible ? inv.departmentId : '',
-            teamId: locationCompatible ? inv.teamId : '',
+            role: option.label,
+            roleSlug: slug,
+            location: '',
+            departmentId: '',
+            teamId: '',
           };
         }),
       );
     },
-    [],
+    [hideStepBar],
   );
 
   //---------------------------------------
@@ -226,7 +267,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         return;
       }
 
-      const roleSlug = ROLE_SLUG_MAP[invite.role];
+      const roleSlug = (invite.roleSlug || ROLE_SLUG_MAP[invite.role]) as TRoleSlug;
       if (!roleSlug) {
         return;
       }
@@ -252,7 +293,6 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
           params.teamId = invite.teamId;
         }
 
-        console.log('[InviteMember] Step 4 data:', params);
         const result = await createInvitation(params).unwrap();
         setInvites(prev =>
           prev.map(inv =>
@@ -332,8 +372,8 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
               key={invite.id}
               invite={invite}
               roleOptions={roleOptions}
-              locationOptions={getLocationOptionsForRole(invite.role)}
-              locationDisabled={isLocationDisabled(invite.role)}
+              locationOptions={getLocationOptionsForRoleSlug(invite.roleSlug)}
+              locationDisabled={isLocationDisabledBySlug(invite.roleSlug)}
               expiryOptions={EXPIRY_OPTIONS}
               onSelectRole={handleSelectRole}
               onSelectLocation={handleSelectLocation}

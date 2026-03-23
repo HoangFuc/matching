@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import reactotron from '../config/ReactotronConfig';
 import {
   FLUSH,
   PAUSE,
@@ -12,6 +13,7 @@ import {
 } from 'redux-persist';
 
 import { authApi } from './api/auth.api';
+import { companyApi } from './api/company.api';
 import { bulletinApi } from './api/bulletin.api';
 import { checkinApi } from './api/checkin.api';
 import { dataRoomApi } from './api/dataRoom.api';
@@ -39,6 +41,7 @@ const rootReducer = combineReducers({
   [checkinApi.reducerPath]: checkinApi.reducer,
   [dataRoomApi.reducerPath]: dataRoomApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
+  [companyApi.reducerPath]: companyApi.reducer,
   [bulletinApi.reducerPath]: bulletinApi.reducer,
   [meetingScheduleManagementApi.reducerPath]:
     meetingScheduleManagementApi.reducer,
@@ -49,6 +52,12 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
   reducer: persistedReducer,
+  enhancers: getDefaultEnhancers =>
+    getDefaultEnhancers().concat(
+      __DEV__ && reactotron.createEnhancer
+        ? reactotron.createEnhancer()
+        : (next: any) => next,
+    ),
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {
@@ -62,7 +71,8 @@ export const store = configureStore({
       .concat(dataRoomApi.middleware)
       .concat(bulletinApi.middleware)
       .concat(meetingScheduleManagementApi.middleware)
-      .concat(meetingLogApi.middleware),
+      .concat(meetingLogApi.middleware)
+      .concat(companyApi.middleware),
 });
 
 export const persistor = persistStore(store);

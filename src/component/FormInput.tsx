@@ -19,6 +19,7 @@ interface IProps extends Omit<TextInputProps, 'style'> {
   multiline?: boolean;
   required?: boolean;
   gap?: number;
+  inputBackgroundColor?: string;
 }
 
 const FormInput: React.FC<IProps> = ({
@@ -27,6 +28,7 @@ const FormInput: React.FC<IProps> = ({
   multiline,
   required,
   gap = 0,
+  inputBackgroundColor,
   ...textInputProps
 }) => {
   return (
@@ -42,7 +44,7 @@ const FormInput: React.FC<IProps> = ({
       </AppText>
 
       <TextInput
-        style={[styles.input, multiline && styles.textArea]}
+        style={[styles.input, multiline && styles.textArea, inputBackgroundColor ? { backgroundColor: inputBackgroundColor } : undefined]}
         placeholderTextColor={AppColors.gray40}
         multiline={multiline}
         textAlignVertical={multiline ? 'top' : undefined}

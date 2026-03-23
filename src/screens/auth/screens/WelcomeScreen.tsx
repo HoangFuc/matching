@@ -1,5 +1,12 @@
 import React from 'react';
-import { Image, StatusBar, StyleSheet, View } from 'react-native';
+import {
+  Image,
+  PermissionsAndroid,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ms } from 'react-native-size-matters/extend';
@@ -17,9 +24,14 @@ type Props = {
 
 const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
   //---------------------------------------
-  const handleLogin = () => {
+  const handleLogin = React.useCallback(async () => {
+    if (Platform.OS !== 'ios') {
+      await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      );
+    }
     navigation.navigate('Login');
-  };
+  }, [navigation]);
 
   //---------------------------------------
   const handleSignUp = () => {

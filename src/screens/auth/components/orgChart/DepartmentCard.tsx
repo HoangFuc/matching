@@ -51,7 +51,7 @@ const DepartmentCard: React.FC<IDepartmentCardProps> = ({
 
       {/* Department card */}
       <View>
-        <View style={[styles.infoSection, !hasTeams && styles.infoSectionNoTeams]}>
+        <View style={styles.infoSection}>
           <View style={styles.header}>
             <MemoChip
               label={`본부 ${deptIndex + 1}`}
@@ -83,9 +83,12 @@ const DepartmentCard: React.FC<IDepartmentCardProps> = ({
             value={dept.name}
             onChangeText={(value: string) => onDeptNameChange(dept.id, value)}
             gap={4}
+            inputBackgroundColor={AppColors.white}
           />
+        </View>
 
-          {!hasTeams && (
+        {!hasTeams && (
+          <View style={styles.addTeamWrapper}>
             <Pressable
               style={styles.addTeamButton}
               onPress={() => onAddTeam(dept.id)}
@@ -99,8 +102,8 @@ const DepartmentCard: React.FC<IDepartmentCardProps> = ({
                 팀 추가
               </AppText>
             </Pressable>
-          )}
-        </View>
+          </View>
+        )}
 
         {dept.teams.map((team, teamIndex) => (
           <MemoTeamCard
@@ -132,6 +135,7 @@ const styles = StyleSheet.create({
     width: TIMELINE_WIDTH,
     alignItems: 'center',
   },
+
   indexBadge: {
     width: ms(22),
     height: ms(22),
@@ -143,6 +147,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 1,
   },
+
   infoSection: {
     backgroundColor: AppColors.lavendar,
     borderTopLeftRadius: ms(12),
@@ -152,24 +157,33 @@ const styles = StyleSheet.create({
     padding: ms(12),
     gap: ms(12),
   },
-  infoSectionNoTeams: {
+
+  addTeamWrapper: {
+    backgroundColor: AppColors.lavendar,
     borderBottomLeftRadius: ms(12),
     borderBottomRightRadius: ms(12),
+    paddingLeft: ms(2),
+    paddingRight: ms(2),
+    paddingBottom: ms(2),
   },
+
   addTeamButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: ms(4),
     paddingVertical: ms(8),
-    borderTopWidth: 1,
-    borderTopColor: AppColors.gray20,
+    backgroundColor: AppColors.white,
+    borderBottomLeftRadius: ms(10),
+    borderBottomRightRadius: ms(10),
   },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+
   trashButton: {
     backgroundColor: AppColors.pastelPink,
     borderRadius: ms(8),

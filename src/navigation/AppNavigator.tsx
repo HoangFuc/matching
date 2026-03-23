@@ -33,6 +33,7 @@ import { MemoScheduleCalendarView } from '../screens/schedule/screens/ScheduleCa
 import { MemoOrganizationChartScreen } from '../screens/organizationChart/screens/OrganizationChartScreen';
 import { MemoOrgChartSetupScreen } from '../screens/auth/screens/OrgChartSetupScreen';
 import { MemoInviteMemberScreen } from '../screens/auth/screens/InviteMemberScreen';
+import { RegisterCompanyProvider } from '../screens/auth/context/RegisterCompanyContext';
 import AuthStack from './AuthStack';
 import HomeStack from './HomeStack';
 import MeetingMinutesStack from './MeetingMinutesStack';
@@ -296,10 +297,13 @@ const AppNavigator: React.FC = () => {
             name="OrganizationChart"
             component={MemoOrganizationChartScreen}
           />
-          <RootStack.Screen
-            name="OrgChartSetup"
-            component={MemoOrgChartSetupScreen}
-          />
+          <RootStack.Screen name="OrgChartSetup">
+            {props => (
+              <RegisterCompanyProvider>
+                <MemoOrgChartSetupScreen {...props} />
+              </RegisterCompanyProvider>
+            )}
+          </RootStack.Screen>
           <RootStack.Screen
             name="InviteMember"
             component={MemoInviteMemberScreen}

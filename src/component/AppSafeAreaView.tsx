@@ -29,7 +29,12 @@ export const AppSafeAreaView: React.FC<Props> = ({ children, style }) => {
   const topPadding = safeTop < 50 ? safeTop + EXTRA_TOP_PADDING : safeTop;
 
   return (
-    <View style={[styles.container, { paddingTop: topPadding }, style]}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: topPadding },
+        style,
+      ]}>
       {children}
     </View>
   );

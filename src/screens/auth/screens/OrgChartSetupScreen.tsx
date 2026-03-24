@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pressable, StatusBar, StyleSheet, View } from 'react-native';
 
-import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Add, InfoCircle } from 'iconsax-react-nativejs';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -166,12 +165,11 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
       const company = response.companies?.[0];
       if (fromSocialLogin) {
         showToast({ type: 'success', message: '생성이 완료되었습니다' });
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'MainTabs' }],
-          }),
-        );
+        navigation.navigate('InviteMember', {
+          company,
+          directorCount: formData.directorCount,
+          hideStepBar: true,
+        });
       } else {
         navigation.navigate('InviteMember', {
           company,
@@ -321,7 +319,7 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
           />
 
           <MemoAppButton
-            label="다음"
+            label="확인"
             variant="primary"
             textVariant="body6"
             disabled={!isValid}

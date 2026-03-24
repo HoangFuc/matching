@@ -30,8 +30,8 @@ describe('checkinApi', () => {
 
   //---------------------------------------
   it('getAttendanceToday sends GET /attendance/today', async () => {
-    const mockResponse = {data: {checkedIn: true, checkInTime: '09:00:00'}};
-    fetchMock.mockResponseOnce(JSON.stringify(mockResponse));
+    const serverResponse = {data: {checkedIn: true, checkInTime: '09:00:00'}};
+    fetchMock.mockResponseOnce(JSON.stringify(serverResponse));
 
     const store = createTestStore();
     const result = await store.dispatch(
@@ -40,7 +40,7 @@ describe('checkinApi', () => {
 
     expect(getRequestUrl()).toContain('/attendance/today');
     expect(getRequestMethod()).toBe('GET');
-    expect(result.data).toEqual(mockResponse);
+    expect(result.data).toEqual({checkedIn: true, checkInTime: '09:00:00'});
   });
 
   //---------------------------------------

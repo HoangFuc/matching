@@ -4,6 +4,7 @@ import { StatusBar, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ms } from 'react-native-size-matters/extend';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppText } from '@/src/component/AppText';
@@ -17,6 +18,7 @@ import { MemoNoCodeOption } from '@/src/screens/auth/components/NoCodeOption';
 type Props = NativeStackScreenProps<AuthStackParamList, 'JoinOrganization'>;
 
 const JoinOrganizationScreen: React.FC<Props> = ({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   const fromSocialLogin = route.params?.fromSocialLogin;
   const [selectedOption, setSelectedOption] = useState<
     'hasCode' | 'noCode' | null
@@ -65,7 +67,11 @@ const JoinOrganizationScreen: React.FC<Props> = ({ navigation, route }) => {
         </View>
 
         {/* Bottom */}
-        <View style={styles.bottomContainer}>
+        <View
+          style={[
+            styles.bottomContainer,
+            { paddingBottom: ms(32) + insets.bottom },
+          ]}>
           <AppText
             variant="body8"
             color={AppColors.gray90}
@@ -113,7 +119,6 @@ const styles = StyleSheet.create({
     gap: ms(24),
   },
   bottomContainer: {
-    paddingBottom: ms(32),
     gap: ms(24),
   },
   footer: {

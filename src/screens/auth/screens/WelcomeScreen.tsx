@@ -10,6 +10,7 @@ import {
 
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ms } from 'react-native-size-matters/extend';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
@@ -23,6 +24,8 @@ type Props = {
 };
 
 const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+
   //---------------------------------------
   const handleLogin = React.useCallback(async () => {
     if (Platform.OS !== 'ios') {
@@ -39,7 +42,7 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <AppSafeAreaView style={styles.container}>
+    <AppSafeAreaView style={[styles.container, { paddingBottom: insets.bottom }]}>
       <StatusBar barStyle="dark-content" backgroundColor={AppColors.white} />
 
       {/* Logo */}
@@ -91,7 +94,7 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       {/* Footer */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: ms(32) }]}>
         <AppText variant="body7" color={AppColors.gray90}>
           비밀번호나 ID를 잊으셨나요?
         </AppText>
@@ -140,7 +143,6 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 'auto',
     alignItems: 'center',
-    paddingBottom: ms(32),
     paddingTop: ms(8),
   },
 });

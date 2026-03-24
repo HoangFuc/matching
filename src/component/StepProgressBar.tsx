@@ -67,7 +67,7 @@ const StepProgressBar: React.FC<IStepProgressBarProps> = ({
   );
 };
 
-export const MemoStepProgressBar = React.memo(StepProgressBar);
+export const  MemoStepProgressBar = React.memo(StepProgressBar);
 
 const styles = StyleSheet.create({
   container: {

@@ -14,6 +14,7 @@ import { CommonActions } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Eye, EyeSlash, TickSquare } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -54,6 +55,7 @@ type Props = {
 };
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [phone, setPhone] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
@@ -108,13 +110,14 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <AppSafeAreaView style={styles.safeArea}>
       <FullScreenLoading visible={isSocialLoading} />
+
       <MemoScreenHeader
         title="로그인"
         icon={<HeaderLogo />}
         onPressBack={() => navigation.navigate('Welcome')}
       />
 
-      <MemoScreenBody>
+      <MemoScreenBody style={{paddingBottom: insets.bottom}}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -143,6 +146,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
               />
+
               <TouchableOpacity
                 onPress={togglePasswordVisibility}
                 style={styles.eyeIcon}
@@ -181,6 +185,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   <View style={styles.checkboxEmpty} />
                 )}
               </View>
+
               <AppText variant="body8" color={AppColors.gray90}>
                 로그인 유지
               </AppText>
@@ -201,6 +206,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   <View style={styles.checkboxEmpty} />
                 )}
               </View>
+
               <AppText variant="body8" color={AppColors.gray90}>
                 아이디 저장
               </AppText>
@@ -220,6 +226,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           {/* Divider */}
           <View style={styles.dividerContainer}>
             <View style={styles.dividerLine} />
+
             <AppText
               variant="body7"
               color={AppColors.gray50}
@@ -227,6 +234,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             >
               또는
             </AppText>
+
             <View style={styles.dividerLine} />
           </View>
 

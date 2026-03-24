@@ -13,6 +13,7 @@ interface IProps {
   rightElement?: React.ReactNode;
   icon?: React.ReactNode;
   onPressBack?: () => void;
+  hideBackButton?: boolean;
 }
 
 const ScreenHeader: React.FC<IProps> = ({
@@ -20,6 +21,7 @@ const ScreenHeader: React.FC<IProps> = ({
   rightElement,
   icon,
   onPressBack,
+  hideBackButton = false,
 }) => {
   const navigation = useNavigation();
 
@@ -61,7 +63,12 @@ const ScreenHeader: React.FC<IProps> = ({
         {title}
       </AppText>
 
-      <Pressable hitSlop={8} onPress={handlePressBack} style={styles.left}>
+      <Pressable
+        hitSlop={8}
+        onPress={handlePressBack}
+        style={[styles.left, hideBackButton && styles.hidden]}
+        disabled={hideBackButton}
+      >
         <ArrowLeft2
           size={`${ms(24)}`}
           color={AppColors.white}
@@ -107,6 +114,9 @@ const styles = StyleSheet.create({
   },
   left: {
     zIndex: 1,
+  },
+  hidden: {
+    opacity: 0,
   },
   placeholder: {
     width: ms(24),

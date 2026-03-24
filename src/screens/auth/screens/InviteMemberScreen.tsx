@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  BackHandler,
   Pressable,
   ScrollView,
   StatusBar,
@@ -24,11 +25,11 @@ import { ROLE_SLUGS, type TRoleSlug } from '@/src/interface/auth.interface';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
 import {
   useCreateInvitationMutation,
-  useGetInvitableRolesQuery,
   useGetInvitablePositionsQuery,
+  useGetInvitableRolesQuery,
 } from '@/src/store/api/auth.api';
-import type { TDropdownOption } from '../components/inviteMember/InviteDropdownField';
 import { MemoInviteCard } from '../components/inviteMember/InviteCard';
+import type { TDropdownOption } from '../components/inviteMember/InviteDropdownField';
 import type { TInviteLink } from '../type';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'InviteMember'>;
@@ -174,25 +175,23 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const handleFinish = React.useCallback(() => {
-    if (hideStepBar) {
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'MainTabs' }],
-        }),
-      );
-      return;
-    }
-
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Login' }],
-    });
-  }, [navigation, hideStepBar]);
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'MainTabs' }],
+      }),
+    );
+  }, [navigation]);
 
   //---------------------------------------
   const handleLater = React.useCallback(() => {
-    navigation.goBack();
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'MainTabs' }],
+      }),
+    );
+    return;
   }, [navigation]);
 
   //---------------------------------------
@@ -308,11 +307,26 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
     [invites, createInvitation],
   );
 
+  //---------------------------------------
+  React.useEffect(() => {
+    navigation.setOptions({ gestureEnabled: false });
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => true,
+    );
+
+    return () => backHandler.remove();
+  }, [navigation]);
+
   return (
     <AppSafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={AppColors.purple} />
 
-      <MemoScreenHeader title="새로운 멤버 초대" onPressBack={handleBack} />
+      <MemoScreenHeader
+        title="새로운 멤버 초대"
+        hideBackButton={true}
+      />
 
       <MemoScreenBody>
         {!hideStepBar && (

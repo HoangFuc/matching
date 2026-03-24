@@ -279,6 +279,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
                   placeholder="비밀번호를 입력하세요"
                   value={value}
                   onChangeText={onChange}
+                  required
                   error={passwordError}
                 />
               )}

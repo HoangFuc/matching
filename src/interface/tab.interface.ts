@@ -37,6 +37,7 @@ export type RootStackParamList = {
   MeetingScheduleDetail: { item: IMeetingScheduleManagement };
   ScheduleCalendarView: { filterTypes?: TScheduleType[] };
   OrganizationChart: undefined;
+  MyPage: undefined;
   OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean; fromSocialLogin?: boolean } | undefined;
   InviteMember: { company?: ICompanyResponse; departments?: Department[]; directorCount?: number; hideStepBar?: boolean } | undefined;
 };

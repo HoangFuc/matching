@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
-    "android:dev": "APP_ENV=development react-native run-android --mode=debug",
+    "android": "react-native run-android --active-arch-only",
+    "android:dev": "APP_ENV=development react-native run-android --mode=debug --active-arch-only",
     "android:release": "APP_ENV=production react-native run-android --mode=release",
     "build:apk:dev": "APP_ENV=development cd android && ./gradlew clean && ./gradlew assembleDebug",
     "build:apk:release": "APP_ENV=production cd android && ./gradlew clean && ./gradlew assembleRelease",
@@ -76,6 +76,9 @@
     "@react-native/eslint-config": "0.83.2",
     "@react-native/metro-config": "0.83.2",
     "@react-native/typescript-config": "0.83.2",
+    "@rozenite/metro": "^1.6.0",
+    "@rozenite/network-activity-plugin": "^1.6.0",
+    "@rozenite/performance-monitor-plugin": "^1.6.0",
     "@tanstack/eslint-plugin-query": "5.91.4",
     "@types/jest": "29.5.13",
     "@types/lodash": "4.17.24",
@@ -86,10 +89,9 @@
     "jest": "29.6.3",
     "jest-fetch-mock": "3.0.3",
     "prettier": "2.8.8",
+    "react-native-performance": "^6.0.0",
     "react-native-svg-transformer": "1.5.3",
     "react-test-renderer": "19.2.0",
-    "reactotron-react-native": "5.1.18",
-    "reactotron-redux": "3.2.1",
     "typescript": "5.8.3"
   },
   "engines": {

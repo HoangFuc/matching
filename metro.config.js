@@ -1,4 +1,5 @@
 const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const {withRozenite} = require('@rozenite/metro');
 
 module.exports = (async () => {
   const defaultConfig = await getDefaultConfig(__dirname);
@@ -13,5 +14,5 @@ module.exports = (async () => {
     },
   };
 
-  return mergeConfig(defaultConfig, config);
+  return withRozenite(mergeConfig(defaultConfig, config));
 })();

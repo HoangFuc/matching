@@ -9,7 +9,9 @@
       "Bash(find /c/matchingBare/src/store -type f -name *.ts -o -name *.tsx)",
       "Bash(npm install:*)",
       "Bash(yarn clean:all)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(npm run:*)",
+      "WebSearch"
     ]
   }
 }

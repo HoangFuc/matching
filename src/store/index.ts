@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import reactotron from '../config/ReactotronConfig';
 import {
   FLUSH,
   PAUSE,
@@ -52,12 +51,6 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
   reducer: persistedReducer,
-  enhancers: getDefaultEnhancers =>
-    getDefaultEnhancers().concat(
-      __DEV__ && reactotron.createEnhancer
-        ? reactotron.createEnhancer()
-        : (next: any) => next,
-    ),
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {

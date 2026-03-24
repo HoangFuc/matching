@@ -1,9 +1,11 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Edit2 } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
+import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
 import type { TInviteLink } from '../../type';
@@ -19,10 +21,12 @@ interface IProps {
   locationOptions: TDropdownOption[];
   locationDisabled: boolean;
   expiryOptions: TDropdownOption[];
+  directorLabel?: string;
   onSelectRole: (id: string, option: TDropdownOption) => void;
   onSelectLocation: (id: string, option: TDropdownOption) => void;
   onSelectExpiry: (id: string, option: TDropdownOption) => void;
   onGenerateLink: (id: string) => void;
+  onEditOrgChart?: () => void;
   isGeneratingLink: boolean;
 }
 
@@ -33,14 +37,17 @@ const InviteCard: React.FC<IProps> = ({
   locationOptions,
   locationDisabled,
   expiryOptions,
+  directorLabel,
   onSelectRole,
   onSelectLocation,
   onSelectExpiry,
   onGenerateLink,
+  onEditOrgChart,
   isGeneratingLink,
 }) => {
   const canGenerate = invite.role !== '' && invite.expiry !== '';
   const hasLink = invite.generatedLink !== '';
+  const isDirector = !!directorLabel;
 
   return (
     <View>
@@ -53,14 +60,38 @@ const InviteCard: React.FC<IProps> = ({
           onSelect={option => onSelectRole(invite.id, option)}
         />
 
-        <MemoInviteDropdownField
-          label="소속 위치"
-          value={invite.location}
-          placeholder="소속 위치 선택"
-          options={locationOptions}
-          disabled={locationDisabled}
-          onSelect={option => onSelectLocation(invite.id, option)}
-        />
+        {isDirector ? (
+          <View style={styles.directorRow}>
+            <AppText variant="body7" color={AppColors.gray90}>
+              소속 위치
+            </AppText>
+
+            <View style={styles.directorLabelRow}>
+              <AppText variant="body8" color={AppColors.gray90}>
+                {directorLabel}
+              </AppText>
+
+              {onEditOrgChart && (
+                <Pressable onPress={onEditOrgChart} style={styles.editButton}>
+                  <Edit2
+                    size={`${ms(16)}`}
+                    color={AppColors.purple}
+                    variant="Linear"
+                  />
+                </Pressable>
+              )}
+            </View>
+          </View>
+        ) : (
+          <MemoInviteDropdownField
+            label="소속 위치"
+            value={invite.location}
+            placeholder="소속 위치 선택"
+            options={locationOptions}
+            disabled={locationDisabled}
+            onSelect={option => onSelectLocation(invite.id, option)}
+          />
+        )}
 
         <MemoInviteDropdownField
           label="링크 만료 기간"
@@ -104,5 +135,20 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: ms(16),
     borderBottomRightRadius: ms(16),
     padding: ms(16),
+  },
+  directorRow: {
+    gap: ms(6),
+  },
+  directorLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: AppColors.gray10,
+    borderRadius: ms(8),
+    paddingHorizontal: ms(12),
+    paddingVertical: ms(10),
+  },
+  editButton: {
+    padding: ms(4),
   },
 });

@@ -65,18 +65,10 @@ const createInviteCard = (): TInviteLink => ({
 //---------------------------------------
 const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   const hideStepBar = route.params?.hideStepBar;
-  const paramDepartments = route.params?.departments;
   const directorCount = route.params?.directorCount ?? 1;
 
-  const { data: invitableRoles } = useGetInvitableRolesQuery(undefined, {
-    skip: !hideStepBar,
-  });
-  const { data: invitablePositions } = useGetInvitablePositionsQuery(
-    undefined,
-    {
-      skip: !hideStepBar,
-    },
-  );
+  const { data: invitableRoles } = useGetInvitableRolesQuery();
+  const { data: invitablePositions } = useGetInvitablePositionsQuery();
 
   const [createInvitation, { isLoading: isCreatingInvitation }] =
     useCreateInvitationMutation();
@@ -86,7 +78,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const roleOptions = React.useMemo<TDropdownOption[]>(() => {
-    if (hideStepBar && invitableRoles) {
+    if (invitableRoles) {
       return invitableRoles.map(r => ({
         label: r.name,
         value: r.slug,
@@ -102,29 +94,23 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
       { label: '팀원', value: '팀원' },
     );
     return options;
-  }, [hideStepBar, invitableRoles, directorCount]);
+  }, [invitableRoles, directorCount]);
 
   //---------------------------------------
   const deptLocationOptions = React.useMemo<TDropdownOption[]>(() => {
-    if (hideStepBar && invitablePositions) {
+    if (invitablePositions) {
       return invitablePositions.map(p => ({
         label: `본부${p.departmentName}`,
         value: `dept-${p.departmentId}`,
         departmentId: p.departmentId,
       }));
     }
-
-    const departments = paramDepartments ?? [];
-    return departments.map(d => ({
-      label: `본부${d.name}`,
-      value: `dept-${d.id}`,
-      departmentId: d.id,
-    }));
-  }, [hideStepBar, invitablePositions, paramDepartments]);
+    return [];
+  }, [invitablePositions]);
 
   //---------------------------------------
   const teamLocationOptions = React.useMemo<TDropdownOption[]>(() => {
-    if (hideStepBar && invitablePositions) {
+    if (invitablePositions) {
       return invitablePositions.flatMap(p =>
         p.teams.map(t => ({
           label: `본부${p.departmentName} > 팀${t.teamName}`,
@@ -134,17 +120,8 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         })),
       );
     }
-
-    const departments = paramDepartments ?? [];
-    return departments.flatMap(d =>
-      d.teams.map(t => ({
-        label: `본부${d.name} > 팀${t.name}`,
-        value: `team-${d.id}-${t.id}`,
-        departmentId: d.id,
-        teamId: t.id,
-      })),
-    );
-  }, [hideStepBar, invitablePositions, paramDepartments]);
+    return [];
+  }, [invitablePositions]);
 
   //---------------------------------------
   const getLocationOptionsForRoleSlug = React.useCallback(
@@ -164,6 +141,27 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   const isLocationDisabledBySlug = React.useCallback((roleSlug: string): boolean => {
     return roleSlug === ROLE_SLUGS.DIRECTOR_2 || roleSlug === ROLE_SLUGS.DIRECTOR || roleSlug === '';
   }, []);
+
+  //---------------------------------------
+  const isDirectorSlug = React.useCallback((roleSlug: string): boolean => {
+    return roleSlug === ROLE_SLUGS.DIRECTOR || roleSlug === ROLE_SLUGS.DIRECTOR_2;
+  }, []);
+
+  //---------------------------------------
+  const getDirectorLabel = React.useCallback(
+    (roleSlug: string): string | undefined => {
+      if (!isDirectorSlug(roleSlug) || !invitablePositions) {
+        return undefined;
+      }
+      return invitablePositions.map(p => `${p.departmentName}본부`).join(', ');
+    },
+    [isDirectorSlug, invitablePositions],
+  );
+
+  //---------------------------------------
+  const handleEditOrgChart = React.useCallback(() => {
+    navigation.navigate('OrgChartSetup', { hideStepBar: true });
+  }, [navigation]);
 
   const [invites, setInvites] = React.useState<TInviteLink[]>([
     createInviteCard(),
@@ -205,7 +203,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   //---------------------------------------
   const handleSelectRole = React.useCallback(
     (inviteId: string, option: TDropdownOption) => {
-      const slug = hideStepBar
+      const slug = invitableRoles
         ? option.value
         : ROLE_SLUG_MAP[option.value] ?? option.value;
 
@@ -225,7 +223,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         }),
       );
     },
-    [hideStepBar],
+    [invitableRoles],
   );
 
   //---------------------------------------
@@ -375,10 +373,12 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
               locationOptions={getLocationOptionsForRoleSlug(invite.roleSlug)}
               locationDisabled={isLocationDisabledBySlug(invite.roleSlug)}
               expiryOptions={EXPIRY_OPTIONS}
+              directorLabel={getDirectorLabel(invite.roleSlug)}
               onSelectRole={handleSelectRole}
               onSelectLocation={handleSelectLocation}
               onSelectExpiry={handleSelectExpiry}
               onGenerateLink={handleGenerateLink}
+              onEditOrgChart={handleEditOrgChart}
               isGeneratingLink={
                 isCreatingInvitation && generatingInviteId === invite.id
               }

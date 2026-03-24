@@ -11,10 +11,9 @@ import {
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
-  CloudPlus,
   ExportCurve,
   InfoCircle,
-  TickCircle,
+  TickCircle
 } from 'iconsax-react-nativejs';
 import { useForm } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -81,8 +80,7 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const isSubmitEnabled =
     watch('agencyName').trim().length > 0 &&
-    !!managementType &&
-    !!companyLogo;
+    !!managementType 
 
   //---------------------------------------
   const handlePickImage = React.useCallback(() => {

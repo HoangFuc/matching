@@ -6,6 +6,8 @@ import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { ROLE_SLUGS } from '@/src/interface/auth.interface';
+import { useUserRole } from '@/src/hooks/useUserRole';
 import type { TDepartment } from '../type';
 import { MemoTeamSection } from './TeamSection';
 
@@ -13,6 +15,8 @@ import { MemoTeamSection } from './TeamSection';
 const DepartmentSection: React.FC<{ department: TDepartment }> = ({
   department,
 }) => {
+  const userRole = useUserRole();
+  const isDepartmentHead = userRole === ROLE_SLUGS.DEPARTMENT_HEAD;
   const [expanded, setExpanded] = React.useState(true);
 
   //---------------------------------------
@@ -28,13 +32,15 @@ const DepartmentSection: React.FC<{ department: TDepartment }> = ({
             {`${department.name}본부`}
           </AppText>
 
-          <Pressable hitSlop={8} style={styles.editButton}>
-            <Edit2
-              size={`${ms(20)}`}
-              color={AppColors.gray90}
-              variant="Linear"
-            />
-          </Pressable>
+          {isDepartmentHead && (
+            <Pressable hitSlop={8} style={styles.editButton}>
+              <Edit2
+                size={`${ms(20)}`}
+                color={AppColors.gray90}
+                variant="Linear"
+              />
+            </Pressable>
+          )}
         </View>
 
         {expanded ? (

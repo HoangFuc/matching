@@ -14,7 +14,6 @@ import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
 import { ArrowRight2, Calendar, TickCircle } from '@/src/constants/icons';
-import { AppImages } from '@/src/constants/images';
 import { saveTokens, saveUserInfo, saveCompanyInfo } from '@/src/services/tokenService';
 import { useJoinCompanyMutation } from '@/src/store/api/auth.api';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
@@ -133,14 +132,14 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
 
           {/* Organization card */}
           <MemoBaseCard style={styles.orgCard}>
-            <Image
-              source={
-                invitation.company.logoUrl
-                  ? { uri: invitation.company.logoUrl }
-                  : AppImages.logoSquare
-              }
-              style={styles.orgLogo}
-            />
+            {invitation.company.logoUrl ? (
+              <Image
+                source={{ uri: invitation.company.logoUrl }}
+                style={styles.orgLogo}
+              />
+            ) : (
+              <View style={[styles.orgLogo, styles.orgLogoPlaceholder]} />
+            )}
 
             <View style={styles.orgInfo}>
               <AppText variant="heading3" color={AppColors.gray90}>
@@ -210,15 +209,15 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
                 </AppText>
 
                 <View style={styles.personRow}>
-                  <Image
-                    source={
-                      invitation.inviter.avatarUrl
-                        ? { uri: invitation.inviter.avatarUrl }
-                        : AppImages.avatar
-                    }
-                    style={styles.avatar}
-                    resizeMode="cover"
-                  />
+                  {invitation.inviter.avatarUrl ? (
+                    <Image
+                      source={{ uri: invitation.inviter.avatarUrl }}
+                      style={styles.avatar}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={[styles.avatar, styles.avatarPlaceholder]} />
+                  )}
 
                   <AppText variant="body6" color={AppColors.gray90}>
                     {invitation.inviter.fullName} {invitation.inviter.roleName}
@@ -323,7 +322,9 @@ const styles = StyleSheet.create({
     width: ms(60),
     height: ms(60),
     borderRadius: ms(100),
-    padding: ms(10),
+  },
+  orgLogoPlaceholder: {
+    backgroundColor: AppColors.gray20,
   },
   orgInfo: {
     flex: 1,
@@ -376,6 +377,9 @@ const styles = StyleSheet.create({
     width: ms(32),
     height: ms(32),
     borderRadius: ms(16),
+  },
+  avatarPlaceholder: {
+    backgroundColor: AppColors.gray20,
   },
   noticeSection: {
     flexDirection: 'row',

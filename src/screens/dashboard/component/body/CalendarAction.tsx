@@ -24,10 +24,10 @@ const CalendarAction: React.FC = () => {
   //---------------------------------------
   const checkinTime = React.useMemo(
     () =>
-      attendance?.data?.checkedIn
-        ? (attendance.data?.checkInTime?.slice(11, 16) ?? null)
+      attendance?.checkedIn
+        ? (attendance?.checkInTime?.slice(11, 16) ?? null)
         : null,
-    [attendance?.data?.checkedIn, attendance?.data?.checkInTime],
+    [attendance?.checkedIn, attendance?.checkInTime],
   );
 
   //---------------------------------------

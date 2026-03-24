@@ -1,12 +1,13 @@
 import React from 'react';
-import { Pressable, ScrollView, StatusBar, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Add } from 'iconsax-react-nativejs';
+import { Add, Edit2 } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
+import { AppText } from '@/src/component/AppText';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
@@ -21,7 +22,6 @@ type Props = NativeStackScreenProps<RootStackParamList, 'OrganizationChart'>;
 //---------------------------------------
 const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
   const userRole = useUserRole();
-  console.log('======================user', userRole);
   const isDirector =
     userRole === ROLE_SLUGS.DIRECTOR || userRole === ROLE_SLUGS.DIRECTOR_2;
 
@@ -57,6 +57,25 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
       <MemoScreenHeader title="조직도" rightElement={rightElement} />
 
       <MemoScreenBody>
+        <View style={styles.hqHeader}>
+          <AppText variant="body6" color={AppColors.gray90}>
+            제 1 본부
+          </AppText>
+
+          {isDirector && (
+            <Pressable
+              hitSlop={8}
+              style={styles.editButton}
+            >
+              <Edit2
+                size={`${ms(20)}`}
+                color={AppColors.gray90}
+                variant="Linear"
+              />
+            </Pressable>
+          )}
+        </View>
+
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -78,9 +97,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppColors.purple,
   },
+  hqHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: ms(16),
+    paddingTop: ms(16),
+  },
+  editButton: {
+    borderRadius: ms(8),
+    padding: ms(4),
+    backgroundColor: AppColors.gray20,
+  },
   scrollContent: {
     flexGrow: 1,
-    padding: ms(16),
+    paddingHorizontal: ms(16),
     gap: ms(12),
+    marginTop: ms(8)
   },
 });

@@ -12,6 +12,10 @@ export const checkinApi = createApi({
   endpoints: builder => ({
     getAttendanceToday: builder.query<IAttendanceToday, void>({
       query: () => '/attendance/today',
+      transformResponse: (response: any): IAttendanceToday => {
+        const data = response?.data ?? response;
+        return data;
+      },
       providesTags: ['Attendance'],
     }),
     //---------------------------------------

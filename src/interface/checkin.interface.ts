@@ -1,9 +1,7 @@
 //---------------------------------------
 export interface IAttendanceToday {
-  data: {
-    checkedIn: boolean;
-    checkInTime: string | null;
-  };
+  checkedIn: boolean;
+  checkInTime: string | null;
 }
 
 //---------------------------------------

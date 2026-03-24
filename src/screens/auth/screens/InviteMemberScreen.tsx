@@ -178,7 +178,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
-        routes: [{ name: 'MainTabs' }],
+        routes: [{ name: 'Login' }],
       }),
     );
   }, [navigation]);
@@ -188,7 +188,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
-        routes: [{ name: 'MainTabs' }],
+        routes: [{ name: 'Login' }],
       }),
     );
     return;

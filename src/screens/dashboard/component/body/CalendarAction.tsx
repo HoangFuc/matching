@@ -30,6 +30,9 @@ const CalendarAction: React.FC = () => {
     [attendance?.checkedIn, attendance?.checkInTime],
   );
 
+  console.log('======================checkinTime Root',checkinTime);
+  console.log('======================attendance',attendance);
+
   //---------------------------------------
   const requestLocationPermission =
     React.useCallback(async (): Promise<boolean> => {

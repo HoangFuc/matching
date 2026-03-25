@@ -45,12 +45,15 @@ export const checkinApi = createApi({
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          const attendance = (data as any)?.data ?? data;
+          const raw = (data as any)?.data ?? data;
           dispatch(
             checkinApi.util.updateQueryData(
               'getAttendanceToday',
               undefined,
-              () => attendance,
+              () => ({
+                checkedIn: true,
+                checkInTime: raw.checkInTime ?? raw.createdAt ?? null,
+              }),
             ),
           );
         } catch {

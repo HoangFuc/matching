@@ -168,7 +168,6 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
         navigation.navigate('InviteMember', {
           company,
           directorCount: formData.directorCount,
-          hideStepBar: true,
         });
       } else {
         navigation.navigate('InviteMember', {

@@ -166,7 +166,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const handleNavigateOrgChart = React.useCallback(() => {
-    navigation.getParent()?.navigate('OrganizationChart');
+    navigation.navigate('OrganizationChart' as any);
   }, [navigation]);
 
   const [invites, setInvites] = React.useState<TInviteLink[]>([

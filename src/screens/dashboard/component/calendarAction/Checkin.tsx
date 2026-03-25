@@ -26,6 +26,7 @@ interface IProps {
 
 const Checkin: React.FC<IProps> = props => {
   const { checkinTime, onCheckin, isLoading } = props;
+  console.log('======================checkin',checkinTime);
 
   //---------------------------------------
   const navigation = useNavigation<RootTabNavigationProp>();

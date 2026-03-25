@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Dimensions,
   Modal,
   Pressable,
   StyleSheet,
@@ -39,7 +40,13 @@ const AppTooltip: React.FC<IAppTooltipProps> = ({ text, children, style }) => {
     setTooltipWidth(e.nativeEvent.layout.width);
   }, []);
 
-  const tooltipLeft = position.x + position.width / 2 - tooltipWidth / 2;
+  const screenWidth = Dimensions.get('window').width;
+  const horizontalPadding = ms(8);
+  const rawLeft = position.x + position.width / 2 - tooltipWidth / 2;
+  const tooltipLeft = Math.max(
+    horizontalPadding,
+    Math.min(rawLeft, screenWidth - tooltipWidth - horizontalPadding),
+  );
 
   return (
     <>
@@ -62,7 +69,15 @@ const AppTooltip: React.FC<IAppTooltipProps> = ({ text, children, style }) => {
               ]}
               onLayout={handleTooltipLayout}
             >
-              <View style={styles.arrow} />
+              <View
+                style={[
+                  styles.arrow,
+                  {
+                    left:
+                      position.x + position.width / 2 - tooltipLeft - ms(6),
+                  },
+                ]}
+              />
               
               <AppText variant="body8" color={AppColors.white}>
                 {text}
@@ -92,7 +107,6 @@ const styles = StyleSheet.create({
   arrow: {
     position: 'absolute',
     top: -ms(6),
-    alignSelf: 'center',
     width: 0,
     height: 0,
     borderLeftWidth: ms(6),

@@ -14,7 +14,7 @@ const createTestStore = () =>
 
 const getRequestUrl = (): string => {
   const call = fetchMock.mock.calls[0][0];
-  return typeof call === 'string' ? call : (call as any).parsedURL?.href ?? call.url;
+  return typeof call === 'string' ? call : (call as any).parsedURL?.href ?? call?.url;
 };
 
 const getRequestMethod = (): string => {

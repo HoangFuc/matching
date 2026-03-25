@@ -169,11 +169,6 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   ]);
 
   //---------------------------------------
-  const handleBack = React.useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
-
-  //---------------------------------------
   const handleFinish = React.useCallback(() => {
     navigation.dispatch(
       CommonActions.reset({

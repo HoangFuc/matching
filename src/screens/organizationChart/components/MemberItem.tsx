@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
 import { ms } from 'react-native-size-matters/extend';
 
@@ -11,11 +11,19 @@ import type { TMember } from '../type';
 const MemberItem: React.FC<{ member: TMember }> = ({ member }) => {
   return (
     <View style={styles.memberItem}>
-      <View style={styles.avatarCircle}>
-        <AppText variant="body7" color={AppColors.white}>
-          {member.fullName.charAt(0)}
-        </AppText>
-      </View>
+      {member.avatarUrl ? (
+        <Image
+          source={{ uri: member.avatarUrl }}
+          style={styles.avatar}
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={styles.avatarCircle}>
+          <AppText variant="body7" color={AppColors.white}>
+            {member.fullName.charAt(0)}
+          </AppText>
+        </View>
+      )}
 
       <View style={styles.memberInfo}>
         <View style={styles.nameRow}>
@@ -53,6 +61,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: ms(8),
     width: '45%',
+  },
+  avatar: {
+    width: ms(36),
+    height: ms(36),
+    borderRadius: ms(18),
   },
   avatarCircle: {
     width: ms(36),

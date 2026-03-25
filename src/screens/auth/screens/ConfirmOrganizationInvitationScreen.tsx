@@ -6,6 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
+import { MemoAppTooltip } from '@/src/component/AppTooltip';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppText } from '@/src/component/AppText';
 import { MemoBottomButtonGroup } from '@/src/component/BottomButtonGroup';
@@ -126,7 +127,7 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
               color={AppColors.gray80}
               style={styles.textCenter}
             >
-              조직 내용을 확인하시고 참여 여부를 결정해주세요.
+              초대 내용을 확인하시고 참여 여부를 결정해주세요.
             </AppText>
           </View>
 
@@ -158,16 +159,17 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
               <View style={styles.breadcrumbRow}>
                 {breadcrumbs.map((item, index) => (
                   <React.Fragment key={index}>
-                    <View
+                    <MemoAppTooltip
+                      text={item.label}
                       style={[
                         styles.breadcrumbTag,
                         { backgroundColor: item.bgColor },
                       ]}
                     >
-                      <AppText variant="body6" color={item.textColor}>
+                      <AppText variant="body6" color={item.textColor} numberOfLines={1}>
                         {item.label}
                       </AppText>
-                    </View>
+                    </MemoAppTooltip>
 
                     {index < breadcrumbs.length - 1 && (
                       <ArrowRight2
@@ -342,6 +344,7 @@ const styles = StyleSheet.create({
   breadcrumbTag: {
     flex: 1,
     paddingVertical: ms(4),
+    paddingHorizontal: ms(8),
     borderRadius: ms(100),
     alignItems: 'center',
   },

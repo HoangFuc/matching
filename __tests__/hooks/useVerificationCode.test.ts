@@ -138,7 +138,7 @@ describe('useVerificationCode', () => {
     const props = getHookProps(renderer!);
     expect(props.remainingSeconds).toBe(0);
     expect(props.status).toBe('expired');
-    expect(props.errorMessage).toBe('인증코드가 만료되었습니다. 재전송해 주세요.');
+    expect(props.errorMessage).toBe('잘못된 인증코드입니다. 다시 시도하세요.');
   });
 
   //---------------------------------------
@@ -224,7 +224,7 @@ describe('useVerificationCode', () => {
 
     const props = getHookProps(renderer!);
     expect(props.status).toBe('expired');
-    expect(props.errorMessage).toBe('인증코드가 만료되었습니다. 재전송해 주세요.');
+    expect(props.errorMessage).toBe('잘못된 인증코드입니다. 다시 시도하세요.');
   });
 
   //---------------------------------------

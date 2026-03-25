@@ -23,6 +23,11 @@ const ToastErrorSilentEndpoints = new Set<string>(['verifyOtp']);
 const ToastErrorCodeMap: Record<string, string> = {
   AUTH_PHONE_EXISTS: '이미 사용 중인 아이디입니다.',
   AUTH_INVALID_CREDENTIALS: '전화번호 또는 비밀번호가 올바르지 않습니다.',
+  DEPT_INVALID_DEFAULT_TEAM: '각 본부에는 최소 1개의 기본 팀이 필요합니다.',
+  INVITE_NOT_FOUND: '초대 코드를 찾을 수 없습니다.',
+  INVITE_INACTIVE: '비활성화된 초대 코드입니다.',
+  INVITE_EXPIRED: '초대 코드가 만료되었습니다.',
+  INVITE_MAX_USES: '초대 코드 사용 횟수가 초과되었습니다.',
 };
 
 export const toastMiddleware: Middleware = () => next => action => {

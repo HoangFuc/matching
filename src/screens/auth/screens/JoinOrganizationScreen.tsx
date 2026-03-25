@@ -3,6 +3,7 @@ import { StatusBar, StyleSheet, View } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ms } from 'react-native-size-matters/extend';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -41,63 +42,71 @@ const JoinOrganizationScreen: React.FC<Props> = ({ navigation, route }) => {
       <MemoScreenHeader title="조직 참여 방법" />
 
       <MemoScreenBody style={styles.body}>
-        {/* Content */}
-        <View style={styles.content}>
-          <AppText
-            variant="body2"
-            color={AppColors.gray100}
-            style={{
-              textAlign: 'center',
-            }}
-          >
-            어떻게 참여하시겠어요?
-          </AppText>
-
-          <MemoHasCodeOption
-            isSelected={selectedOption === 'hasCode'}
-            onSelect={handleHasInviteCode}
-            fromSocialLogin={fromSocialLogin}
-          />
-
-          <MemoNoCodeOption
-            isSelected={selectedOption === 'noCode'}
-            onSelect={handleNoInviteCode}
-            fromSocialLogin={fromSocialLogin}
-          />
-        </View>
-
-        {/* Bottom */}
-        <View
-          style={[
-            styles.bottomContainer,
-            { paddingBottom: ms(32) + insets.bottom },
-          ]}>
-          <AppText
-            variant="body8"
-            color={AppColors.gray90}
-            style={styles.footer}
-          >
-            계속 진행함으로써{' '}
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          extraScrollHeight={ms(120)}
+        >
+          {/* Content */}
+          <View style={styles.content}>
             <AppText
-              variant="body8"
-              color={AppColors.gray90}
-              style={styles.underlineText}
-              onPress={() => {}}
+              variant="body2"
+              color={AppColors.gray100}
+              style={{
+                textAlign: 'center',
+              }}
             >
-              서비스 이용약관
-            </AppText>{' '}
-            및{' '}
-            <AppText
-              variant="body8"
-              color={AppColors.gray90}
-              style={styles.underlineText}
-              onPress={() => {}}
-            >
-              개인정보처리방침
+              어떻게 참여하시겠어요?
             </AppText>
-            에 동의하게 됩니다.
-          </AppText>
-        </View>
+
+            <MemoHasCodeOption
+              isSelected={selectedOption === 'hasCode'}
+              onSelect={handleHasInviteCode}
+              fromSocialLogin={fromSocialLogin}
+            />
+
+            <MemoNoCodeOption
+              isSelected={selectedOption === 'noCode'}
+              onSelect={handleNoInviteCode}
+              fromSocialLogin={fromSocialLogin}
+            />
+          </View>
+
+          {/* Bottom */}
+          <View
+            style={[
+              styles.bottomContainer,
+              { paddingBottom: ms(32) + insets.bottom },
+            ]}>
+            <AppText
+              variant="body8"
+              color={AppColors.gray90}
+              style={styles.footer}
+            >
+              계속 진행함으로써{' '}
+              <AppText
+                variant="body8"
+                color={AppColors.gray90}
+                style={styles.underlineText}
+                onPress={() => {}}
+              >
+                서비스 이용약관
+              </AppText>{' '}
+              및{' '}
+              <AppText
+                variant="body8"
+                color={AppColors.gray90}
+                style={styles.underlineText}
+                onPress={() => {}}
+              >
+                개인정보처리방침
+              </AppText>
+              에 동의하게 됩니다.
+            </AppText>
+          </View>
+        </KeyboardAwareScrollView>
       </MemoScreenBody>
     </AppSafeAreaView>
   );
@@ -112,6 +121,9 @@ const styles = StyleSheet.create({
   },
   body: {
     paddingHorizontal: ms(24),
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   content: {
     flex: 1,

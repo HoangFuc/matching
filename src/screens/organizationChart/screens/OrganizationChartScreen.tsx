@@ -54,11 +54,15 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
     <AppSafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={AppColors.purple} />
 
-      <MemoScreenHeader title="조직도" rightElement={rightElement} />
+      <MemoScreenHeader
+        title="조직도"
+        rightElement={rightElement}
+        onPressBack={() => navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'Dashboard' } })}
+      />
 
       <MemoScreenBody>
         <View style={styles.hqHeader}>
-          <AppText variant="body6" color={AppColors.gray90}>
+          <AppText variant="body6" color={AppColors.gray90}> 
             제 1 본부
           </AppText>
 

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ArrowDown2 } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoBottomSheetModal } from '@/src/component/BottomSheetModal';
 import { AppColors } from '@/src/constants/colors';
 
 export type TDropdownOption = {
@@ -21,6 +22,7 @@ interface IProps {
   options: TDropdownOption[];
   onSelect: (option: TDropdownOption) => void;
   disabled?: boolean;
+  useBottomSheet?: boolean;
 }
 
 //---------------------------------------
@@ -31,8 +33,35 @@ const InviteDropdownField: React.FC<IProps> = ({
   options,
   onSelect,
   disabled,
+  useBottomSheet,
 }) => {
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showDropdown, setShowDropdown] = React.useState(false);
+
+  //---------------------------------------
+  const renderDropdownContent = () => (
+    <>
+      {options.map(option => {
+        const isSelected = value === option.label;
+        return (
+          <Pressable
+            key={option.value}
+            style={useBottomSheet ? styles.sheetItem : styles.dropdownItem}
+            onPress={() => {
+              onSelect(option);
+              setShowDropdown(false);
+            }}
+          >
+            <AppText
+              variant={isSelected ? 'body1' : 'body4'}
+              color={AppColors.gray100}
+            >
+              {option.label}
+            </AppText>
+          </Pressable>
+        );
+      })}
+    </>
+  );
 
   return (
     <View style={styles.fieldContainer}>
@@ -58,28 +87,20 @@ const InviteDropdownField: React.FC<IProps> = ({
         />
       </Pressable>
 
-      {showDropdown && (
-        <View style={styles.dropdownList}>
-          {options.map(option => (
-            <Pressable
-              key={option.value}
-              style={styles.dropdownItem}
-              onPress={() => {
-                onSelect(option);
-                setShowDropdown(false);
-              }}
-            >
-              <AppText
-                variant="body8"
-                color={
-                  value === option.label ? AppColors.purple : AppColors.gray80
-                }
-              >
-                {option.label}
-              </AppText>
-            </Pressable>
-          ))}
-        </View>
+      {useBottomSheet ? (
+        <MemoBottomSheetModal
+          visible={showDropdown}
+          onClose={() => setShowDropdown(false)}
+          title={label}
+        >
+          {renderDropdownContent()}
+        </MemoBottomSheetModal>
+      ) : (
+        showDropdown && (
+          <View style={styles.dropdownList}>
+            {renderDropdownContent()}
+          </View>
+        )
       )}
     </View>
   );
@@ -113,5 +134,10 @@ const styles = StyleSheet.create({
   dropdownItem: {
     paddingHorizontal: ms(12),
     paddingVertical: ms(10),
+  },
+  sheetItem: {
+    alignItems: 'center',
+    paddingVertical: ms(10),
+    paddingHorizontal: ms(16),
   },
 });

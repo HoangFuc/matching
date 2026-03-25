@@ -41,7 +41,8 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
   const withSteps = route.params?.withSteps ?? false;
   const inviteCode = route.params?.inviteCode ?? '';
   const { setStepData } = useRegisterCompany();
-  const [sendOtp, { isLoading: isSendingOtp }] = useSendOtpMutation();
+  const [sendOtp, { isLoading: isSendingOtp }] = useSendOtpMutation({ fixedCacheKey: 'sendOtp' });
+  const [resendOtp] = useSendOtpMutation({ fixedCacheKey: 'resendOtp' });
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerWithInvite, { isLoading: isRegistering }] = useRegisterWithInviteMutation();
 
@@ -81,6 +82,10 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
       const cleaned = phone.replace(/[^0-9]/g, '');
       await sendOtp({ phone: cleaned, purpose: 'register' }).unwrap();
     },
+    onResendCode: async (phone: string) => {
+      const cleaned = phone.replace(/[^0-9]/g, '');
+      await resendOtp({ phone: cleaned, purpose: 'register' }).unwrap();
+    },
     onVerifyCode: async (phone: string, code: string) => {
       try {
         const cleaned = phone.replace(/[^0-9]/g, '');
@@ -115,12 +120,12 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const handleSendCode = React.useCallback(() => {
+    setPhoneError('');
     const phone = watch('phone');
     if (!phone.startsWith('010')) {
       setPhoneError('010으로 시작하는 휴대폰 번호를 입력하세요.');
       return;
     }
-    setPhoneError('');
     verification.sendCode(phone);
   }, [watch, verification]);
 
@@ -206,7 +211,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           enableOnAndroid
-          extraScrollHeight={ms(120)}
+          extraScrollHeight={ms(200)}
         >
           {/* 이름 & 휴대폰 번호 */}
           <MemoBaseCard style={{ gap: ms(16) }}>
@@ -310,18 +315,21 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
               bold
               onPress={() => toggleAgreement('all')}
             />
+
             <MemoAgreementCheckbox
               testID="checkbox-terms"
               label="(필수) 이용 약관에 대한 동의"
               checked={agreements.terms}
               onPress={() => toggleAgreement('terms')}
             />
+
             <MemoAgreementCheckbox
               testID="checkbox-privacy"
               label="(필수) 개인정보 수집 및 이용에 대한 동의"
               checked={agreements.privacy}
               onPress={() => toggleAgreement('privacy')}
             />
+            
             <MemoAgreementCheckbox
               testID="checkbox-marketing"
               label="(선택) 광고성 정보 수신 이용에 대한 동의"

@@ -85,7 +85,7 @@ const CreateAgencyScreen: React.FC<Props> = ({ navigation, route }) => {
   //---------------------------------------
   const handlePickImage = React.useCallback(() => {
     launchImageLibrary(
-      { mediaType: 'photo', quality: 0.8, maxWidth: 500, maxHeight: 500 },
+      { mediaType: 'photo', quality: 0.8, maxWidth: 500, maxHeight: 500, presentationStyle: 'popover' },
       response => {
         if (response.didCancel || response.errorCode) {
           return;

@@ -44,19 +44,19 @@ const StepProgressBar: React.FC<IStepProgressBarProps> = ({
               <View
                 style={[
                   styles.dot,
-                  step <= currentStep ? styles.dotActive : styles.dotInactive,
+                  step < currentStep ? styles.dotActive : styles.dotInactive,
                 ]}
               />
               <View
                 style={[
                   styles.dot,
-                  step <= currentStep ? styles.dotActive : styles.dotInactive,
+                  step < currentStep ? styles.dotActive : styles.dotInactive,
                 ]}
               />
               <View
                 style={[
                   styles.dot,
-                  step <= currentStep ? styles.dotActive : styles.dotInactive,
+                  step < currentStep ? styles.dotActive : styles.dotInactive,
                 ]}
               />
             </View>

@@ -9,16 +9,18 @@ const OTP_ERROR_MESSAGES: Record<string, string> = {
   OTP_MAX_ATTEMPTS: '인증 시도 횟수를 초과했습니다. 재전송해 주세요.',
 };
 
-const DEFAULT_ERROR_MESSAGE = '인증에 실패했습니다. 다시 시도하세요.';
+const DEFAULT_ERROR_MESSAGE = '잘못된 인증코드입니다. 다시 시도하세요.';
 
 interface UseVerificationCodeOptions {
   onSendCode: (phone: string) => Promise<void>;
+  onResendCode?: (phone: string) => Promise<void>;
   onVerifyCode: (phone: string, code: string) => Promise<boolean | string>;
   duration?: number;
 }
 
 export const useVerificationCode = ({
   onSendCode,
+  onResendCode,
   onVerifyCode,
   duration = TIMER_DURATION,
 }: UseVerificationCodeOptions) => {
@@ -99,8 +101,9 @@ export const useVerificationCode = ({
   //---------------------------------------
   const resend = useCallback(
     async (phone: string) => {
+      const sendFn = onResendCode ?? onSendCode;
       try {
-        await onSendCode(phone);
+        await sendFn(phone);
         setCode('');
         setStatus('sent');
         setErrorMessage('');
@@ -109,7 +112,7 @@ export const useVerificationCode = ({
         // toast is handled by toastMiddleware
       }
     },
-    [onSendCode, startTimer],
+    [onResendCode, onSendCode, startTimer],
   );
 
   //---------------------------------------

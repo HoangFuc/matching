@@ -42,6 +42,21 @@ export const checkinApi = createApi({
         body,
       }),
       invalidatesTags: (_result, error) => (error ? [] : ['Attendance']),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const attendance = (data as any)?.data ?? data;
+          dispatch(
+            checkinApi.util.updateQueryData(
+              'getAttendanceToday',
+              undefined,
+              () => attendance,
+            ),
+          );
+        } catch {
+          // invalidatesTags will handle refetch on error
+        }
+      },
     }),
   }),
 });

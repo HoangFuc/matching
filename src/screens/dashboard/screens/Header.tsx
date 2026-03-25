@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import {
   Image,
   ImageBackground,
@@ -9,8 +9,11 @@ import {
 
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
+import Toast from 'react-native-toast-message';
 
 import { AppText } from '@/src/component/AppText';
+import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { AppColors } from '@/src/constants/colors';
 import { HamburgerMenu, Notification } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
@@ -18,8 +21,6 @@ import { RootStackParamList } from '@/src/interface/tab.interface';
 import { getUserInfo, removeToken } from '@/src/services/tokenService';
 import { _retrieveData } from '@/src/api/async.storage';
 import { useLogoutMutation } from '@/src/store/api/auth.api';
-import { moderateScale as ms } from 'react-native-size-matters/extend';
-import Toast from 'react-native-toast-message';
 
 //---------------------------------------
 const DAYS_KR = [
@@ -46,13 +47,13 @@ const formatDateKR = (timestamp?: string | number): string => {
 const HeaderDashboard: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [logout] = useLogoutMutation();
-  const [fullName, setFullName] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [timestamp, setTimestamp] = useState<string | number | undefined>();
+  const [logout, { isLoading }] = useLogoutMutation();
+  const [fullName, setFullName] = React.useState('');
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const [timestamp, setTimestamp] = React.useState<string | number | undefined>();
 
   //---------------------------------------
-  useEffect(() => {
+  React.useEffect(() => {
     const loadUserInfo = async () => {
       const user = await getUserInfo();
       if (user) {
@@ -65,7 +66,7 @@ const HeaderDashboard: React.FC = () => {
   }, []);
 
   //---------------------------------------
-  const handleLogout = useCallback(async () => {
+  const handleLogout = React.useCallback(async () => {
     try {
       const refreshToken = await _retrieveData('refresh_token');
       if (refreshToken) {
@@ -121,6 +122,8 @@ const HeaderDashboard: React.FC = () => {
           </AppText>
         </View>
       </View>
+
+      <FullScreenLoading visible={isLoading} />
     </ImageBackground>
   );
 };

@@ -50,7 +50,7 @@ export type MeetingMinutesStackParamList = {
 };
 
 export type RootTabParamList = {
-  Home: undefined;
+  Home: NavigatorScreenParams<HomeStackParamList> | undefined;
   Schedule: NavigatorScreenParams<ScheduleStackParamList> | undefined;
   MeetingMinutes: undefined;
   Contract: undefined;

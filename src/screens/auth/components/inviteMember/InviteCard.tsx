@@ -1,7 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { Edit2 } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -58,10 +57,11 @@ const InviteCard: React.FC<IProps> = ({
           placeholder="직책 선택"
           options={roleOptions}
           onSelect={option => onSelectRole(invite.id, option)}
+          useBottomSheet
         />
 
         {isDirector ? (
-          <View style={styles.directorRow}>
+          <View style={[styles.directorRow, styles.directorDisabled]}>
             <AppText variant="body7" color={AppColors.gray90}>
               소속 위치
             </AppText>
@@ -70,16 +70,6 @@ const InviteCard: React.FC<IProps> = ({
               <AppText variant="body8" color={AppColors.gray90}>
                 {directorLabel}
               </AppText>
-
-              {onEditOrgChart && (
-                <Pressable onPress={onEditOrgChart} style={styles.editButton}>
-                  <Edit2
-                    size={`${ms(16)}`}
-                    color={AppColors.purple}
-                    variant="Linear"
-                  />
-                </Pressable>
-              )}
             </View>
           </View>
         ) : (
@@ -90,6 +80,7 @@ const InviteCard: React.FC<IProps> = ({
             options={locationOptions}
             disabled={locationDisabled}
             onSelect={option => onSelectLocation(invite.id, option)}
+            useBottomSheet
           />
         )}
 
@@ -99,6 +90,7 @@ const InviteCard: React.FC<IProps> = ({
           placeholder="만료 기간 선택"
           options={expiryOptions}
           onSelect={option => onSelectExpiry(invite.id, option)}
+          useBottomSheet
         />
 
         <MemoAppButton
@@ -139,16 +131,15 @@ const styles = StyleSheet.create({
   directorRow: {
     gap: ms(6),
   },
+  directorDisabled: {
+    opacity: 0.5,
+  },
   directorLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: AppColors.gray10,
     borderRadius: ms(8),
     paddingHorizontal: ms(12),
     paddingVertical: ms(10),
-  },
-  editButton: {
-    padding: ms(4),
   },
 });

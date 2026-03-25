@@ -81,7 +81,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   const roleOptions = React.useMemo<TDropdownOption[]>(() => {
     if (invitableRoles) {
       return invitableRoles.map(r => ({
-        label: r.name,
+        label: r.slug === ROLE_SLUGS.DIRECTOR_2 ? `${r.name} 2` : r.name,
         value: r.slug,
       }));
     }
@@ -162,6 +162,11 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   //---------------------------------------
   const handleEditOrgChart = React.useCallback(() => {
     navigation.navigate('OrgChartSetup', { hideStepBar: true });
+  }, [navigation]);
+
+  //---------------------------------------
+  const handleNavigateOrgChart = React.useCallback(() => {
+    navigation.getParent()?.navigate('OrganizationChart');
   }, [navigation]);
 
   const [invites, setInvites] = React.useState<TInviteLink[]>([
@@ -320,7 +325,8 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
 
       <MemoScreenHeader
         title="새로운 멤버 초대"
-        hideBackButton={true}
+        hideBackButton={!hideStepBar}
+        onPressBack={hideStepBar ? () => navigation.goBack() : undefined}
       />
 
       <MemoScreenBody>
@@ -395,21 +401,32 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
           ))}
         </ScrollView>
 
-        <MemoBottomButtonGroup>
-          <MemoAppButton
-            label="나중에"
-            variant="secondary"
-            textVariant="body6"
-            onPress={handleLater}
-          />
+        {hideStepBar ? (
+          <MemoBottomButtonGroup>
+            <MemoAppButton
+              label="공유하기"
+              variant="primary"
+              textVariant="body6"
+              onPress={handleNavigateOrgChart}
+            />
+          </MemoBottomButtonGroup>
+        ) : (
+          <MemoBottomButtonGroup>
+            <MemoAppButton
+              label="나중에"
+              variant="secondary"
+              textVariant="body6"
+              onPress={handleLater}
+            />
 
-          <MemoAppButton
-            label="완료"
-            variant="primary"
-            textVariant="body6"
-            onPress={handleFinish}
-          />
-        </MemoBottomButtonGroup>
+            <MemoAppButton
+              label="완료"
+              variant="primary"
+              textVariant="body6"
+              onPress={handleFinish}
+            />
+          </MemoBottomButtonGroup>
+        )}
       </MemoScreenBody>
     </AppSafeAreaView>
   );

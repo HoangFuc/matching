@@ -54,8 +54,8 @@ const HasCodeOption: React.FC<Props> = ({ isSelected, onSelect, fromSocialLogin 
     try {
       const invitation = await getInvitation(code).unwrap();
       navigation.navigate('ConfirmOrganizationInvitation', { invitation, inviteCode: code, fromSocialLogin });
-    } catch (error) {
-      console.error('Failed to fetch invitation:', error);
+    } catch {
+      // toast is handled by toastMiddleware
     }
   }, [inviteCode, getInvitation, navigation]);
 

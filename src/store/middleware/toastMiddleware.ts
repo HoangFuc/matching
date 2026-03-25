@@ -21,7 +21,7 @@ const ToastErrorSilentEndpoints = new Set<string>(['verifyOtp']);
 
 // errorCode → 한국어 에러 메시지
 const ToastErrorCodeMap: Record<string, string> = {
-  AUTH_PHONE_EXISTS: '이미 사용 중인 아이디입니다.',
+  AUTH_PHONE_EXISTS: '해당 전화번호는 이미 존재합니다.',
   AUTH_INVALID_CREDENTIALS: '전화번호 또는 비밀번호가 올바르지 않습니다.',
   DEPT_INVALID_DEFAULT_TEAM: '각 본부에는 최소 1개의 기본 팀이 필요합니다.',
   INVITE_NOT_FOUND: '초대 코드를 찾을 수 없습니다.',

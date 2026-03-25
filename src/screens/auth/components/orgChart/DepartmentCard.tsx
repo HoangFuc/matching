@@ -114,6 +114,7 @@ const DepartmentCard: React.FC<IDepartmentCardProps> = ({
             isFirst={teamIndex === 0}
             isLast={teamIndex === dept.teams.length - 1}
             canDelete={canDeleteTeam}
+            canToggleDefault={canDeleteTeam}
             onAddTeam={onAddTeam}
             onDeleteTeam={onDeleteTeam}
             onNameChange={onTeamNameChange}

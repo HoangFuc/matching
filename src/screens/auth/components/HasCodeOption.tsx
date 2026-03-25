@@ -19,6 +19,7 @@ type Props = {
   isSelected: boolean;
   onSelect: () => void;
   fromSocialLogin?: boolean;
+  deepLinkInviteCode?: string;
 };
 
 type FormValues = {
@@ -34,19 +35,20 @@ const extractCode = (input: string): string => {
 };
 
 //---------------------------------------
-const HasCodeOption: React.FC<Props> = ({ isSelected, onSelect, fromSocialLogin }) => {
+const HasCodeOption: React.FC<Props> = ({ isSelected, onSelect, fromSocialLogin, deepLinkInviteCode }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
-  const { control, watch } = useForm<FormValues>({
-    defaultValues: { inviteCode: '' },
+  const { control, watch, setValue } = useForm<FormValues>({
+    defaultValues: { inviteCode: deepLinkInviteCode ?? '' },
   });
   const [getInvitation, { isLoading }] = useLazyGetInvitationByCodeQuery();
 
   const inviteCode = watch('inviteCode');
 
   //---------------------------------------
-  const handleConnect = React.useCallback(async () => {
-    const code = extractCode(inviteCode);
+  const handleConnect = React.useCallback(async (codeOverride?: string) => {
+    const raw = typeof codeOverride === 'string' ? codeOverride : inviteCode;
+    const code = extractCode(raw);
     if (!code) {
       return;
     }
@@ -57,7 +59,15 @@ const HasCodeOption: React.FC<Props> = ({ isSelected, onSelect, fromSocialLogin 
     } catch {
       // toast is handled by toastMiddleware
     }
-  }, [inviteCode, getInvitation, navigation]);
+  }, [inviteCode, getInvitation, navigation, fromSocialLogin]);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    if (deepLinkInviteCode) {
+      setValue('inviteCode', deepLinkInviteCode);
+      handleConnect(deepLinkInviteCode);
+    }
+  }, [deepLinkInviteCode]);
 
   return (
     <View style={styles.hasCodeWrapper}>

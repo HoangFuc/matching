@@ -1,9 +1,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
-import { Add, Trash } from 'iconsax-react-nativejs';
+import { Add, InfoCircle, Trash } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import { MemoAppTooltip } from '@/src/component/AppTooltip';
 import { MemoChip } from '@/src/component/Chip';
 import { MemoFormInput } from '@/src/component/FormInput';
 import { AppColors } from '@/src/constants/colors';
@@ -16,6 +17,7 @@ interface ITeamCardProps {
   isFirst: boolean;
   isLast: boolean;
   canDelete: boolean;
+  canToggleDefault: boolean;
   onAddTeam: (deptId: string) => void;
   onDeleteTeam: (deptId: string, teamId: string) => void;
   onNameChange: (deptId: string, teamId: string, value: string) => void;
@@ -29,6 +31,7 @@ const TeamCard: React.FC<ITeamCardProps> = ({
   isFirst,
   isLast,
   canDelete,
+  canToggleDefault,
   onAddTeam,
   onDeleteTeam,
   onNameChange,
@@ -94,14 +97,19 @@ const TeamCard: React.FC<ITeamCardProps> = ({
           이 팀을 기본 팀으로 설정
         </AppText>
 
-        <AppText variant="detail" color={AppColors.gray90}>
-          멤버 초대 시 이 팀에 자동 배정됩니다.
-        </AppText>
+        <MemoAppTooltip text="멤버 초대 시 이 팀에 자동 배정됩니다.">
+          <InfoCircle
+            size={`${ms(14)}`}
+            color={AppColors.gray90}
+            variant="Linear"
+          />
+        </MemoAppTooltip>
       </View>
 
       <Switch
         value={team.isDefault}
         onValueChange={() => onToggleDefault(deptId, team.id)}
+        disabled={!canToggleDefault}
         trackColor={{ false: AppColors.gray20, true: AppColors.purple }}
         thumbColor={AppColors.gray40}
       />
@@ -178,6 +186,8 @@ const styles = StyleSheet.create({
   },
   defaultTextGroup: {
     flex: 1,
-    gap: ms(2),
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ms(4),
   },
 });

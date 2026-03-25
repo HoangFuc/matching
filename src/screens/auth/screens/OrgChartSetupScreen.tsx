@@ -111,8 +111,14 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
     navigation.goBack();
   }, [navigation]);
 
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
   //---------------------------------------
   const handleNext = React.useCallback(async () => {
+    if (isSubmitting) {
+      return;
+    }
+    setIsSubmitting(true);
     try {
       if (hideStepBar) {
         if (!(initialJson && toJson() === initialJson)) {
@@ -178,8 +184,10 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
       }
     } catch (error) {
       console.error('Registration failed:', error);
+      setIsSubmitting(false);
     }
   }, [
+    isSubmitting,
     departments,
     hideStepBar,
     updateDepartments,
@@ -321,7 +329,7 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
             label="확인"
             variant="primary"
             textVariant="body6"
-            disabled={!isValid}
+            disabled={!isValid || isSubmitting}
             onPress={handleNext}
           />
         </MemoBottomButtonGroup>

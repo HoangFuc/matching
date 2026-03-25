@@ -79,7 +79,7 @@ const AppTooltip: React.FC<IAppTooltipProps> = ({ text, children, style }) => {
                 ]}
               />
               
-              <AppText variant="body8" color={AppColors.white}>
+              <AppText variant="detail" color={AppColors.white}>
                 {text}
               </AppText>
             </View>
@@ -99,8 +99,8 @@ const styles = StyleSheet.create({
   tooltipBox: {
     position: 'absolute',
     backgroundColor: AppColors.gray90,
-    paddingVertical: ms(6),
-    paddingHorizontal: ms(10),
+    paddingVertical: ms(4),
+    paddingHorizontal: ms(6),
     borderRadius: ms(8),
     maxWidth: ms(250),
   },

@@ -17,7 +17,7 @@ import type { IMeetingScheduleManagement } from './meetingScheduleManagement.int
 export type AuthStackParamList = {
   Welcome: undefined;
   Login: undefined;
-  JoinOrganization: { fromSocialLogin?: boolean } | undefined;
+  JoinOrganization: { fromSocialLogin?: boolean; inviteCode?: string } | undefined;
   ConfirmOrganizationInvitation: { invitation: IInvitationDetailResponse; inviteCode: string; fromSocialLogin?: boolean };
   JoinMembership: { withSteps?: boolean; inviteCode?: string } | undefined;
   CreateAgency: { fromSocialLogin?: boolean } | undefined;

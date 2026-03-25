@@ -19,7 +19,9 @@ const CalendarAction: React.FC = () => {
   const { data: attendance } = useGetAttendanceTodayQuery(undefined, {
     skip: !hasCompany,
   });
-  const [checkin, { isLoading }] = useCheckinMutation();
+  const [checkin, { isLoading: isCheckinLoading }] = useCheckinMutation();
+  const [isGettingLocation, setIsGettingLocation] = React.useState(false);
+  const isLoading = isCheckinLoading || isGettingLocation;
 
   //---------------------------------------
   const checkinTime = React.useMemo(
@@ -29,9 +31,6 @@ const CalendarAction: React.FC = () => {
         : null,
     [attendance?.checkedIn, attendance?.checkInTime],
   );
-
-  console.log('======================checkinTime Root',checkinTime);
-  console.log('======================attendance',attendance);
 
   //---------------------------------------
   const requestLocationPermission =
@@ -72,11 +71,14 @@ const CalendarAction: React.FC = () => {
         return;
       }
 
+      setIsGettingLocation(true);
       const { latitude, longitude } = await getCurrentPosition();
       await checkin({ latitude, longitude }).unwrap();
       Toast.show({ type: 'success', text1: '출근 체크에 성공했습니다' });
     } catch {
       Toast.show({ type: 'error', text1: '출근 체크에 실패했습니다' });
+    } finally {
+      setIsGettingLocation(false);
     }
   }, [checkin, requestLocationPermission, getCurrentPosition]);
 

@@ -127,7 +127,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <MemoPhoneInput
             value={phone}
             onChangeText={setPhone}
-            label="사용자 ID (전화번호)"
+            label="사용자 ID (휴대폰 번호)"
             placeholder="전화번호를 입력해 주세요"
           />
 

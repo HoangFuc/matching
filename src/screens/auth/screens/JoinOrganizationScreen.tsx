@@ -21,9 +21,10 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'JoinOrganization'>;
 const JoinOrganizationScreen: React.FC<Props> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const fromSocialLogin = route.params?.fromSocialLogin;
+  const deepLinkInviteCode = route.params?.inviteCode;
   const [selectedOption, setSelectedOption] = useState<
     'hasCode' | 'noCode' | null
-  >(null);
+  >(deepLinkInviteCode ? 'hasCode' : null);
 
   //---------------------------------------
   const handleHasInviteCode = () => {
@@ -65,6 +66,7 @@ const JoinOrganizationScreen: React.FC<Props> = ({ navigation, route }) => {
               isSelected={selectedOption === 'hasCode'}
               onSelect={handleHasInviteCode}
               fromSocialLogin={fromSocialLogin}
+              deepLinkInviteCode={deepLinkInviteCode}
             />
 
             <MemoNoCodeOption

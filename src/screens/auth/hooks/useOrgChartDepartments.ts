@@ -98,11 +98,16 @@ export const useOrgChartDepartments = (initialDepartments?: Department[]) => {
   //---------------------------------------
   const deleteTeam = React.useCallback((deptId: string, teamId: string) => {
     setDepartments(prev =>
-      prev.map(dept =>
-        dept.id === deptId
-          ? { ...dept, teams: dept.teams.filter(t => t.id !== teamId) }
-          : dept,
-      ),
+      prev.map(dept => {
+        if (dept.id !== deptId) {
+          return dept;
+        }
+        const remaining = dept.teams.filter(t => t.id !== teamId);
+        if (remaining.length === 1) {
+          remaining[0] = { ...remaining[0], isDefault: true };
+        }
+        return { ...dept, teams: remaining };
+      }),
     );
   }, []);
 

@@ -9,6 +9,7 @@ import {
   CommonActions,
   NavigationContainer,
   useFocusEffect,
+  type LinkingOptions,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -49,6 +50,19 @@ import {
 } from '../constants/icons';
 import { OverlayProvider, useOverlay } from '../providers/OverlayProvider';
 import { MemoQuickActionFAB } from '../screens/dashboard/component/calendarAction/QuickActionModal';
+
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ['matching://'],
+  config: {
+    screens: {
+      Auth: {
+        screens: {
+          JoinOrganization: 'invite/:inviteCode',
+        },
+      },
+    },
+  },
+};
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -259,7 +273,7 @@ const AppNavigator: React.FC = () => {
 
   return (
     <>
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <RootStack.Navigator
           initialRouteName={initialRoute}
           screenOptions={{ headerShown: false }}>

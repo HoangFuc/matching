@@ -34,8 +34,6 @@ const styles = StyleSheet.create({
     padding: ms(16),
     paddingBottom: ms(64),
     flex: 1,
-    borderWidth: 1,
-    borderColor: AppColors.gray30,
     backgroundColor: AppColors.white,
     borderRadius: ms(16),
     ...CardShadow,

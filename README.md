@@ -91,15 +91,3 @@ npx jest <path>       # Run specific test file
 
 Tests are located in `__tests__/` and cover APIs, Redux slices, services, middleware, utilities, and hooks.
 
-## Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-API_BASE_URL=https://your-api-url.com/api/v1
-GOOGLE_WEB_CLIENT_ID=your-google-web-client-id
-GOOGLE_IOS_CLIENT_ID=your-google-ios-client-id
-NAVER_CLIENT_ID=your-naver-client-id
-NAVER_CLIENT_SECRET=your-naver-client-secret
-NAVER_APP_NAME=your-app-name
-```

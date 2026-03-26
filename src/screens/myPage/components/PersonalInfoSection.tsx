@@ -1,11 +1,10 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
-import { Edit2 } from '@/src/constants/icons';
 
 interface IPersonalInfoSectionProps {
   name: string;
@@ -21,10 +20,10 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({
   value,
 }) => (
   <View style={styles.infoRow}>
-    <AppText variant="body7" color={AppColors.gray60} style={styles.label}>
+    <AppText variant="body6" color={AppColors.gray90} style={styles.label}>
       {label}
     </AppText>
-    <AppText variant="body7" color={AppColors.gray90} style={styles.value}>
+    <AppText variant="body8" color={AppColors.gray90} style={styles.value}>
       {value}
     </AppText>
   </View>
@@ -36,30 +35,19 @@ const PersonalInfoSection: React.FC<IPersonalInfoSectionProps> = ({
   phone,
   team,
   position,
-  onPressEdit,
 }) => {
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <AppText variant="body1" color={AppColors.gray90}>
-          개인 정보
-        </AppText>
-
-        {onPressEdit && (
-          <Pressable hitSlop={8} onPress={onPressEdit}>
-            <Edit2
-              size={`${ms(20)}`}
-              color={AppColors.gray60}
-              variant="Linear"
-            />
-          </Pressable>
-        )}
-      </View>
-
       <View style={styles.rows}>
         <InfoRow label="이름" value={name} />
-        <InfoRow label="휴대폰 번호" value={phone} />
+
+        <InfoRow
+          label="휴대폰 번호"
+          value={phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')}
+        />
+
         <InfoRow label="소속 팀" value={team} />
+
         <InfoRow label="직책" value={position} />
       </View>
     </View>
@@ -70,15 +58,12 @@ export const MemoPersonalInfoSection = React.memo(PersonalInfoSection);
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: ms(20),
-    borderBottomWidth: 1,
-    borderBottomColor: AppColors.gray20,
+    gap: ms(16),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: ms(16),
   },
   rows: {
     gap: ms(12),

@@ -7,48 +7,51 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppText } from '@/src/component/AppText';
+import { MemoBaseCard } from '@/src/component/BaseCard';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
-import {
-  Buildings,
-  Cup,
-  Element3,
-  LoginCurve,
-  Notification,
-  InfoCircle,
-  Document,
-} from '@/src/constants/icons';
-import {
-  getUserInfo,
-  getCompanyInfo,
-} from '@/src/services/tokenService';
+import { Edit2 } from '@/src/constants/icons';
 import type { RootStackParamList } from '@/src/interface/tab.interface';
+import { useGetUserProfileQuery } from '@/src/store/api/user.api';
 
-import { MemoProfileCard } from '../components/ProfileCard';
+import { MemoGeneralMenuSection } from '../components/GeneralMenuSection';
+import { MemoPersonalInfoEditSection } from '../components/PersonalInfoEditSection';
 import { MemoPersonalInfoSection } from '../components/PersonalInfoSection';
-import { MemoMenuItem } from '../components/MenuItem';
-
-const APP_VERSION = '1.0.0';
+import { MemoProfileCard } from '../components/ProfileCard';
+import { MemoSettingsMenuSection } from '../components/SettingsMenuSection';
 
 //---------------------------------------
 const MyPageScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const [userInfo, setUserInfo] = React.useState<any>(null);
-  const [companyInfo, setCompanyInfo] = React.useState<any>(null);
+  const { data: userProfile, refetch } = useGetUserProfileQuery();
+  const [isEditing, setIsEditing] = React.useState(false);
 
   //---------------------------------------
-  React.useEffect(() => {
-    const loadData = async () => {
-      const user = await getUserInfo();
-      const company = await getCompanyInfo();
-      setUserInfo(user);
-      setCompanyInfo(company);
-    };
-    loadData();
+  const handlePressEdit = React.useCallback(() => {
+    setIsEditing(true);
   }, []);
+
+  //---------------------------------------
+  const handleCancelEdit = React.useCallback(() => {
+    setIsEditing(false);
+  }, []);
+
+  //---------------------------------------
+  const handleSaveEdit = React.useCallback(
+    (_data: {
+      name: string;
+      phone: string;
+      team: string;
+      position: string;
+    }) => {
+      refetch();
+      setIsEditing(false);
+    },
+    [refetch],
+  );
 
   //---------------------------------------
   const handlePressOrgChart = React.useCallback(() => {
@@ -65,101 +68,64 @@ const MyPageScreen: React.FC = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <MemoProfileCard
-            avatarUrl={userInfo?.avatarUrl}
-            name={userInfo?.fullName ?? ''}
-            companyName={companyInfo?.companyName ?? ''}
-            roleName={userInfo?.roleName ?? ''}
-          />
-
-          <MemoPersonalInfoSection
-            name={userInfo?.fullName ?? ''}
-            phone={userInfo?.phone ?? ''}
-            team={userInfo?.teamName ?? ''}
-            position={userInfo?.positionName ?? ''}
-          />
-
-          <View style={styles.menuSection}>
-            <MemoMenuItem
-              icon={
-                <Buildings
-                  size={`${ms(20)}`}
-                  color={AppColors.gray70}
-                  variant="Linear"
-                />
-              }
-              label="앱 조직도"
-              onPress={handlePressOrgChart}
-            />
-            <MemoMenuItem
-              icon={
-                <Cup
-                  size={`${ms(20)}`}
-                  color={AppColors.gray70}
-                  variant="Linear"
-                />
-              }
-              label="팀 미션"
+          <View style={styles.personalCard}>
+            <MemoProfileCard
+              avatarUrl={userProfile?.avatarUrl}
+              name={userProfile?.fullName ?? ''}
+              companyName={userProfile?.company.name ?? ''}
+              roleName={userProfile?.role.name ?? ''}
             />
           </View>
 
-          <View style={styles.menuSection}>
-            <MemoMenuItem
-              icon={
-                <Element3
-                  size={`${ms(20)}`}
-                  color={AppColors.gray70}
-                  variant="Linear"
+          <View style={{ gap: ms(8) }}>
+            <View style={styles.header}>
+              <AppText variant="body5" color={AppColors.gray90}>
+                개인 정보
+              </AppText>
+
+              {!isEditing && (
+                <Pressable
+                  hitSlop={8}
+                  onPress={handlePressEdit}
+                  style={styles.editIcon}
+                >
+                  <Edit2
+                    size={`${ms(20)}`}
+                    color={AppColors.gray90}
+                    variant="Linear"
+                  />
+                </Pressable>
+              )}
+            </View>
+
+            <MemoBaseCard>
+              {isEditing ? (
+                <MemoPersonalInfoEditSection
+                  name={userProfile?.fullName ?? ''}
+                  phone={userProfile?.phone ?? ''}
+                  team={userProfile?.team?.name ?? ''}
+                  position={userProfile?.department?.name ?? ''}
+                  onCancel={handleCancelEdit}
+                  onSave={handleSaveEdit}
                 />
-              }
-              label="보안 설정"
-            />
-            <MemoMenuItem
-              icon={
-                <Notification
-                  size={`${ms(20)}`}
-                  color={AppColors.gray70}
-                  variant="Linear"
+              ) : (
+                <MemoPersonalInfoSection
+                  name={userProfile?.fullName ?? ''}
+                  phone={userProfile?.phone ?? ''}
+                  team={userProfile?.team?.name ?? ''}
+                  position={userProfile?.department?.name ?? ''}
+                  onPressEdit={handlePressEdit}
                 />
-              }
-              label="알림 설정"
-            />
-            <MemoMenuItem
-              icon={
-                <InfoCircle
-                  size={`${ms(20)}`}
-                  color={AppColors.gray70}
-                  variant="Linear"
-                />
-              }
-              label="개인 정보 보호 정책"
-            />
-            <MemoMenuItem
-              icon={
-                <Document
-                  size={`${ms(20)}`}
-                  color={AppColors.gray70}
-                  variant="Linear"
-                />
-              }
-              label="이용 약관"
-            />
-            <MemoMenuItem
-              icon={
-                <LoginCurve
-                  size={`${ms(20)}`}
-                  color={AppColors.gray70}
-                  variant="Linear"
-                />
-              }
-              label="앱 버전"
-              rightText={APP_VERSION}
-              showArrow={false}
-            />
+              )}
+            </MemoBaseCard>
           </View>
+
+          <MemoGeneralMenuSection onPressOrgChart={handlePressOrgChart} />
+
+          <MemoSettingsMenuSection />
 
           <Pressable style={styles.withdrawButton}>
-            <AppText variant="body7" color={AppColors.negative}>
+            <AppText variant="body3" color={AppColors.negative}>
               회원 탈퇴
             </AppText>
           </Pressable>
@@ -180,15 +146,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: ms(20),
+    padding: ms(16),
     paddingBottom: ms(40),
+    gap: ms(12),
   },
-  menuSection: {
-    borderBottomWidth: 1,
-    borderBottomColor: AppColors.gray20,
+  personalCard: {
+    gap: ms(16),
   },
   withdrawButton: {
     alignItems: 'center',
-    paddingVertical: ms(20),
+    paddingVertical: ms(8),
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  editIcon: {
+    backgroundColor: AppColors.gray20,
+    padding: ms(4),
+    borderRadius: ms(8),
   },
 });

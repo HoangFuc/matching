@@ -5,6 +5,7 @@ import Geolocation from 'react-native-geolocation-service';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
 
+import FullScreenLoading from '@/src/component/FullScreenLoading';
 import {
   useCheckinMutation,
   useGetAttendanceTodayQuery,
@@ -86,11 +87,9 @@ const CalendarAction: React.FC = () => {
     <View style={styles.container}>
       <MemoSchedule />
 
-      <MemoCheckin
-        checkinTime={checkinTime}
-        onCheckin={handleCheckin}
-        isLoading={isLoading}
-      />
+      <MemoCheckin checkinTime={checkinTime} onCheckin={handleCheckin} />
+
+      <FullScreenLoading visible={isLoading} />
     </View>
   );
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ArrowRight2, Buildings, User } from 'iconsax-react-nativejs';
+
+import { ArrowRight2, Buildings, Profile2User } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -33,6 +34,7 @@ const OrgChartPreview: React.FC<IOrgChartPreviewProps> = ({
           <AppText variant="body8" color={AppColors.burntOrange}>
             총괄{' '}
           </AppText>
+
           <AppText
             variant="body6"
             color={AppColors.burntOrange}
@@ -51,6 +53,7 @@ const OrgChartPreview: React.FC<IOrgChartPreviewProps> = ({
         style={[styles.tag, { backgroundColor: AppColors.lightLime }]}
       >
         <Buildings size={ms(14)} color={AppColors.green} variant="Linear" />
+
         <AppText
           variant="body6"
           color={AppColors.green}
@@ -67,7 +70,12 @@ const OrgChartPreview: React.FC<IOrgChartPreviewProps> = ({
         text={`팀 ${totalTeams}개`}
         style={[styles.tag, { backgroundColor: AppColors.lightBlue }]}
       >
-        <User size={ms(14)} color={AppColors.strongBlue} variant="Linear" />
+        <Profile2User
+          size={ms(14)}
+          color={AppColors.strongBlue}
+          variant="Linear"
+        />
+
         <AppText
           variant="body6"
           color={AppColors.strongBlue}

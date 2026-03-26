@@ -33,6 +33,7 @@ import { MemoMeetingScheduleDetailScreen } from '../screens/meetingScheduleManag
 import { MemoScheduleCalendarView } from '../screens/schedule/screens/ScheduleCalendarView';
 import { MemoOrganizationChartScreen } from '../screens/organizationChart/screens/OrganizationChartScreen';
 import { MemoMyPageScreen } from '../screens/myPage/screens/MyPageScreen';
+import { MemoSecuritySettingsScreen } from '../screens/myPage/screens/SecuritySettingsScreen';
 import { MemoOrgChartSetupScreen } from '../screens/auth/screens/OrgChartSetupScreen';
 import { MemoInviteMemberScreen } from '../screens/auth/screens/InviteMemberScreen';
 import { RegisterCompanyProvider } from '../screens/auth/context/RegisterCompanyContext';
@@ -315,6 +316,10 @@ const AppNavigator: React.FC = () => {
           <RootStack.Screen
             name="MyPage"
             component={MemoMyPageScreen}
+          />
+          <RootStack.Screen
+            name="SecuritySettings"
+            component={MemoSecuritySettingsScreen}
           />
           <RootStack.Screen name="OrgChartSetup">
             {props => (

@@ -82,49 +82,53 @@ const HeaderDashboard: React.FC = () => {
   }, [logout, navigation]);
 
   return (
-    <ImageBackground source={AppImages.headerBg} resizeMode="cover">
-      <View style={styles.logo}>
-        <Image
-          style={{
-            width: ms(47),
-            aspectRatio: 47 / 24,
-          }}
-          resizeMode="contain"
-          source={AppImages.matchingLogo}
-        />
+    <>
+      <ImageBackground source={AppImages.headerBg} resizeMode="cover">
+        <View style={styles.logo}>
+          <Image
+            style={{
+              width: ms(47),
+              aspectRatio: 47 / 24,
+            }}
+            resizeMode="contain"
+            source={AppImages.matchingLogo}
+          />
 
-        <View style={styles.action}>
-          <Notification size={`${ms(24)}`} color={`${AppColors.white}`} />
+          <View style={styles.action}>
+            <Notification size={`${ms(24)}`} color={`${AppColors.white}`} />
 
-          <HamburgerMenu size={`${ms(24)}`} color={`${AppColors.white}`} />
+            <Pressable onPress={() => navigation.navigate('MyPage')}>
+              <HamburgerMenu size={`${ms(24)}`} color={`${AppColors.white}`} />
+            </Pressable>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.info}>
-        <Pressable onPress={handleLogout}>
-          {avatarUrl ? (
-            <Image
-              source={{ uri: avatarUrl }}
-              style={styles.avatar}
-            />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]} />
-          )}
-        </Pressable>
+        <View style={styles.info}>
+          <Pressable onPress={handleLogout}>
+            {avatarUrl ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]} />
+            )}
+          </Pressable>
 
-        <View>
-          <AppText variant="detail" color={AppColors.white}>
-            {formatDateKR(timestamp)}
-          </AppText>
+          <View>
+            <AppText variant="detail" color={AppColors.white}>
+              {formatDateKR(timestamp)}
+            </AppText>
 
-          <AppText variant="heading3" color={AppColors.white}>
-            {fullName}님 안녕하세요
-          </AppText>
+            <AppText variant="heading3" color={AppColors.white}>
+              {fullName}님 안녕하세요
+            </AppText>
+          </View>
         </View>
-      </View>
+      </ImageBackground>
 
       <FullScreenLoading visible={isLoading} />
-    </ImageBackground>
+    </>
   );
 };
 

@@ -11,7 +11,10 @@ import { AppText } from '@/src/component/AppText';
 import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
 import { AppColors } from '@/src/constants/colors';
 import { AppImages } from '@/src/constants/images';
-import type { RootStackParamList, RootTabParamList } from '@/src/interface/tab.interface';
+import type {
+  RootStackParamList,
+  RootTabParamList,
+} from '@/src/interface/tab.interface';
 import { MemoCommonAction } from '../moreActions/CommonAction';
 
 type TNav = CompositeNavigationProp<
@@ -98,7 +101,7 @@ const MoreActions: React.FC = () => {
           label="기안"
           style={styles.gridItem}
           image={<Image source={AppImages.phoneBook} style={styles.icon} />}
-          onPress={() => navigation.navigate('OrganizationChart')}
+          onPress={handleShowDevModal}
         />
       </View>
 

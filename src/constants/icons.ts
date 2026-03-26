@@ -37,6 +37,13 @@ export {
   User,
   Microphone2,
   DocumentCopy,
+  Data2,
+  ArchiveBook,
+  Lock,
+  SecuritySafe,
+  Book,
+  Bookmark,
+  Profile2User,
 } from 'iconsax-react-nativejs';
 
 export { default as DotsVertical } from '@/src/assets/icons/dots_vertical.svg';

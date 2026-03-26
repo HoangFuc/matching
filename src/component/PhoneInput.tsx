@@ -14,6 +14,7 @@ interface IProps {
   placeholder?: string;
   required?: boolean;
   error?: string;
+  gap?: number;
 }
 
 //---------------------------------------
@@ -63,6 +64,7 @@ const PhoneInput: React.FC<IProps> = ({
   placeholder = '연락처을 입력하세요',
   required,
   error,
+  gap = 0,
 }) => {
   const inputRef = React.useRef<TextInput>(null);
   const cursorRef = React.useRef(0);
@@ -109,7 +111,7 @@ const PhoneInput: React.FC<IProps> = ({
   );
 
   return (
-    <View>
+    <View style={{gap: ms(gap)}}>
       {label && (
         <AppText variant="body7" color={AppColors.gray90}>
           {label}

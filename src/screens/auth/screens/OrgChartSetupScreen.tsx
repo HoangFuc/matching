@@ -188,18 +188,19 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   }, [
     isSubmitting,
-    departments,
     hideStepBar,
-    updateDepartments,
-    toJson,
     setStepData,
+    toJson,
     getFormData,
-    resetFormData,
-    registerCompany,
-    createCompany,
     fromSocialLogin,
-    showToast,
+    resetFormData,
+    initialJson,
     navigation,
+    departments,
+    updateDepartments,
+    showToast,
+    createCompany,
+    registerCompany,
   ]);
 
   return (

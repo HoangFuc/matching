@@ -220,7 +220,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.loginButton}
             onPress={handleLogin}
             loading={isLoading}
-            disabled={isLoading || !phone || !password}
+            disabled={isLoading || isSocialLoading || !phone || !password}
           />
 
           {/* Divider */}
@@ -241,10 +241,10 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           {/* Social login */}
           <View style={styles.socialRow}>
             <TouchableOpacity
-              style={[styles.socialButton]}
+              style={[styles.socialButton, (isLoading || isSocialLoading) && styles.socialButtonDisabled]}
               onPress={() => handleSocialLogin('kakao')}
-              disabled={isSocialLoading}
-            >
+              disabled={isLoading || isSocialLoading}
+>
               <Image
                 source={AppImages.kakao}
                 style={styles.socialIcon}
@@ -253,10 +253,10 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.socialButton]}
+              style={[styles.socialButton, (isLoading || isSocialLoading) && styles.socialButtonDisabled]}
               onPress={() => handleSocialLogin('naver')}
-              disabled={isSocialLoading}
-            >
+              disabled={isLoading || isSocialLoading}
+>
               <Image
                 source={AppImages.naver}
                 style={styles.socialIcon}
@@ -265,10 +265,10 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.socialButton, styles.googleButton]}
+              style={[styles.socialButton, styles.googleButton, (isLoading || isSocialLoading) && styles.socialButtonDisabled]}
               onPress={() => handleSocialLogin('google')}
-              disabled={isSocialLoading}
-            >
+              disabled={isLoading || isSocialLoading}
+>
               <Image
                 source={AppImages.google}
                 style={styles.googleIcon}
@@ -385,6 +385,9 @@ const styles = StyleSheet.create({
     borderRadius: ms(24),
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  socialButtonDisabled: {
+    opacity: 0.4,
   },
   googleButton: {
     backgroundColor: AppColors.gray10,

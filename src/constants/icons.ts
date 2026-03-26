@@ -27,16 +27,19 @@ export {
   More,
   Notification,
   Pause,
+  People,
   Play,
   SearchNormal1,
   Send,
   Sort,
+  Star1,
   TickCircle,
   TickSquare,
   Trash,
   User,
   Microphone2,
   DocumentCopy,
+  SmsTracking,
 } from 'iconsax-react-nativejs';
 
 export { default as DotsVertical } from '@/src/assets/icons/dots_vertical.svg';

@@ -43,6 +43,8 @@ export type TDirector = {
 };
 
 export type TStructure = {
+  companyName: string;
+  totalMembers: number;
   directors: TDirector[];
   departments: TDepartment[];
   totalDepartments: number;

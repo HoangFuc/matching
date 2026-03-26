@@ -22,7 +22,6 @@ import {
   IRegisterWithInviteParams,
   ISocialLoginParams,
 } from '@/src/interface/auth.interface';
-import type { TStructure } from '@/src/screens/organizationChart/type';
 
 export type TInvitableRole = {
   slug: string;
@@ -290,15 +289,6 @@ export const authApi = createApi({
     }),
 
     //---------------------------------------
-    getStructure: builder.query<TStructure, void>({
-      query: () => '/company/structure',
-      transformResponse: (response: any) => {
-        const data = response?.data?.data ?? response?.data ?? response;
-        return data;
-      },
-    }),
-
-    //---------------------------------------
     getInvitableRoles: builder.query<TInvitableRole[], void>({
       query: () => '/company/invitable-roles',
       transformResponse: (response: any): TInvitableRole[] => {
@@ -332,7 +322,7 @@ export const {
   useLazyGetInvitationByCodeQuery,
   useRefreshTokenMutation,
   useLogoutMutation,
-  useGetStructureQuery,
+
   useGetInvitableRolesQuery,
   useGetInvitablePositionsQuery,
 } = authApi;

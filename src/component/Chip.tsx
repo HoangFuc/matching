@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, StyleProp, View, ViewStyle } from 'react-native';
 
 import { ms } from 'react-native-size-matters/extend';
 
@@ -16,6 +16,8 @@ interface IProps {
   paddingVertical?: number;
   opacity?: number;
   onPress?: () => void;
+  leftIcon?: React.ReactNode;
+  leftIconStyle?: StyleProp<ViewStyle>;
 }
 
 const Chip: React.FC<IProps> = ({
@@ -28,6 +30,8 @@ const Chip: React.FC<IProps> = ({
   paddingVertical,
   opacity,
   onPress,
+  leftIcon,
+  leftIconStyle,
 }) => {
   return (
     <Pressable
@@ -48,6 +52,10 @@ const Chip: React.FC<IProps> = ({
       ]}
       onPress={onPress}
     >
+      {leftIcon && (
+        <View style={leftIconStyle}>{leftIcon}</View>
+      )}
+
       <AppText variant={textVariant} color={textColor}>
         {label}
       </AppText>
@@ -59,7 +67,9 @@ export const MemoChip = React.memo(Chip);
 
 const styles = StyleSheet.create({
   chip: {
+    flexDirection: 'row',
     alignSelf: 'flex-start',
+    alignItems: 'center',
     borderRadius: ms(100),
     paddingHorizontal: ms(8),
     paddingVertical: ms(4),

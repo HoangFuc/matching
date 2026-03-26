@@ -28,4 +28,5 @@ export const AppImages = {
   logoSquare: require('@/src/assets/images/logoSquare.png'),
   addUser: require('@/src/assets/images/addUser.png'),
   addGroup: require('@/src/assets/images/addGroup.png'),
+  star1: require('@/src/assets/images/star1.png'),
 };

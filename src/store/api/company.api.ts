@@ -1,5 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { createBaseQuery } from './baseQuery';
+import type { TStructure } from '@/src/screens/organizationChart/type';
 
 export type TCompanyTeam = {
   id: string;
@@ -54,8 +55,20 @@ export const companyApi = createApi({
       invalidatesTags: ['Departments'],
     }),
 
+    //---------------------------------------
+    getStructure: builder.query<TStructure, void>({
+      query: () => '/structure',
+      transformResponse: (response: any) => {
+        const data = response?.data?.data ?? response?.data ?? response;
+        return data;
+      },
+    }),
+
   }),
 });
 
-export const { useGetDepartmentsQuery, useUpdateDepartmentsMutation } =
-  companyApi;
+export const {
+  useGetDepartmentsQuery,
+  useUpdateDepartmentsMutation,
+  useGetStructureQuery,
+} = companyApi;

@@ -19,10 +19,7 @@ import {
   InfoCircle,
   Document,
 } from '@/src/constants/icons';
-import {
-  getUserInfo,
-  getCompanyInfo,
-} from '@/src/services/tokenService';
+import { getUserInfo, getCompanyInfo } from '@/src/services/tokenService';
 import type { RootStackParamList } from '@/src/interface/tab.interface';
 
 import { MemoProfileCard } from '../components/ProfileCard';

@@ -12,7 +12,10 @@ export type TTeam = {
   id: string;
   name: string;
   isDefault: boolean;
+  canEdit: boolean;
+  teamLeader?: TMember | null;
   members: TMember[];
+  totalMembers: number;
 };
 
 export type TDepartmentHead = {
@@ -28,7 +31,8 @@ export type TDepartmentHead = {
 export type TDepartment = {
   id: string;
   name: string;
-  departmentHead: TDepartmentHead | null;
+  canEdit: boolean;
+  departmentHead?: TDepartmentHead | null;
   teams: TTeam[];
 };
 
@@ -45,6 +49,7 @@ export type TDirector = {
 export type TStructure = {
   companyName: string;
   totalMembers: number;
+  canEdit: boolean;
   directors: TDirector[];
   departments: TDepartment[];
   totalDepartments: number;

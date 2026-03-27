@@ -1,8 +1,17 @@
 import React from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  Keyboard,
+  Pressable,
+  StatusBar,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ms } from 'react-native-size-matters/extend';
 
@@ -20,10 +29,19 @@ import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
 import { MemoVerificationCodeSection } from '@/src/component/VerificationCodeSection';
 import { AppColors } from '@/src/constants/colors';
+import { User } from '@/src/constants/icons';
 import { useVerificationCode } from '@/src/hooks/useVerificationCode';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
-import { saveTokens, saveUserInfo, saveCompanyInfo } from '@/src/services/tokenService';
-import { useSendOtpMutation, useVerifyOtpMutation, useRegisterWithInviteMutation } from '@/src/store/api';
+import {
+  saveCompanyInfo,
+  saveTokens,
+  saveUserInfo,
+} from '@/src/services/tokenService';
+import {
+  useRegisterWithInviteMutation,
+  useSendOtpMutation,
+  useVerifyOtpMutation,
+} from '@/src/store/api/auth.api';
 import { useRegisterCompany } from '../context/RegisterCompanyContext';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'JoinMembership'>;
@@ -41,10 +59,13 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
   const withSteps = route.params?.withSteps ?? false;
   const inviteCode = route.params?.inviteCode ?? '';
   const { setStepData } = useRegisterCompany();
-  const [sendOtp, { isLoading: isSendingOtp }] = useSendOtpMutation({ fixedCacheKey: 'sendOtp' });
+  const [sendOtp, { isLoading: isSendingOtp }] = useSendOtpMutation({
+    fixedCacheKey: 'sendOtp',
+  });
   const [resendOtp] = useSendOtpMutation({ fixedCacheKey: 'resendOtp' });
   const [verifyOtp] = useVerifyOtpMutation();
-  const [registerWithInvite, { isLoading: isRegistering }] = useRegisterWithInviteMutation();
+  const [registerWithInvite, { isLoading: isRegistering }] =
+    useRegisterWithInviteMutation();
 
   const { control, handleSubmit, watch } = useForm<FormValues>({
     defaultValues: {
@@ -54,6 +75,10 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
       confirmPassword: '',
     },
   });
+
+  const [avatarImage, setAvatarImage] = React.useState<
+    { uri: string; type: string; name: string } | undefined
+  >();
 
   const [phoneError, setPhoneError] = React.useState('');
   const [agreements, setAgreements] = React.useState({
@@ -100,6 +125,46 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
   });
 
   //---------------------------------------
+  const handlePickAvatar = React.useCallback(() => {
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        quality: 0.8,
+        maxWidth: 500,
+        maxHeight: 500,
+        presentationStyle: 'popover',
+      },
+      response => {
+        if (response.didCancel || response.errorCode) {
+          return;
+        }
+        const asset = response.assets?.[0];
+        if (!asset?.uri) {
+          return;
+        }
+
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        if (asset.type && !allowedTypes.includes(asset.type)) {
+          Alert.alert('', 'PNG 또는 JPG 형식의 이미지만 업로드할 수 있습니다.');
+          return;
+        }
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (asset.fileSize && asset.fileSize > maxSize) {
+          Alert.alert('', '이미지 크기는 최대 5MB까지 업로드할 수 있습니다.');
+          return;
+        }
+
+        setAvatarImage({
+          uri: asset.uri,
+          type: asset.type || 'image/jpeg',
+          name: asset.fileName || 'avatar.jpg',
+        });
+      },
+    );
+  }, []);
+
+  //---------------------------------------
   const toggleAgreement = React.useCallback((key: AgreementKey) => {
     setAgreements(prev => {
       if (key === 'all') {
@@ -120,6 +185,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const handleSendCode = React.useCallback(() => {
+    Keyboard.dismiss();
     setPhoneError('');
     const phone = watch('phone');
     if (!phone.startsWith('010')) {
@@ -166,6 +232,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
         termsAgreed: agreements.terms,
         privacyAgreed: agreements.privacy,
         marketingAgreed: agreements.marketing,
+        avatarImage,
       };
       if (withSteps) {
         setStepData(stepData);
@@ -181,10 +248,20 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
           await saveCompanyInfo(result.companies);
           navigation.navigate('Login');
         } catch (error) {
+          console.log('======================error', error);
         }
       }
     },
-    [navigation, withSteps, setStepData, agreements, verificationToken, inviteCode, registerWithInvite],
+    [
+      navigation,
+      withSteps,
+      setStepData,
+      agreements,
+      verificationToken,
+      inviteCode,
+      registerWithInvite,
+      avatarImage,
+    ],
   );
 
   return (
@@ -213,6 +290,20 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
           enableOnAndroid
           extraScrollHeight={ms(200)}
         >
+          {/* 프로필 이미지 */}
+          <View style={styles.avatarSection}>
+            <Pressable onPress={handlePickAvatar} style={styles.avatarWrapper}>
+              {avatarImage ? (
+                <Image
+                  source={{ uri: avatarImage.uri }}
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <User size={ms(40)} color={AppColors.gray30} variant="Linear" />
+              )}
+            </Pressable>
+          </View>
+
           {/* 이름 & 휴대폰 번호 */}
           <MemoBaseCard style={{ gap: ms(16) }}>
             <RHFFormInput
@@ -329,7 +420,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
               checked={agreements.privacy}
               onPress={() => toggleAgreement('privacy')}
             />
-            
+
             <MemoAgreementCheckbox
               testID="checkbox-marketing"
               label="(선택) 광고성 정보 수신 이용에 대한 동의"
@@ -390,6 +481,36 @@ const styles = StyleSheet.create({
     paddingVertical: ms(8),
     borderRadius: ms(8),
     gap: ms(10),
+  },
+  avatarSection: {
+    alignItems: 'center',
+    paddingVertical: ms(8),
+  },
+  avatarWrapper: {
+    width: ms(100),
+    height: ms(100),
+    borderRadius: ms(100),
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: AppColors.gray10,
+  },
+  avatarImage: {
+    width: ms(80),
+    height: ms(80),
+    borderRadius: ms(40),
+  },
+  cameraIconWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: ms(26),
+    height: ms(26),
+    borderRadius: ms(13),
+    backgroundColor: AppColors.gray50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: ms(2),
+    borderColor: AppColors.white,
   },
   agreementSection: {
     gap: ms(12),

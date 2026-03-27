@@ -3,6 +3,7 @@ import {
   Platform,
   StyleSheet,
   TextInput,
+  type TextInput as TextInputType,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -48,10 +49,19 @@ const VerificationCodeSection: React.FC<IVerificationCodeSectionProps> = ({
   remainingSeconds,
   errorMessage,
 }) => {
+  const codeInputRef = React.useRef<TextInputType>(null);
+
   const isVerified = status === 'verified';
   const isError = status === 'error';
   const isExpired = status === 'expired';
   const showTimer = !isVerified;
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      codeInputRef.current?.focus();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -93,6 +103,7 @@ const VerificationCodeSection: React.FC<IVerificationCodeSectionProps> = ({
             ]}
           >
             <TextInput
+              ref={codeInputRef}
               style={styles.codeInput}
               value={code}
               onChangeText={onChangeCode}

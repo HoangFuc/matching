@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   BackHandler,
+  Platform,
   Pressable,
   ScrollView,
   StatusBar,
@@ -12,8 +13,10 @@ import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Add, InfoCircle } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MemoAppButton } from '@/src/component/AppButton';
+import { useToast } from '@/src/providers/ToastProvider';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppText } from '@/src/component/AppText';
 import { MemoBottomButtonGroup } from '@/src/component/BottomButtonGroup';
@@ -65,6 +68,7 @@ const createInviteCard = (): TInviteLink => ({
 
 //---------------------------------------
 const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   const hideStepBar = route.params?.hideStepBar;
   const directorCount = route.params?.directorCount ?? 1;
 
@@ -130,7 +134,10 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
       if (roleSlug === ROLE_SLUGS.DEPARTMENT_HEAD) {
         return deptLocationOptions;
       }
-      if (roleSlug === ROLE_SLUGS.TEAM_LEADER || roleSlug === ROLE_SLUGS.MEMBER) {
+      if (
+        roleSlug === ROLE_SLUGS.TEAM_LEADER ||
+        roleSlug === ROLE_SLUGS.MEMBER
+      ) {
         return teamLocationOptions;
       }
       return [];
@@ -139,13 +146,22 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 
   //---------------------------------------
-  const isLocationDisabledBySlug = React.useCallback((roleSlug: string): boolean => {
-    return roleSlug === ROLE_SLUGS.DIRECTOR_2 || roleSlug === ROLE_SLUGS.DIRECTOR || roleSlug === '';
-  }, []);
+  const isLocationDisabledBySlug = React.useCallback(
+    (roleSlug: string): boolean => {
+      return (
+        roleSlug === ROLE_SLUGS.DIRECTOR_2 ||
+        roleSlug === ROLE_SLUGS.DIRECTOR ||
+        roleSlug === ''
+      );
+    },
+    [],
+  );
 
   //---------------------------------------
   const isDirectorSlug = React.useCallback((roleSlug: string): boolean => {
-    return roleSlug === ROLE_SLUGS.DIRECTOR || roleSlug === ROLE_SLUGS.DIRECTOR_2;
+    return (
+      roleSlug === ROLE_SLUGS.DIRECTOR || roleSlug === ROLE_SLUGS.DIRECTOR_2
+    );
   }, []);
 
   //---------------------------------------
@@ -160,18 +176,25 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 
   //---------------------------------------
-  const handleEditOrgChart = React.useCallback(() => {
-    navigation.navigate('OrgChartSetup', { hideStepBar: true });
-  }, [navigation]);
-
-  //---------------------------------------
-  const handleNavigateOrgChart = React.useCallback(() => {
-    navigation.navigate('OrganizationChart' as any);
-  }, [navigation]);
+  const { showToast } = useToast();
 
   const [invites, setInvites] = React.useState<TInviteLink[]>([
     createInviteCard(),
   ]);
+
+  //---------------------------------------
+  const hasUnsavedChanges = React.useMemo(() => {
+    return invites.some(
+      inv =>
+        (inv.role || inv.location || inv.expiry) && !inv.generatedLink,
+    );
+  }, [invites]);
+
+  //---------------------------------------
+  const handleShare = React.useCallback(() => {
+    showToast({ type: 'success', message: '초대장이 성공적으로 생성되었습니다' });
+    navigation.navigate('OrganizationChart' as any);
+  }, [navigation, showToast]);
 
   //---------------------------------------
   const handleFinish = React.useCallback(() => {
@@ -264,7 +287,8 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         return;
       }
 
-      const roleSlug = (invite.roleSlug || ROLE_SLUG_MAP[invite.role]) as TRoleSlug;
+      const roleSlug = (invite.roleSlug ||
+        ROLE_SLUG_MAP[invite.role]) as TRoleSlug;
       if (!roleSlug) {
         return;
       }
@@ -274,34 +298,32 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         return;
       }
 
+      const params: {
+        roleSlug: TRoleSlug;
+        departmentId?: string;
+        teamId?: string;
+        expiresInDays: number;
+      } = { roleSlug, expiresInDays };
+
+      if (invite.departmentId) {
+        params.departmentId = invite.departmentId;
+      }
+      if (invite.teamId) {
+        params.teamId = invite.teamId;
+      }
+
       setGeneratingInviteId(inviteId);
-      try {
-        const params: {
-          roleSlug: TRoleSlug;
-          departmentId?: string;
-          teamId?: string;
-          expiresInDays: number;
-        } = { roleSlug, expiresInDays };
+      const response = await createInvitation(params);
+      setGeneratingInviteId(null);
 
-        if (invite.departmentId) {
-          params.departmentId = invite.departmentId;
-        }
-        if (invite.teamId) {
-          params.teamId = invite.teamId;
-        }
-
-        const result = await createInvitation(params).unwrap();
+      if ('data' in response) {
         setInvites(prev =>
           prev.map(inv =>
             inv.id === inviteId
-              ? { ...inv, generatedLink: result.inviteUrl }
+              ? { ...inv, generatedLink: response.data!.inviteUrl }
               : inv,
           ),
         );
-      } catch (error) {
-        console.error('Failed to create invitation:', error);
-      } finally {
-        setGeneratingInviteId(null);
       }
     },
     [invites, createInvitation],
@@ -393,7 +415,6 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
               onSelectLocation={handleSelectLocation}
               onSelectExpiry={handleSelectExpiry}
               onGenerateLink={handleGenerateLink}
-              onEditOrgChart={handleEditOrgChart}
               isGeneratingLink={
                 isCreatingInvitation && generatingInviteId === invite.id
               }
@@ -402,14 +423,21 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         </ScrollView>
 
         {hideStepBar ? (
-          <MemoBottomButtonGroup>
+          <View
+            style={[
+              styles.container,
+              { marginBottom: Math.max(insets.bottom, ms(16)) },
+            ]}
+          >
             <MemoAppButton
               label="공유하기"
               variant="primary"
               textVariant="body6"
-              onPress={handleNavigateOrgChart}
+              disabled={hasUnsavedChanges}
+              onPress={handleShare}
+              style={styles.buttonWrapper}
             />
-          </MemoBottomButtonGroup>
+          </View>
         ) : (
           <MemoBottomButtonGroup>
             <MemoAppButton
@@ -473,5 +501,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: ms(10),
     paddingVertical: ms(4),
     backgroundColor: AppColors.lavendar,
+  },
+  shareButtonContainer: {
+    alignItems: 'center',
+    paddingVertical: ms(16),
+    paddingHorizontal: ms(16),
+  },
+
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: ms(8),
+    paddingVertical: ms(16),
+    paddingHorizontal: ms(16),
+    backgroundColor: 'white',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#5329C2',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.14,
+        shadowRadius: 8,
+      },
+      default: {
+        boxShadow: '0px -2px 10px 0px #5353530D',
+      },
+    }),
+  },
+  buttonWrapper: {
+    alignSelf: 'center',
+    paddingVertical: ms(8),
+    paddingHorizontal: ms(12),
+    width: ms(163),
+    marginBottom: ms(10),
   },
 });

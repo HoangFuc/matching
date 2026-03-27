@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
-
 import {
+  Add,
   ArrowDown2,
   ArrowUp2,
   CloseCircle,
@@ -13,12 +13,15 @@ import { ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
-import type { TDepartment } from '../type';
+import type { TDepartment, TMember } from '../type';
+import { MemoAddMemberSheet } from './AddMemberSheet';
+import { MemoRenameOrgSheet } from './RenameOrgSheet';
 import { MemoTeamSection } from './TeamSection';
 
 interface IProps {
   department: TDepartment;
   isEditing?: boolean;
+  canEditRoot?: boolean;
   defaultExpanded?: boolean;
 }
 
@@ -32,18 +35,100 @@ const getTotalMembers = (department: TDepartment): number => {
 };
 
 //---------------------------------------
+const DepartmentHeadPlaceholder: React.FC<{
+  isEditing?: boolean;
+  onPressAdd?: () => void;
+}> = ({ isEditing = false, onPressAdd }) => {
+  return (
+    <View style={styles.headPlaceholder}>
+      <AppText variant="body7" color={AppColors.gray70}>
+        본부장
+      </AppText>
+
+      {isEditing && (
+        <Pressable style={styles.headPlaceholderAddButton} onPress={onPressAdd}>
+          <Add size={`${ms(12)}`} color={AppColors.gray70} variant="Linear" />
+        </Pressable>
+      )}
+    </View>
+  );
+};
+
+//---------------------------------------
 const DepartmentSection: React.FC<IProps> = ({
   department,
   isEditing = false,
+  canEditRoot = false,
   defaultExpanded = true,
 }) => {
+  const canEditDept = canEditRoot || department.canEdit;
   const [expanded, setExpanded] = React.useState(defaultExpanded);
+  const [renameVisible, setRenameVisible] = React.useState(false);
+  const [addTeamVisible, setAddTeamVisible] = React.useState(false);
+  const [addMemberVisible, setAddMemberVisible] = React.useState(false);
   const totalMembers = getTotalMembers(department);
 
   //---------------------------------------
   const handleToggle = React.useCallback(() => {
     setExpanded(prev => !prev);
   }, []);
+
+  //---------------------------------------
+  const handlePressEdit = React.useCallback(() => {
+    setRenameVisible(true);
+  }, []);
+
+  //---------------------------------------
+  const handleCloseRename = React.useCallback(() => {
+    setRenameVisible(false);
+  }, []);
+
+  //---------------------------------------
+  const handleSaveRename = React.useCallback(
+    (newName: string) => {
+      // TODO: call API to rename department
+      console.log('Rename department', department.id, newName);
+    },
+    [department.id],
+  );
+
+  //---------------------------------------
+  const handlePressAddTeam = React.useCallback(() => {
+    setAddTeamVisible(true);
+  }, []);
+
+  //---------------------------------------
+  const handleCloseAddTeam = React.useCallback(() => {
+    setAddTeamVisible(false);
+  }, []);
+
+  //---------------------------------------
+  const handleSaveAddTeam = React.useCallback(
+    (teamName: string) => {
+      // TODO: call API to add team
+      console.log('Add team to department', department.id, teamName);
+    },
+    [department.id],
+  );
+
+  //---------------------------------------
+  const handlePressAddMember = React.useCallback(() => {
+    setAddMemberVisible(true);
+  }, []);
+
+  //---------------------------------------
+  const handleCloseAddMember = React.useCallback(() => {
+    setAddMemberVisible(false);
+  }, []);
+
+  //---------------------------------------
+  const handleConfirmAddMember = React.useCallback(
+    (member: TMember) => {
+      // TODO: call API to add member as department head
+      console.log('Add department head', department.id, member);
+    },
+    [department.id],
+  );
 
   return (
     <MemoBaseCard style={styles.card}>
@@ -59,15 +144,21 @@ const DepartmentSection: React.FC<IProps> = ({
             {`${department.name} (${totalMembers}명)`}
           </AppText>
 
-          {isEditing && (
-            <Pressable hitSlop={8} style={styles.editButton}>
-              <Edit2
-                size={`${ms(17)}`}
-                color={AppColors.gray90}
-                variant="Linear"
-              />
-            </Pressable>
-          )}
+          <Pressable
+            hitSlop={8}
+            disabled={!(isEditing && canEditDept)}
+            onPress={e => {
+              e.stopPropagation();
+              handlePressEdit();
+            }}
+            style={[styles.editButton, !(isEditing && canEditDept) && styles.hidden]}
+          >
+            <Edit2
+              size={`${ms(20)}`}
+              color={AppColors.gray90}
+              variant="Linear"
+            />
+          </Pressable>
         </View>
 
         {expanded ? (
@@ -88,7 +179,7 @@ const DepartmentSection: React.FC<IProps> = ({
       {expanded && (
         <View style={styles.expandedContent}>
           {/* Department Head */}
-          {department.departmentHead && (
+          {department.departmentHead?.fullName ? (
             <View style={styles.departmentHeadRow}>
               {department.departmentHead.avatarUrl ? (
                 <Image
@@ -109,28 +200,43 @@ const DepartmentSection: React.FC<IProps> = ({
                   {department.departmentHead.fullName}
                 </AppText>
 
+                {department.departmentHead.isMe && (
+                  <View style={styles.meBadge}>
+                    <AppText variant="detail" color={AppColors.purple}>
+                      나
+                    </AppText>
+                  </View>
+                )}
+
                 <View style={styles.dot} />
 
                 <AppText variant="detail" color={AppColors.gray70}>
                   {department.departmentHead.role}
                 </AppText>
 
-                {isEditing && (
-                  <Pressable hitSlop={8}>
-                    <CloseCircle
-                      size={`${ms(16)}`}
-                      color={AppColors.gray50}
-                      variant="Bold"
-                    />
-                  </Pressable>
-                )}
+                <Pressable
+                  hitSlop={8}
+                  disabled={!(isEditing && canEditDept)}
+                  style={!(isEditing && canEditDept) && styles.hidden}
+                >
+                  <CloseCircle
+                    size={`${ms(16)}`}
+                    color={AppColors.gray50}
+                    variant="Bold"
+                  />
+                </Pressable>
               </View>
             </View>
+          ) : (
+            <DepartmentHeadPlaceholder
+              isEditing={isEditing && canEditDept}
+              onPressAdd={handlePressAddMember}
+            />
           )}
 
           {department.teams.map((team, index) => {
             const isLastTeam = index === department.teams.length - 1;
-            const isLast = isLastTeam && !isEditing;
+            const isLast = isLastTeam && !(isEditing && canEditDept);
 
             return (
               <View key={team.id} style={styles.teamRow}>
@@ -159,12 +265,12 @@ const DepartmentSection: React.FC<IProps> = ({
                   )}
                 </View>
 
-                <MemoTeamSection team={team} isEditing={isEditing} />
+                <MemoTeamSection team={team} isEditing={isEditing} canEditDept={canEditDept} />
               </View>
             );
           })}
 
-          {isEditing && (
+          {isEditing && canEditDept && (
             <View style={styles.teamRow}>
               <View style={styles.connectorColumn}>
                 <View
@@ -182,8 +288,8 @@ const DepartmentSection: React.FC<IProps> = ({
                 />
               </View>
 
-              <Pressable style={styles.addTeamButton}>
-                <AppText variant="body7" color={AppColors.gray50}>
+              <Pressable style={styles.addTeamButton} onPress={handlePressAddTeam}>
+                <AppText variant="body8" color={AppColors.gray70}>
                   + 팀 추가
                 </AppText>
               </Pressable>
@@ -191,6 +297,30 @@ const DepartmentSection: React.FC<IProps> = ({
           )}
         </View>
       )}
+      <MemoRenameOrgSheet
+        visible={renameVisible}
+        onClose={handleCloseRename}
+        currentName={department.name}
+        onSave={handleSaveRename}
+        inputLabel="부서명"
+        placeholder="부서명을 입력해 주세요"
+      />
+
+      <MemoRenameOrgSheet
+        visible={addTeamVisible}
+        onClose={handleCloseAddTeam}
+        currentName=""
+        onSave={handleSaveAddTeam}
+        title="팀 추가"
+        inputLabel="팀명"
+        placeholder="팀명을 입력하세요"
+      />
+
+      <MemoAddMemberSheet
+        visible={addMemberVisible}
+        onClose={handleCloseAddMember}
+        onConfirm={handleConfirmAddMember}
+      />
     </MemoBaseCard>
   );
 };
@@ -228,6 +358,7 @@ const styles = StyleSheet.create({
     borderRadius: ms(8),
     backgroundColor: AppColors.gray10,
     marginBottom: ms(1),
+    marginLeft: ms(10),
   },
   headAvatar: {
     width: ms(34),
@@ -246,6 +377,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: ms(4),
+  },
+  meBadge: {
+    backgroundColor: AppColors.pastelLavendar,
+    borderRadius: ms(4),
+    paddingHorizontal: ms(6),
+    paddingVertical: ms(1),
   },
   dot: {
     width: ms(3),
@@ -281,15 +418,44 @@ const styles = StyleSheet.create({
     flex: 1,
     borderLeftWidth: ms(1),
   },
+  hidden: {
+    opacity: 0,
+  },
   addTeamButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: ms(10),
     borderWidth: 1,
+    padding: ms(8),
     borderColor: AppColors.gray30,
     borderRadius: ms(8),
-    borderStyle: 'dashed',
     marginLeft: ms(18),
+    gap: ms(6),
+    backgroundColor: AppColors.gray10,
+  },
+  headPlaceholder: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: ms(4),
+    padding: ms(8),
+    borderRadius: ms(8),
+    backgroundColor: AppColors.gray10,
+    marginLeft: ms(10),
+  },
+  headPlaceholderAddButton: {
+    width: ms(24),
+    height: ms(24),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: AppColors.gray20,
+    borderRadius: ms(100),
+    padding: ms(4),
+  },
+  headPlaceholderLine: {
+    flex: 1,
+    height: ms(2),
+    backgroundColor: AppColors.gray80,
+    borderRadius: ms(1),
   },
 });

@@ -302,6 +302,13 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
       ],
     );
 
+    //---------------------------------------
+    React.useEffect(() => {
+      return () => {
+        closeEventSource();
+      };
+    }, [closeEventSource]);
+
     return {
       progress,
       initProgress,

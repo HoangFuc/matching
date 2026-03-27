@@ -6,16 +6,16 @@ import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
-import { DocumentCopy } from '@/src/constants/icons';
+import { DocumentCopy, ShareIcon } from '@/src/constants/icons';
 import { useToast } from '@/src/providers/ToastProvider';
-import { ShareIcon } from 'react-native-heroicons/solid';
 
 interface IProps {
   link: string;
+  settingsChanged?: boolean;
 }
 
 //---------------------------------------
-const GeneratedLinkRow: React.FC<IProps> = ({ link }) => {
+const GeneratedLinkRow: React.FC<IProps> = ({ link, settingsChanged }) => {
   const { showToast } = useToast();
 
   //---------------------------------------
@@ -36,7 +36,9 @@ const GeneratedLinkRow: React.FC<IProps> = ({ link }) => {
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <View style={styles.linkRow}>
+        <View
+          style={[styles.linkRow, settingsChanged && styles.linkRowChanged]}
+        >
           <AppText
             variant="body8"
             color={AppColors.gray80}
@@ -46,23 +48,31 @@ const GeneratedLinkRow: React.FC<IProps> = ({ link }) => {
             {link}
           </AppText>
 
-          <Pressable hitSlop={8} onPress={handleCopy}>
-            <DocumentCopy
-              size={`${ms(18)}`}
-              color={AppColors.gray90}
-              variant="Linear"
-            />
-          </Pressable>
+          {!settingsChanged && (
+            <Pressable hitSlop={8} onPress={handleCopy}>
+              <DocumentCopy
+                size={`${ms(18)}`}
+                color={AppColors.gray90}
+                variant="Linear"
+              />
+            </Pressable>
+          )}
         </View>
 
-        <Pressable hitSlop={8} onPress={handleShare}>
-          <ShareIcon width={ms(20)} height={ms(20)} stroke={AppColors.white} />
+        <Pressable hitSlop={8} onPress={handleShare} disabled={settingsChanged}>
+          <ShareIcon width={ms(20)} height={ms(20)} color={settingsChanged ? AppColors.gray40 : AppColors.gray90} />
         </Pressable>
       </View>
 
-      <AppText variant="detail" color={AppColors.purple}>
-        * 링크 유형: 여러 명 사용 가능
-      </AppText>
+      {settingsChanged ? (
+        <AppText variant="detail" color={AppColors.negative}>
+          설정이 변경되었습니다. 링크를 다시 생성해 주세요
+        </AppText>
+      ) : (
+        <AppText variant="detail" color={AppColors.purple}>
+          * 링크 유형: 여러 명 사용 가능
+        </AppText>
+      )}
     </View>
   );
 };
@@ -92,5 +102,8 @@ const styles = StyleSheet.create({
   },
   linkText: {
     flex: 1,
+  },
+  linkRowChanged: {
+    borderColor: AppColors.negative,
   },
 });

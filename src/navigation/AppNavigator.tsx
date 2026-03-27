@@ -36,6 +36,7 @@ import { MemoMyPageScreen } from '../screens/myPage/screens/MyPageScreen';
 import { MemoOrgChartSetupScreen } from '../screens/auth/screens/OrgChartSetupScreen';
 import { MemoInviteMemberScreen } from '../screens/auth/screens/InviteMemberScreen';
 import { RegisterCompanyProvider } from '../screens/auth/context/RegisterCompanyContext';
+import { getKeepLoggedIn, getToken } from '@/src/services/tokenService';
 import AuthStack from './AuthStack';
 import HomeStack from './HomeStack';
 import MeetingMinutesStack from './MeetingMinutesStack';
@@ -250,9 +251,6 @@ const AppNavigator: React.FC = () => {
   React.useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { getKeepLoggedIn, getToken } = await import(
-          '@/src/services/tokenService'
-        );
         const keepLoggedIn = await getKeepLoggedIn();
         if (keepLoggedIn) {
           const token = await getToken();

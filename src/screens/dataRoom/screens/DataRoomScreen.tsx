@@ -23,6 +23,10 @@ import {
   useGetFoldersQuery,
 } from '@/src/store/api/dataRoom.api';
 import { useAppSelector } from '@/src/store/hooks';
+
+type TGridItem =
+  | { type: 'folder'; data: IFolder }
+  | { type: 'file'; data: IFile };
 import { MemoFABWithMenu } from '../components/FABWithMenu';
 import { MemoFileGridItem } from '../components/file';
 import {
@@ -52,6 +56,13 @@ const DataRoomScreen: React.FC = () => {
   const { data } = useGetFoldersQuery(activeTab);
   const folders = data?.folders ?? [];
   const files = data?.files ?? [];
+
+  //---------------------------------------
+  const gridItems = React.useMemo<TGridItem[]>(() => {
+    const items: TGridItem[] = folders.map(f => ({ type: 'folder', data: f }));
+    files.forEach(f => items.push({ type: 'file', data: f }));
+    return items;
+  }, [folders, files]);
 
   //---------------------------------------
   const { shareFolder } = useShareItem();
@@ -146,30 +157,29 @@ const DataRoomScreen: React.FC = () => {
   }, []);
 
   //---------------------------------------
-  const renderFolderItem = React.useCallback(
-    ({ item }: { item: IFolder }) => {
+  const renderGridItem = React.useCallback(
+    ({ item }: { item: TGridItem }) => {
+      if (item.type === 'folder') {
+        return (
+          <MemoFolderCard
+            folder={item.data}
+            onPress={handlePressFolder}
+            onPressMore={handlePressMore}
+          />
+        );
+      }
       return (
-        <MemoFolderCard
-          folder={item}
-          onPress={handlePressFolder}
-          onPressMore={handlePressMore}
-        />
+        <MemoFileGridItem item={item.data} onPressMore={handlePressFileMore} />
       );
     },
-    [handlePressFolder, handlePressMore],
+    [handlePressFolder, handlePressMore, handlePressFileMore],
   );
 
   //---------------------------------------
-  const renderFileItem = React.useCallback(
-    ({ item }: { item: IFile }) => {
-      return <MemoFileGridItem item={item} onPressMore={handlePressFileMore} />;
-    },
-    [handlePressFileMore],
+  const gridKeyExtractor = React.useCallback(
+    (item: TGridItem) => `${item.type}-${item.data.id}`,
+    [],
   );
-
-  //---------------------------------------
-  const keyExtractor = React.useCallback((item: IFolder) => item.id, []);
-  const fileKeyExtractor = React.useCallback((item: IFile) => item.id, []);
 
   return (
     <AppSafeAreaView style={styles.safeArea}>
@@ -216,32 +226,20 @@ const DataRoomScreen: React.FC = () => {
           ))}
         </View>
 
-        {/* Folder Grid */}
+        {/* Folder & File Grid */}
         <FlatList
-          data={folders}
-          renderItem={renderFolderItem}
-          keyExtractor={keyExtractor}
+          data={gridItems}
+          renderItem={renderGridItem}
+          keyExtractor={gridKeyExtractor}
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          ListFooterComponent={
-            files.length > 0 ? (
-              <FlatList
-                data={files}
-                renderItem={renderFileItem}
-                keyExtractor={fileKeyExtractor}
-                numColumns={2}
-                columnWrapperStyle={styles.row}
-                contentContainerStyle={styles.fileListContent}
-                scrollEnabled={false}
-              />
-            ) : null
-          }
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           ListEmptyComponent={
-            files.length === 0 ? (
-              <MemoNoData message="데이터가 없습니다" />
-            ) : null
+            <MemoNoData message="데이터가 없습니다" />
           }
         />
 
@@ -348,9 +346,6 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
-  },
-  fileListContent: {
-    gap: ms(12),
   },
   progressBar: {
     borderRadius: ms(100),

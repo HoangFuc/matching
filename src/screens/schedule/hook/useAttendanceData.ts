@@ -2,7 +2,7 @@ import React from 'react';
 
 import dayjs from 'dayjs';
 
-import { useGetMyAttendanceQuery } from '@/src/store/api';
+import { useGetMyAttendanceQuery } from '@/src/store/api/checkin.api';
 import { useHasCompany } from '@/src/hooks/useHasCompany';
 import { TScheduleMode } from '../type';
 

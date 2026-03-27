@@ -82,7 +82,11 @@ const buildInfoRows = (item: TMeetingMinutes): TDetailInfoRow[] => {
 
   const rows: TDetailInfoRow[] = [
     { label: '미팅종류', type: 'chip', chips },
-    { label: '날짜', type: 'text', value: item.meetingDate?.split('T')[0]?.replace(/-/g, '.') },
+    {
+      label: '날짜',
+      type: 'text',
+      value: item.meetingDate?.split('T')[0]?.replace(/-/g, '.'),
+    },
   ];
 
   if (item.address) {
@@ -97,7 +101,11 @@ const buildInfoRows = (item: TMeetingMinutes): TDetailInfoRow[] => {
   rows.push({ label: '고객명', type: 'text', value: item.customerName });
 
   if (item.customerPhone) {
-    rows.push({ label: '연락처', type: 'text', value: formatKoreanPhone(item.customerPhone ?? '') });
+    rows.push({
+      label: '연락처',
+      type: 'text',
+      value: formatKoreanPhone(item.customerPhone ?? ''),
+    });
   }
 
   rows.push({
@@ -163,24 +171,31 @@ const MeetingMinutesDetailScreen: React.FC = () => {
     async (uri: string): Promise<number> => {
       try {
         const durationMs = await new Promise<number>(resolve => {
+          let resolved = false;
+          const cleanup = () => {
+            if (!resolved) {
+              resolved = true;
+              AudioRecorderPlayer.stopPlayer().catch(() => {});
+              AudioRecorderPlayer.removePlayBackListener();
+            }
+          };
+
           const timeout = setTimeout(() => {
-            AudioRecorderPlayer.stopPlayer().catch(() => {});
-            AudioRecorderPlayer.removePlayBackListener();
+            cleanup();
             resolve(0);
           }, 5000);
 
           AudioRecorderPlayer.addPlayBackListener(e => {
             if (e.duration > 0) {
               clearTimeout(timeout);
-              AudioRecorderPlayer.stopPlayer().catch(() => {});
-              AudioRecorderPlayer.removePlayBackListener();
+              cleanup();
               resolve(e.duration);
             }
           });
 
           AudioRecorderPlayer.startPlayer(uri).catch(() => {
             clearTimeout(timeout);
-            AudioRecorderPlayer.removePlayBackListener();
+            cleanup();
             resolve(0);
           });
         });

@@ -172,6 +172,9 @@ const DataDetailScreen: React.FC = () => {
             ]}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={<MemoNoData message="파일이 없습니다" />}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={true}
           />
         ) : (
           <FlatList
@@ -187,6 +190,9 @@ const DataDetailScreen: React.FC = () => {
             ]}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={<MemoNoData message="파일이 없습니다" />}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={true}
           />
         )}
 

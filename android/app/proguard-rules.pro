@@ -8,3 +8,30 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# React Native
+-keep class com.facebook.react.** { *; }
+-keep class com.facebook.hermes.** { *; }
+-keep class com.facebook.jni.** { *; }
+
+# Keep native methods
+-keepclassmembers class * {
+    @com.facebook.react.bridge.ReactMethod <methods>;
+    @com.facebook.react.uimanager.annotations.ReactProp <methods>;
+    @com.facebook.react.uimanager.annotations.ReactPropGroup <methods>;
+}
+
+# Hermes
+-keep class com.facebook.hermes.unicode.** { *; }
+-keep class com.facebook.jni.** { *; }
+
+# react-native-reanimated
+-keep class com.swmansion.reanimated.** { *; }
+
+# OkHttp
+-dontwarn okhttp3.**
+-dontwarn okio.**
+
+# Keep model/data classes used with Gson/serialization
+-keepattributes Signature
+-keepattributes *Annotation*

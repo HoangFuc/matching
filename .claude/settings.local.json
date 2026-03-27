@@ -11,7 +11,8 @@
       "Bash(yarn clean:all)",
       "Bash(npx jest:*)",
       "Bash(npm run:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(find /c/matchingBare/src/screens -type f -name \"*.tsx\" -exec grep -l \"data\\\\.\" {})"
     ]
   }
 }

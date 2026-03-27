@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   useFocusEffect,
@@ -21,6 +22,7 @@ import { TScheduleRoute } from '../type';
 const Schedule: React.FC = () => {
   const route = useRoute<TScheduleRoute>();
   const navigation = useNavigation<ScheduleNavigationProp>();
+  const insets = useSafeAreaInsets();
   const mode = route.params?.mode ?? 'schedule';
   const hideTabBar = route.params?.hideTabBar;
 
@@ -43,10 +45,16 @@ const Schedule: React.FC = () => {
       setSelectedFilterTypes(ALL_SCHEDULE_TYPES);
       setDetailDateKey(undefined);
 
+      const tabBarWithInset = {
+        ...styles.tabBar,
+        height: ms(70) + insets.bottom,
+        paddingBottom: insets.bottom,
+      };
+
       if (hideTabBar) {
         navigation.getParent()?.setOptions({
           tabBarStyle: {
-            ...styles.tabBar,
+            ...tabBarWithInset,
             opacity: 0,
           },
         });
@@ -54,7 +62,7 @@ const Schedule: React.FC = () => {
 
       return () => {
         navigation.getParent()?.setOptions({
-          tabBarStyle: { ...styles.tabBar, opacity: 1 },
+          tabBarStyle: { ...tabBarWithInset, opacity: 1 },
         });
         navigation.setParams({
           mode: undefined,
@@ -62,7 +70,7 @@ const Schedule: React.FC = () => {
           hideTabBar: undefined,
         });
       };
-    }, [navigation, hideTabBar]),
+    }, [navigation, hideTabBar, insets.bottom]),
   );
 
   //---------------------------------------
@@ -143,8 +151,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabBar: {
-    height: ms(92),
     borderTopLeftRadius: ms(20),
     borderTopRightRadius: ms(20),
+    backgroundColor: AppColors.white,
   },
 });

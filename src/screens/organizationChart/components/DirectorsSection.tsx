@@ -1,22 +1,31 @@
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
-import { Add } from 'iconsax-react-nativejs';
+import { Add, CloseCircle } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { AppImages } from '@/src/constants/images';
-import type { TDirector } from '../type';
+import type { TDirector, TMember } from '../type';
+import { MemoAddMemberSheet } from './AddMemberSheet';
 
 interface IProps {
   directors: TDirector[];
+  totalMembers: number;
+  isEditing?: boolean;
+  canEdit?: boolean;
 }
 
 //---------------------------------------
-const DirectorCard: React.FC<{ director: TDirector }> = ({ director }) => {
+const DirectorCard: React.FC<{
+  director: TDirector;
+  isEditing?: boolean;
+}> = ({ director, isEditing = false }) => {
   return (
-    <View style={[styles.card, director.isMe && styles.cardActive]}>
+    <View
+      style={[styles.card, director.isMe && !isEditing && styles.cardActive]}
+    >
       {director.isMe && (
         <Image
           source={AppImages.star1}
@@ -60,39 +69,66 @@ const DirectorCard: React.FC<{ director: TDirector }> = ({ director }) => {
           {director.role}
         </AppText>
       </View>
+
+      <Pressable
+        hitSlop={8}
+        disabled={!isEditing}
+        style={!isEditing && styles.hidden}
+      >
+        <CloseCircle
+          size={`${ms(16)}`}
+          color={AppColors.gray50}
+          variant="Bold"
+        />
+      </Pressable>
     </View>
   );
 };
 
 //---------------------------------------
-const PlaceholderCard: React.FC = () => {
+const PlaceholderCard: React.FC<{ onPressAdd?: () => void }> = ({
+  onPressAdd,
+}) => {
   return (
-    <View style={styles.card}>
-      <View style={styles.placeholderCircle}>
-        <Add size={`${ms(20)}`} color={AppColors.gray40} variant="Linear" />
+    <Pressable style={styles.placeholderCard} onPress={onPressAdd}>
+      <AppText variant="body6" color={AppColors.gray70}>
+        총괄 2
+      </AppText>
+
+      <View style={styles.placeholderAddButton}>
+        <Add size={`${ms(12)}`} color={AppColors.gray50} variant="Linear" />
       </View>
-
-      <View style={styles.infoWrapper}>
-        <View style={styles.nameRow}>
-          <AppText variant="body6" color={AppColors.gray40}>
-            총괄 2
-          </AppText>
-
-          <View style={styles.addBadge}>
-            <Add size={`${ms(10)}`} color={AppColors.gray40} variant="Linear" />
-          </View>
-        </View>
-
-        <View style={styles.placeholderLine} />
-      </View>
-    </View>
+    </Pressable>
   );
 };
 
 //---------------------------------------
-const DirectorsSection: React.FC<IProps> = ({ directors }) => {
+const DirectorsSection: React.FC<IProps> = ({
+  directors,
+  totalMembers,
+  isEditing = false,
+  canEdit = false,
+}) => {
+  const effectiveEditing = isEditing && canEdit;
+  const [addMemberVisible, setAddMemberVisible] = React.useState(false);
   const director1 = directors[0] ?? null;
   const director2 = directors.length > 1 ? directors[1] : null;
+
+  //---------------------------------------
+  const handlePressAddMember = React.useCallback(() => {
+    setAddMemberVisible(true);
+  }, []);
+
+  //---------------------------------------
+  const handleCloseAddMember = React.useCallback(() => {
+    setAddMemberVisible(false);
+  }, []);
+
+  //---------------------------------------
+  const handleConfirmAddMember = React.useCallback((member: TMember) => {
+    // TODO: call API to add director
+    console.log('Add director', member);
+  }, []);
 
   if (!director1 && !director2) {
     return null;
@@ -100,9 +136,19 @@ const DirectorsSection: React.FC<IProps> = ({ directors }) => {
 
   return (
     <View style={styles.container}>
-      {director1 && <DirectorCard director={director1} />}
+      {director1 && <DirectorCard director={director1} isEditing={effectiveEditing} />}
 
-      {director2 ? <DirectorCard director={director2} /> : <PlaceholderCard />}
+      {director2 ? (
+        <DirectorCard director={director2} isEditing={effectiveEditing} />
+      ) : effectiveEditing && totalMembers > 1 ? (
+        <PlaceholderCard onPressAdd={handlePressAddMember} />
+      ) : null}
+
+      <MemoAddMemberSheet
+        visible={addMemberVisible}
+        onClose={handleCloseAddMember}
+        onConfirm={handleConfirmAddMember}
+      />
     </View>
   );
 };
@@ -171,26 +217,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: ms(6),
     paddingVertical: ms(1),
   },
-  placeholderCircle: {
-    width: ms(44),
-    height: ms(44),
-    borderRadius: ms(22),
-    backgroundColor: AppColors.gray20,
+  placeholderCard: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  addBadge: {
-    width: ms(16),
-    height: ms(16),
-    borderRadius: ms(8),
+    gap: ms(6),
+    backgroundColor: AppColors.white,
+    borderRadius: ms(14),
     borderWidth: ms(1),
     borderColor: AppColors.gray30,
+    paddingVertical: ms(14),
+    paddingHorizontal: ms(12),
+  },
+  placeholderAddButton: {
+    width: ms(24),
+    height: ms(24),
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: AppColors.gray20,
+    borderRadius: ms(100),
+    padding: ms(4),
+  },
+  hidden: {
+    opacity: 0,
   },
   placeholderLine: {
-    height: ms(1),
-    backgroundColor: AppColors.gray30,
-    marginTop: ms(4),
+    flex: 1,
+    height: ms(2),
+    backgroundColor: AppColors.gray80,
+    borderRadius: ms(1),
   },
 });

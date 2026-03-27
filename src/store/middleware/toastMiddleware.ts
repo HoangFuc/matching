@@ -28,6 +28,7 @@ const ToastErrorCodeMap: Record<string, string> = {
   INVITE_INACTIVE: '비활성화된 초대 코드입니다.',
   INVITE_EXPIRED: '초대 코드가 만료되었습니다.',
   INVITE_MAX_USES: '초대 코드 사용 횟수가 초과되었습니다.',
+  INVITE_POSITION_OCCUPIED: '이 팀에는 이미 팀장이 있습니다.',
 };
 
 export const toastMiddleware: Middleware = () => next => action => {

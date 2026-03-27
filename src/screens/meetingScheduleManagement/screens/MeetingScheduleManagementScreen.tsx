@@ -10,6 +10,7 @@ import {
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import dayjs from 'dayjs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -31,7 +32,6 @@ import {
 import { IMeetingScheduleManagement } from '@/src/interface/meetingScheduleManagement.interface';
 import { RootStackParamList } from '@/src/interface/tab.interface';
 import { useGetMeetingSchedulesQuery } from '@/src/store/api/meetingScheduleManagement.api';
-import { padZero } from '@/src/utils/calendar.helper';
 import { MemoDateRangePickerModal } from '../components/DateRangePickerModal';
 import { MemoMeetingScheduleCard } from '../components/MeetingScheduleCard';
 
@@ -41,21 +41,16 @@ const LIMIT = 20;
 
 const MeetingScheduleManagementScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
-  const now = new Date();
   const [page, setPage] = React.useState(1);
   const [activeTab, setActiveTab] = React.useState<MeetingScheduleScopeEnum>(
     MeetingScheduleScopeEnum.COMPANY,
   );
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [startDate, setStartDate] = React.useState(
-    `${now.getFullYear()}-${padZero(now.getMonth() + 1)}-${padZero(
-      now.getDate(),
-    )}`,
+    dayjs().format('YYYY-MM-DD'),
   );
   const [endDate, setEndDate] = React.useState(
-    `${now.getFullYear()}-${padZero(now.getMonth() + 1)}-${padZero(
-      now.getDate() + 6,
-    )}`,
+    dayjs().add(6, 'day').format('YYYY-MM-DD'),
   );
 
   const { data, isLoading, isFetching, refetch } = useGetMeetingSchedulesQuery({
@@ -73,13 +68,9 @@ const MeetingScheduleManagementScreen: React.FC = () => {
   //---------------------------------------
   useFocusEffect(
     React.useCallback(() => {
-      const today = new Date();
-      const todayStr = `${today.getFullYear()}-${padZero(
-        today.getMonth() + 1,
-      )}-${padZero(today.getDate())}`;
-      const nextWeekStr = `${today.getFullYear()}-${padZero(
-        today.getMonth() + 1,
-      )}-${padZero(today.getDate() + 6)}`;
+      const todayDayjs = dayjs();
+      const todayStr = todayDayjs.format('YYYY-MM-DD');
+      const nextWeekStr = todayDayjs.add(6, 'day').format('YYYY-MM-DD');
       setStartDate(todayStr);
       setEndDate(nextWeekStr);
       setActiveTab(MeetingScheduleScopeEnum.COMPANY);
@@ -265,6 +256,9 @@ const MeetingScheduleManagementScreen: React.FC = () => {
             ListFooterComponent={renderFooter}
             onRefresh={refetch}
             refreshing={isLoading}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={true}
           />
         )}
       </MemoScreenBody>

@@ -1,6 +1,8 @@
 import { BlurView } from '@react-native-community/blur';
 import React from 'react';
 import {
+  Animated,
+  Dimensions,
   KeyboardAvoidingView,
   Modal,
   Pressable,
@@ -12,9 +14,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import { ms, s } from 'react-native-size-matters/extend';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppColors } from '@/src/constants/colors';
 import { AppText } from './AppText';
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const ANIM_DURATION = 300;
 
 interface IProps {
   visible: boolean;
@@ -39,65 +45,141 @@ const AppBottomSheet: React.FC<IProps> = ({
   contentContainerStyle,
   footer,
 }) => {
+  const insets = useSafeAreaInsets();
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const backdropOpacity = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  //---------------------------------------
+  React.useEffect(() => {
+    if (visible) {
+      setModalVisible(true);
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: ANIM_DURATION,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: ANIM_DURATION,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: ANIM_DURATION,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: SCREEN_HEIGHT,
+          duration: ANIM_DURATION,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setModalVisible(false);
+      });
+    }
+  }, [visible, backdropOpacity, slideAnim]);
+
+  //---------------------------------------
+  const handleClose = React.useCallback(() => {
+    Animated.parallel([
+      Animated.timing(backdropOpacity, {
+        toValue: 0,
+        duration: ANIM_DURATION,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: SCREEN_HEIGHT,
+        duration: ANIM_DURATION,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setModalVisible(false);
+      onClose();
+    });
+  }, [backdropOpacity, slideAnim, onClose]);
+
   return (
     <Modal
-      visible={visible}
+      visible={modalVisible}
       transparent
-      animationType="slide"
+      animationType="none"
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <GestureHandlerRootView style={styles.flex}>
         <KeyboardAvoidingView style={styles.flex} behavior="padding">
-          <BlurView style={styles.overlay} blurType="dark" blurAmount={8}>
-            <Pressable style={styles.overlayPressable} onPress={onClose}>
-              <Pressable
-                style={[styles.sheet, { maxHeight }]}
-                onPress={e => e.stopPropagation()}
-              >
-                {showHandle && <View style={styles.handleBar} />}
+          <Animated.View style={[styles.flex, { opacity: backdropOpacity }]}>
+            <BlurView style={styles.overlay} blurType="dark" blurAmount={8}>
+              <Pressable style={styles.overlayPressable} onPress={handleClose} />
+            </BlurView>
+          </Animated.View>
 
-                {title && (
-                  <View style={styles.titleContainer}>
-                    <AppText variant="heading3" color={AppColors.gray100}>
-                      {title}
-                    </AppText>
-                  </View>
-                )}
+          <Animated.View
+            style={[
+              styles.sheetWrapper,
+              { transform: [{ translateY: slideAnim }] },
+            ]}
+          >
+            <Pressable
+              style={[styles.sheet, { maxHeight }]}
+              onPress={e => e.stopPropagation()}
+            >
+              {showHandle && <View style={styles.handleBar} />}
 
-                {scrollable ? (
-                  <KeyboardAwareScrollView
-                    contentContainerStyle={[
-                      styles.contentContainer,
-                      contentContainerStyle,
-                    ]}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                    enableOnAndroid
-                    extraScrollHeight={ms(20)}
-                  >
-                    {children}
-                  </KeyboardAwareScrollView>
-                ) : (
-                  <KeyboardAwareScrollView
-                    contentContainerStyle={[
-                      styles.contentContainer,
-                      contentContainerStyle,
-                    ]}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                    enableOnAndroid
-                    extraScrollHeight={ms(20)}
-                    scrollEnabled={false}
-                  >
-                    {children}
-                  </KeyboardAwareScrollView>
-                )}
+              {title && (
+                <View style={styles.titleContainer}>
+                  <AppText variant="heading3" color={AppColors.gray100}>
+                    {title}
+                  </AppText>
+                </View>
+              )}
 
-                {footer && <View style={styles.footerContainer}>{footer}</View>}
-              </Pressable>
+              {scrollable ? (
+                <KeyboardAwareScrollView
+                  contentContainerStyle={[
+                    styles.contentContainer,
+                    contentContainerStyle,
+                  ]}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                  enableOnAndroid
+                  extraScrollHeight={ms(20)}
+                >
+                  {children}
+                </KeyboardAwareScrollView>
+              ) : (
+                <KeyboardAwareScrollView
+                  contentContainerStyle={[
+                    styles.contentContainer,
+                    contentContainerStyle,
+                  ]}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                  enableOnAndroid
+                  extraScrollHeight={ms(20)}
+                  scrollEnabled={false}
+                >
+                  {children}
+                </KeyboardAwareScrollView>
+              )}
+
+              {footer && (
+                <View
+                  style={[
+                    styles.footerContainer,
+                    { paddingBottom: ms(20) + insets.bottom },
+                  ]}
+                >
+                  {footer}
+                </View>
+              )}
             </Pressable>
-          </BlurView>
+          </Animated.View>
         </KeyboardAvoidingView>
       </GestureHandlerRootView>
     </Modal>
@@ -114,8 +196,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   overlayPressable: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    ...StyleSheet.absoluteFillObject,
+  },
+  sheetWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   sheet: {
     backgroundColor: AppColors.white,
@@ -146,7 +233,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: ms(12),
     paddingHorizontal: ms(20),
-    paddingBottom: ms(20),
     paddingTop: ms(12),
   },
 });

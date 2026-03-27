@@ -10,6 +10,7 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
+import dayjs from 'dayjs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -21,7 +22,6 @@ import { TMeetingMinutes } from '@/src/interface/meetingMinutes.interface';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
 import { MemoDateRangePickerModal } from '@/src/screens/meetingScheduleManagement/components/DateRangePickerModal';
 import { useGetMeetingLogsQuery } from '@/src/store/api/meetingLog.api';
-import { padZero } from '@/src/utils/calendar.helper';
 import { MemoMeetingCard } from '../components/MeetingCard';
 
 type TNav = NativeStackNavigationProp<MeetingMinutesStackParamList>;
@@ -30,18 +30,13 @@ const LIMIT = 20;
 
 const MeetingMinutesScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
-  const now = new Date();
   const [page, setPage] = React.useState(1);
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [startDate, setStartDate] = React.useState(
-    `${now.getFullYear()}-${padZero(now.getMonth() + 1)}-${padZero(
-      now.getDate(),
-    )}`,
+    dayjs().format('YYYY-MM-DD'),
   );
   const [endDate, setEndDate] = React.useState(
-    `${now.getFullYear()}-${padZero(now.getMonth() + 1)}-${padZero(
-      now.getDate() + 6,
-    )}`,
+    dayjs().add(6, 'day').format('YYYY-MM-DD'),
   );
 
   //---------------------------------------
@@ -172,6 +167,9 @@ const MeetingMinutesScreen: React.FC = () => {
             ListFooterComponent={renderFooter}
             onRefresh={refetch}
             refreshing={isLoading}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={true}
           />
         )}
       </MemoScreenBody>

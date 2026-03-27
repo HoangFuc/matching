@@ -101,7 +101,8 @@ const SearchScreen: React.FC = () => {
 
   //---------------------------------------
   React.useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 300);
+    const timer = setTimeout(() => inputRef.current?.focus(), 300);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -144,6 +145,9 @@ const SearchScreen: React.FC = () => {
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
         ListEmptyComponent={
           keyword.trim() ? (
             <View style={styles.emptyContainer}>

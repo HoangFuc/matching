@@ -87,6 +87,12 @@ export const Typography = {
     lineHeight: lh(12),
     letterSpacing: ls(12),
   },
+  detail2: {
+    fontSize: 10,
+    fontWeight: FontWeight.regular,
+    lineHeight: lh(12),
+    letterSpacing: ls(12),
+  },
   pretendard: {
     fontSize: 12,
     fontWeight: FontWeight.semibold,

@@ -10,6 +10,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Buildings, Edit2, SmsTracking } from 'iconsax-react-nativejs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -23,25 +24,78 @@ import type { RootStackParamList } from '@/src/interface/tab.interface';
 import { useGetStructureQuery } from '@/src/store/api/company.api';
 import { MemoDepartmentSection } from '../components/DepartmentSection';
 import { MemoDirectorsSection } from '../components/DirectorsSection';
+import { MemoRenameOrgSheet } from '../components/RenameOrgSheet';
 import { MOCK_STRUCTURE } from '../mockData';
+import type { TStructure } from '../type';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OrganizationChart'>;
 
 //---------------------------------------
+const hasAnyEditPermission = (structure: TStructure): boolean => {
+  if (structure.canEdit) {
+    return true;
+  }
+  for (const dept of structure.departments) {
+    if (dept.canEdit) {
+      return true;
+    }
+    for (const team of dept.teams) {
+      if (team.canEdit) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+//---------------------------------------
 const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
-  // const { data: apiStructure, refetch } = useGetStructureQuery();
+  const { data: apiStructure, refetch } = useGetStructureQuery();
+  const insets = useSafeAreaInsets();
   const [isEditing, setIsEditing] = React.useState(false);
+  const [renameVisible, setRenameVisible] = React.useState(false);
+  const [createDeptVisible, setCreateDeptVisible] = React.useState(false);
 
   // Use API data if available, fallback to mock data
-  // const structure = apiStructure ?? MOCK_STRUCTURE;
-  const structure = MOCK_STRUCTURE;
+  const structure = apiStructure ?? MOCK_STRUCTURE;
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   //---------------------------------------
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     refetch();
-  //   }, [refetch]),
-  // );
+  const handleOpenRename = React.useCallback(() => {
+    setRenameVisible(true);
+  }, []);
+
+  //---------------------------------------
+  const handleCloseRename = React.useCallback(() => {
+    setRenameVisible(false);
+  }, []);
+
+  //---------------------------------------
+  const handleSaveRename = React.useCallback((newName: string) => {
+    // TODO: send rename request to server
+    console.log('Rename company to:', newName);
+  }, []);
+
+  //---------------------------------------
+  const handleOpenCreateDept = React.useCallback(() => {
+    setCreateDeptVisible(true);
+  }, []);
+
+  //---------------------------------------
+  const handleCloseCreateDept = React.useCallback(() => {
+    setCreateDeptVisible(false);
+  }, []);
+
+  //---------------------------------------
+  const handleSaveCreateDept = React.useCallback((name: string) => {
+    // TODO: send create department request to server
+    console.log('Create department:', name);
+  }, []);
 
   //---------------------------------------
   const handleToggleEdit = React.useCallback(() => {
@@ -54,33 +108,43 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
   }, [navigation]);
 
   //---------------------------------------
-  const handlePressShare = React.useCallback(() => {
-    // TODO: implement share
+  const handleCancelEdit = React.useCallback(() => {
+    setIsEditing(false);
   }, []);
+
+  //---------------------------------------
+  const handlePressSave = React.useCallback(() => {
+    // TODO: process body and send data to server
+  }, []);
+
+  //---------------------------------------
+  const canEditAnything = hasAnyEditPermission(structure);
 
   //---------------------------------------
   const rightElement = React.useMemo(
     () =>
       isEditing ? null : (
         <View style={styles.headerRight}>
-          <Pressable hitSlop={8} onPress={handleToggleEdit}>
-            <Edit2
-              size={`${ms(22)}`}
-              color={AppColors.white}
-              variant="Linear"
-            />
-          </Pressable>
+          {canEditAnything && (
+            <Pressable hitSlop={8} onPress={handleToggleEdit}>
+              <Edit2
+                size={`${ms(20)}`}
+                color={AppColors.white}
+                variant="Linear"
+              />
+            </Pressable>
+          )}
 
           <Pressable hitSlop={8} onPress={handlePressInvite}>
             <SmsTracking
-              size={`${ms(22)}`}
+              size={`${ms(20)}`}
               color={AppColors.white}
               variant="Linear"
             />
           </Pressable>
         </View>
       ),
-    [isEditing, handleToggleEdit, handlePressInvite],
+    [isEditing, canEditAnything, handleToggleEdit, handlePressInvite],
   );
 
   return (
@@ -101,7 +165,10 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
 
       <MemoScreenBody>
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: ms(24) + insets.bottom },
+          ]}
           showsVerticalScrollIndicator={false}
         >
           {/* Company Header */}
@@ -116,23 +183,40 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
               <AppText variant="heading3" color={AppColors.gray90}>
                 {`${structure.companyName} (${structure.totalMembers}명)`}
               </AppText>
+
+              {isEditing && structure.canEdit && (
+                <Pressable hitSlop={8} onPress={handleOpenRename}>
+                  <Edit2
+                    size={`${ms(20)}`}
+                    color={AppColors.gray90}
+                    variant="Linear"
+                  />
+                </Pressable>
+              )}
             </View>
 
-            {isEditing && (
-              <MemoAppButton
-                label="+ 부서 생성"
-                variant="secondary"
-                textVariant="body6"
-                textColor={AppColors.purple}
-                style={styles.addDepartmentButton}
-                onPress={() => {}}
-              />
-            )}
+            <MemoAppButton
+              label="+ 부서 생성"
+              variant="secondary"
+              textVariant="body6"
+              textColor={AppColors.purple}
+              style={[
+                styles.addDepartmentButton,
+                !(isEditing && structure.canEdit) && styles.hidden,
+              ]}
+              disabled={!(isEditing && structure.canEdit)}
+              onPress={handleOpenCreateDept}
+            />
           </View>
 
           {/* Directors */}
           {structure.directors.length > 0 && (
-            <MemoDirectorsSection directors={structure.directors} />
+            <MemoDirectorsSection
+              directors={structure.directors}
+              totalMembers={structure.totalMembers}
+              isEditing={isEditing}
+              canEdit={structure.canEdit}
+            />
           )}
 
           {/* Departments */}
@@ -142,6 +226,7 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
                 key={dept.id}
                 department={dept}
                 isEditing={isEditing}
+                canEditRoot={structure.canEdit}
                 defaultExpanded={index < 2}
               />
             ))}
@@ -151,14 +236,39 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
         {isEditing && (
           <MemoBottomButtonGroup>
             <MemoAppButton
-              label="공유하기"
+              label="취소"
+              variant="secondary"
+              textVariant="body6"
+              onPress={handleCancelEdit}
+            />
+
+            <MemoAppButton
+              label="저장"
               variant="primary"
               textVariant="body6"
-              onPress={handlePressShare}
+              textColor={AppColors.purple}
+              onPress={handlePressSave}
             />
           </MemoBottomButtonGroup>
         )}
       </MemoScreenBody>
+
+      <MemoRenameOrgSheet
+        visible={renameVisible}
+        onClose={handleCloseRename}
+        currentName={structure.companyName}
+        onSave={handleSaveRename}
+      />
+
+      <MemoRenameOrgSheet
+        visible={createDeptVisible}
+        onClose={handleCloseCreateDept}
+        currentName=""
+        onSave={handleSaveCreateDept}
+        title="부서 생성"
+        inputLabel="부서명"
+        placeholder="조직명을 입력해 주세요"
+      />
     </AppSafeAreaView>
   );
 };
@@ -178,7 +288,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: ms(24),
   },
   companyHeader: {
     flexDirection: 'row',
@@ -203,6 +312,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: ms(12),
     paddingVertical: ms(4),
     backgroundColor: AppColors.lavendar,
+  },
+  hidden: {
+    opacity: 0,
   },
   departmentsContainer: {
     paddingHorizontal: ms(16),

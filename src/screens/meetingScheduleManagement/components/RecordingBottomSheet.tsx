@@ -144,6 +144,17 @@ const RecordingBottomSheet: React.FC<IProps> = ({
     }
   }, [visible]);
 
+  //---------------------------------------
+  useEffect(() => {
+    return () => {
+      if (isRecordingRef.current) {
+        AudioRecorderPlayer.stopRecorder().catch(() => {});
+        AudioRecorderPlayer.removeRecordBackListener();
+        isRecordingRef.current = false;
+      }
+    };
+  }, []);
+
   return (
     <MemoBottomSheetModal
       visible={visible}

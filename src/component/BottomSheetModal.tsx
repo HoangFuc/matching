@@ -6,6 +6,8 @@ import {
   View,
   ViewStyle,
   StyleProp,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 
@@ -13,6 +15,8 @@ import { ms, s } from 'react-native-size-matters/extend';
 
 import { AppText } from './AppText';
 import { AppColors } from '../constants/colors';
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 interface IProps {
   visible: boolean;
@@ -29,37 +33,54 @@ const BottomSheetModal: React.FC<IProps> = ({
   sheetStyle,
   children,
 }) => {
+  const translateY = React.useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  //---------------------------------------
+
+  React.useEffect(() => {
+    if (visible) {
+      Animated.spring(translateY, {
+        toValue: 0,
+        useNativeDriver: true,
+        bounciness: 4,
+        speed: 14,
+      }).start();
+    } else {
+      translateY.setValue(SCREEN_HEIGHT);
+    }
+  }, [visible, translateY]);
+
+  //---------------------------------------
+
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType="fade"
       onRequestClose={onClose}
     >
       <BlurView style={styles.blur} blurType="dark" blurAmount={8}>
-      <Pressable
-        style={styles.overlay}
-        onPress={onClose}
-      >
-        <Pressable
-          style={[styles.sheet, sheetStyle]}
-          onPress={e => e.stopPropagation()}
-        >
-          <View style={styles.handleBar} />
+        <Pressable style={styles.overlay} onPress={onClose}>
+          <Animated.View
+            style={[styles.sheet, sheetStyle, { transform: [{ translateY }] }]}
+          >
+            <Pressable onPress={e => e.stopPropagation()}>
+              <View style={styles.handleBar} />
 
-          {title && (
-            <AppText
-              variant="heading3"
-              color={AppColors.gray100}
-              style={styles.title}
-            >
-              {title}
-            </AppText>
-          )}
+              {title && (
+                <AppText
+                  variant="heading3"
+                  color={AppColors.gray100}
+                  style={styles.title}
+                >
+                  {title}
+                </AppText>
+              )}
 
-          {children}
+              {children}
+            </Pressable>
+          </Animated.View>
         </Pressable>
-      </Pressable>
       </BlurView>
     </Modal>
   );
@@ -80,6 +101,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: ms(20),
     borderTopRightRadius: ms(20),
   },
+
   handleBar: {
     width: s(50),
     height: s(6),

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
+
 import { AppColors } from '@/src/constants/colors';
 import type { IFile } from '@/src/store/api/dataRoom.api';
 

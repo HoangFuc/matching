@@ -1866,9 +1866,9 @@
     color "^4.2.3"
 
 "@react-navigation/core@^7.16.2":
-  version "7.17.0"
-  resolved "https://registry.yarnpkg.com/@react-navigation/core/-/core-7.17.0.tgz#7553a86e25acc7221ba6cdf6296e9163ab361c73"
-  integrity sha512-E4Kr1PRrhKiVn1RdMdPIG1rCfrKh+HiVJ2smdLsh9D95Q2z0a9dGE9yHpRQ2pAUiiwOfgloLqegkPb8g+TcCBA==
+  version "7.17.1"
+  resolved "https://registry.yarnpkg.com/@react-navigation/core/-/core-7.17.1.tgz#0e2ca973e77f8c578dd4f1539c90e4c7e43a3d02"
+  integrity sha512-P1kL4FVTVYEf9Cvmb+WFxQ2UkbaXc9psj6OE0BsZ+hutPqZVbmiN6v/TI5QPf4qtg40a02yYo3vo+Mob9vJKtg==
   dependencies:
     "@react-navigation/routers" "^7.5.3"
     escape-string-regexp "^4.0.0"
@@ -1889,9 +1889,9 @@
     use-sync-external-store "^1.5.0"
 
 "@react-navigation/elements@^2.5.0", "@react-navigation/elements@^2.9.8":
-  version "2.9.12"
-  resolved "https://registry.yarnpkg.com/@react-navigation/elements/-/elements-2.9.12.tgz#ec88caa8398ed29c985ba28c2cd672481f169f00"
-  integrity sha512-LSaQUj5SV9OXVRcxT8mqETDoM7BOKCveCvuLjdAr9NZnPDM5HW8uDnvW/sCa8oEFy+22+ojoXtHFKsfnesgBbw==
+  version "2.9.13"
+  resolved "https://registry.yarnpkg.com/@react-navigation/elements/-/elements-2.9.13.tgz#6369cd1053823434dc8fb1cf5e89a635edb09985"
+  integrity sha512-ZD8fPwhujgs3SwgaPRse+shLCFkeLhlfk9BHtQ604Qa7/p0/sRQV9HkTfREP8gtbt6nwk6WE+0vWfX2iqxOCKA==
   dependencies:
     color "^4.2.3"
     use-latest-callback "^0.2.4"
@@ -2767,9 +2767,9 @@ base64-js@^1.3.1, base64-js@^1.5.1:
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
 
 baseline-browser-mapping@^2.9.0:
-  version "2.10.10"
-  resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.10.10.tgz#e74bd066724c1d8d7d8ea75fc3be25389a7a5c56"
-  integrity sha512-sUoJ3IMxx4AyRqO4MLeHlnGDkyXRoUG0/AI9fjK+vS72ekpV0yWVY7O0BVjmBcRtkNcsAO2QDZ4tdKKGoI6YaQ==
+  version "2.10.11"
+  resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.10.11.tgz#957bea71ccc2e9854287c2575a037d36b3a94b73"
+  integrity sha512-DAKrHphkJyiGuau/cFieRYhcTFeK/lBuD++C7cZ6KZHbMhBrisoi+EvhQ5RZrIfV5qwsW8kgQ07JIC+MDJRAhg==
 
 bl@^4.1.0:
   version "4.1.0"
@@ -3460,9 +3460,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.5.263:
-  version "1.5.323"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.323.tgz#1111d8bd686361b88a0f19c92da8019337cf4f79"
-  integrity sha512-oQm+FxbazvN2WICCbvJgj3IYPKV8awip57+W5VP+Aatk4kFU4pDYCPHZOX22Z27zpw8uttBehEqgK+VTJAYrVw==
+  version "1.5.327"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.327.tgz#506ebbcb82b779271218bfc1a1e91ed2745267ef"
+  integrity sha512-hLxLdIJDf8zIzKoH2TPCs+Botc+wUmj9sp4jVMwklY/sKleM8xxxOExRX3Gxj73nCXmJe3anhG7SvsDDPDvmuQ==
 
 emittery@^0.13.1:
   version "0.13.1"
@@ -6120,9 +6120,9 @@ path-scurry@^2.0.0:
     minipass "^7.1.2"
 
 path-to-regexp@^8.0.0:
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-8.3.0.tgz#aa818a6981f99321003a08987d3cec9c3474cd1f"
-  integrity sha512-7jdwVIRtsP8MYpdXSwOS0YdD0Du+qOoF/AEPIt88PcCFrZCzx41oxku1jD88hZBwbNUIEfpqvuhjFaMAqMTWnA==
+  version "8.4.0"
+  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-8.4.0.tgz#8e98fcd94826aff01a90c544ef74ffbaca3a78ed"
+  integrity sha512-PuseHIvAnz3bjrM2rGJtSgo1zjgxapTLZ7x2pjhzWwlp4SJQgK3f3iZIQwkpEnBaKz6seKBADpM4B4ySkuYypg==
 
 path-type@^4.0.0:
   version "4.0.0"

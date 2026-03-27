@@ -1,6 +1,5 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
-
 import { CloseCircle } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
 
@@ -41,6 +40,14 @@ const MemberItem: React.FC<IProps> = ({
           {member.fullName}
         </AppText>
 
+        {member.isMe && (
+          <View style={styles.meBadge}>
+            <AppText variant="detail" color={AppColors.purple}>
+              나
+            </AppText>
+          </View>
+        )}
+
         <View style={styles.dot} />
 
         <AppText variant="detail" color={AppColors.gray70}>
@@ -80,6 +87,14 @@ const MemberItem: React.FC<IProps> = ({
         <AppText variant="body7" color={AppColors.gray90} numberOfLines={1}>
           {member.fullName}
         </AppText>
+
+        {member.isMe && (
+          <View style={styles.meBadge}>
+            <AppText variant="detail" color={AppColors.purple}>
+              나
+            </AppText>
+          </View>
+        )}
 
         {isEditing && (
           <Pressable hitSlop={8}>
@@ -141,7 +156,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  nameRow: {
+  meBadge: {
+    backgroundColor: AppColors.pastelLavendar,
+    borderRadius: ms(4),
+    paddingHorizontal: ms(6),
+    paddingVertical: ms(1),
+  },
+nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: ms(2),

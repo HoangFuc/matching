@@ -20,28 +20,25 @@ import { MemoRanking } from "../component/body/Ranking";
 const GRADIENT_HEIGHT = ms(24);
 const GRADIENT_STEPS = 20;
 
+const GRADIENT_OPACITIES = Array.from({ length: GRADIENT_STEPS }, (_, i) => {
+  const ratio = i / (GRADIENT_STEPS - 1);
+  return 1 - ratio * ratio;
+});
+
 //---------------------------------------
 
-const GradientOverlay: React.FC = () => {
+const GradientOverlay: React.FC = React.memo(() => {
   return (
     <View style={styles.gradientContainer} pointerEvents="none">
-      {Array.from({ length: GRADIENT_STEPS }).map((_, i) => {
-        const ratio = i / (GRADIENT_STEPS - 1);
-        return (
-          <View
-            key={i}
-            style={[
-              styles.gradientStep,
-              {
-                opacity: 1 - ratio * ratio,
-              },
-            ]}
-          />
-        );
-      })}
+      {GRADIENT_OPACITIES.map((opacity, i) => (
+        <View
+          key={i}
+          style={[styles.gradientStep, { opacity }]}
+        />
+      ))}
     </View>
   );
-};
+});
 
 //---------------------------------------
 

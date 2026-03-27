@@ -31,8 +31,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     gap: ms(8),
-    height: ms(76),
-    paddingTop: ms(16),
+    paddingVertical: ms(16),
     paddingHorizontal: ms(16),
     backgroundColor: 'white',
     ...Platform.select({

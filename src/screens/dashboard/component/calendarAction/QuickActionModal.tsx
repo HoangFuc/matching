@@ -10,6 +10,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { ms } from 'react-native-size-matters/extend';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/src/component/AppText';
 import { MemoUnderDevelopmentModal } from '@/src/component/UnderDevelopmentModal';
@@ -50,6 +51,7 @@ const ACTIONS = [
 
 const QuickActionFAB: React.FC = () => {
   const { overlayVisible: expanded, setOverlayVisible } = useOverlay();
+  const insets = useSafeAreaInsets();
   const rotation = useSharedValue(0);
   const [showDevModal, setShowDevModal] = useState(false);
 
@@ -94,7 +96,10 @@ const QuickActionFAB: React.FC = () => {
 
   return (
     <>
-      <View style={styles.wrapper} pointerEvents="box-none">
+      <View
+        style={[styles.wrapper, { bottom: ms(116) + insets.bottom }]}
+        pointerEvents="box-none"
+      >
         <View style={styles.row}>
           {expanded && (
             <Animated.View
@@ -152,7 +157,7 @@ export const MemoQuickActionFAB = React.memo(QuickActionFAB);
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    bottom: ms(116),
+    bottom: 0,
     left: 0,
     right: 0,
     alignItems: 'flex-end',

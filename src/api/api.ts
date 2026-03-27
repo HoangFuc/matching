@@ -1,7 +1,5 @@
 import { Alert } from 'react-native';
 
-import _ from 'lodash';
-
 import { API_BASE_URL } from '@env';
 import { getCommonHeaders } from '@/src/services/apiHeaderService';
 import { showUpdateRequired } from '@/src/utils/updateRequiredDispatcher';
@@ -11,18 +9,16 @@ const API_URL = API_BASE_URL;
 const TIME_OUT_API = 100000;
 
 export const buildQuies = (params = {}) => {
-  const queries = _(params)
-    .entries()
-    .reduce((acc, [key, value]) => {
-      let type = typeof value;
-      if (type !== 'undefined') {
-        let val = type === 'object' ? JSON.stringify(value) : (value as string);
-        acc.push(`${key}=${encodeURI(val)}`);
-      }
-      return acc;
-    }, [] as string[]);
+  const queries = Object.entries(params).reduce((acc, [key, value]) => {
+    let type = typeof value;
+    if (type !== 'undefined') {
+      let val = type === 'object' ? JSON.stringify(value) : (value as string);
+      acc.push(`${key}=${encodeURI(val)}`);
+    }
+    return acc;
+  }, [] as string[]);
 
-  const query = _.isEmpty(queries) ? '' : `?${queries.join('&')}`;
+  const query = queries.length === 0 ? '' : `?${queries.join('&')}`;
   return query;
 };
 
@@ -53,7 +49,7 @@ export const apiGet = async (
     clearTimeout(timeoutId);
 
     const contentType = result.headers.get('content-type');
-    const json =
+    const json: any =
       contentType && contentType.match('json')
         ? await result.json()
         : await result.text();
@@ -61,7 +57,7 @@ export const apiGet = async (
     const responseStatus = result.status;
 
     if (responseStatus >= 400) {
-      let message = _.get(json, 'error.message', result.status);
+      let message = json?.error?.message ?? result.status;
       if (responseStatus === 403 && json?.data) {
         showUpdateRequired(json.data);
       }
@@ -70,7 +66,7 @@ export const apiGet = async (
       }
 
       const error = new Error(message);
-      _.set(error, 'code', responseStatus);
+      (error as any).code = responseStatus;
       throw error;
     }
     return json;
@@ -116,7 +112,7 @@ export const apiRest = async (
     clearTimeout(timeoutId);
 
     const contentType = result.headers.get('content-type');
-    const json =
+    const json: any =
       contentType && contentType.match('json')
         ? await result.json()
         : await result.text();
@@ -124,11 +120,8 @@ export const apiRest = async (
     const responseStatus = result.status;
 
     if (responseStatus >= 400) {
-      let message = _.get(
-        json,
-        'error.message',
-        `${responseStatus}: ${JSON.stringify(json)}`,
-      );
+      let message =
+        json?.error?.message ?? `${responseStatus}: ${JSON.stringify(json)}`;
       if (responseStatus === 403 && json?.data) {
         showUpdateRequired(json.data);
       }

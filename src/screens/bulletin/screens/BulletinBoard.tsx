@@ -113,6 +113,9 @@ const BulletinBoard: React.FC = () => {
           ListEmptyComponent={renderEmpty}
           onRefresh={refetch}
           refreshing={isLoading}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
         />
       </MemoScreenBody>
     </AppSafeAreaView>

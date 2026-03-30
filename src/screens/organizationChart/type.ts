@@ -32,6 +32,7 @@ export type TDepartment = {
   id: string;
   name: string;
   canEdit: boolean;
+  managedById?: string;
   departmentHead?: TDepartmentHead | null;
   teams: TTeam[];
 };

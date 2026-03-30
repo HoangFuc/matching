@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
@@ -24,6 +23,7 @@ import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { formatKoreanPhone } from '@/src/component/PhoneInput';
 import {
   MemoDetailInfoRow,
@@ -275,92 +275,82 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   }, []);
 
   //---------------------------------------
-  if (isLoading || !item) {
-    return (
-      <AppSafeAreaView style={styles.safeArea}>
-        <MemoScreenHeader title="미팅록 세부 정보" />
-        <MemoScreenBody>
-          <ActivityIndicator
-            style={styles.centerLoader}
-            color={AppColors.purple}
-          />
-        </MemoScreenBody>
-      </AppSafeAreaView>
-    );
-  }
-
   return (
     <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="미팅록 세부 정보" />
 
-      <MemoScreenBody>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Meeting Info Header */}
-          <View style={styles.cardHeader}>
-            <AppText variant="body5" color={AppColors.gray90}>
-              회의 정보
-            </AppText>
+      <FullScreenLoading visible={isLoading || !item} />
 
-            <Pressable
-              hitSlop={8}
-              onPress={handleEdit}
-              style={styles.iconContainer}
-            >
-              <Edit2
-                size={`${ms(20)}`}
-                color={AppColors.gray90}
-                variant="Linear"
-              />
-            </Pressable>
-          </View>
-
-          {/* Meeting Info Card */}
-          <View style={styles.card}>
-            {infoRows.map(row => (
-              <MemoDetailInfoRow key={row.label} row={row} />
-            ))}
-          </View>
-
-          {/* Upload Progress */}
-          {uploadProgress && (
-            <MemoUploadProgressBar
-              progress={uploadProgress}
-              onCancel={cancelUpload}
-              containerStyle={styles.uploadCard}
-            />
-          )}
-
-          {/* Recordings */}
-          {recordings?.map(rec => (
-            <MemoRecordedAudioCard
-              key={rec.id}
-              filePath={rec.playUrl}
-              fileName={fixBrokenUtf8Encoding(rec.fileName)}
-              durationMs={
-                rec.durationSeconds ? rec.durationSeconds * 1000 : undefined
-              }
-            />
-          ))}
-
-          {/* Import file when no recording */}
-          {!recordings?.length && !uploadProgress && (
-            <View style={styles.uploadSection}>
+      {item && (
+        <MemoScreenBody>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Meeting Info Header */}
+            <View style={styles.cardHeader}>
               <AppText variant="body5" color={AppColors.gray90}>
-                녹음파일
+                회의 정보
               </AppText>
 
-              <MemoFileUploadSection
-                files={uploadFiles}
-                onPickFile={handlePickFile}
-                onRemoveFile={handleRemoveFile}
-              />
+              <Pressable
+                hitSlop={8}
+                onPress={handleEdit}
+                style={styles.iconContainer}
+              >
+                <Edit2
+                  size={`${ms(20)}`}
+                  color={AppColors.gray90}
+                  variant="Linear"
+                />
+              </Pressable>
             </View>
-          )}
-        </ScrollView>
-      </MemoScreenBody>
+
+            {/* Meeting Info Card */}
+            <View style={styles.card}>
+              {infoRows.map(row => (
+                <MemoDetailInfoRow key={row.label} row={row} />
+              ))}
+            </View>
+
+            {/* Upload Progress */}
+            {uploadProgress && (
+              <MemoUploadProgressBar
+                progress={uploadProgress}
+                onCancel={cancelUpload}
+                containerStyle={styles.uploadCard}
+              />
+            )}
+
+            {/* Recordings */}
+            {recordings?.map(rec => (
+              <MemoRecordedAudioCard
+                key={rec.id}
+                filePath={rec.playUrl}
+                fileName={fixBrokenUtf8Encoding(rec.fileName)}
+                durationMs={
+                  rec.durationSeconds ? rec.durationSeconds * 1000 : undefined
+                }
+              />
+            ))}
+
+            {/* Import file when no recording */}
+            {!recordings?.length && !uploadProgress && (
+              <View style={styles.uploadSection}>
+                <AppText variant="body5" color={AppColors.gray90}>
+                  녹음파일
+                </AppText>
+
+                <MemoFileUploadSection
+                  files={uploadFiles}
+                  onPickFile={handlePickFile}
+                  onRemoveFile={handleRemoveFile}
+                />
+              </View>
+            )}
+          </ScrollView>
+        </MemoScreenBody>
+      )}
     </AppSafeAreaView>
   );
 };
@@ -409,10 +399,5 @@ const styles = StyleSheet.create({
   },
   uploadSection: {
     gap: ms(8),
-  },
-  centerLoader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });

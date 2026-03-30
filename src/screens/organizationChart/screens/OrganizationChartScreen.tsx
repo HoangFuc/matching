@@ -31,16 +31,18 @@ type Props = NativeStackScreenProps<RootStackParamList, 'OrganizationChart'>;
 //---------------------------------------
 const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const [directorSlot, setDirectorSlot] = React.useState(1);
   const {
     structure,
     isEditing,
+    hasChanges,
     canEditAnything,
     isSingleDirectorCompany,
     editActions,
     startEditing,
     cancelEdit,
     saveEdit,
-  } = useOrgFormData();
+  } = useOrgFormData(directorSlot);
 
   const [renameVisible, setRenameVisible] = React.useState(false);
   const [createDeptVisible, setCreateDeptVisible] = React.useState(false);
@@ -72,8 +74,14 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
 
   //---------------------------------------
   const handleSaveCreateDept = React.useCallback((name: string) => {
-    editActions.createDepartment(name);
-  }, [editActions]);
+    const director = structure.directors[directorSlot - 1];
+    editActions.createDepartment(name, director?.memberId);
+  }, [editActions, structure.directors, directorSlot]);
+
+  //---------------------------------------
+  const handlePressDirector = React.useCallback((slot: number) => {
+    setDirectorSlot(slot);
+  }, []);
 
   //---------------------------------------
   const handlePressInvite = React.useCallback(() => {
@@ -131,6 +139,7 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
               { paddingBottom: ms(24) + insets.bottom },
             ]}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             {/* Company Header */}
             <View style={styles.companyHeader}>
@@ -178,6 +187,8 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
                 isEditing={isEditing}
                 canEdit={structure.canEdit}
                 isSingleDirectorCompany={isSingleDirectorCompany}
+                selectedSlot={directorSlot}
+                onPressDirector={handlePressDirector}
               />
             )}
 
@@ -187,6 +198,7 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
                 <MemoDepartmentSection
                   key={dept.id}
                   department={dept}
+                  allDepartments={structure.departments}
                   isEditing={isEditing}
                   canEditRoot={structure.canEdit}
                   defaultExpanded={index < 2}
@@ -208,7 +220,7 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
                 label="저장"
                 variant="primary"
                 textVariant="body6"
-                textColor={AppColors.purple}
+                disabled={!hasChanges}
                 onPress={saveEdit}
               />
             </MemoBottomButtonGroup>

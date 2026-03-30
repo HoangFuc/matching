@@ -15,12 +15,16 @@ import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
 import { useOrgEditActions } from '../context/OrgEditContext';
 import type { TDepartment, TMember } from '../type';
+import { findMemberCurrentPosition, getDepartmentMemberIds } from '../utils';
 import { MemoAddMemberSheet } from './AddMemberSheet';
+import { MemoKickMemberSheet } from './KickMemberSheet';
 import { MemoRenameOrgSheet } from './RenameOrgSheet';
 import { MemoTeamSection } from './TeamSection';
+import { MemoTransferMemberSheet } from './TransferMemberSheet';
 
 interface IProps {
   department: TDepartment;
+  allDepartments: TDepartment[];
   isEditing?: boolean;
   canEditRoot?: boolean;
   defaultExpanded?: boolean;
@@ -59,6 +63,7 @@ const DepartmentHeadPlaceholder: React.FC<{
 //---------------------------------------
 const DepartmentSection: React.FC<IProps> = ({
   department,
+  allDepartments,
   isEditing = false,
   canEditRoot = false,
   defaultExpanded = true,
@@ -69,7 +74,17 @@ const DepartmentSection: React.FC<IProps> = ({
   const [renameVisible, setRenameVisible] = React.useState(false);
   const [addTeamVisible, setAddTeamVisible] = React.useState(false);
   const [addMemberVisible, setAddMemberVisible] = React.useState(false);
+  const [kickHeadVisible, setKickHeadVisible] = React.useState(false);
+  const [transferInfo, setTransferInfo] = React.useState<{
+    member: TMember;
+    currentGroupName: string;
+    transferType: 'department' | 'team';
+  } | null>(null);
   const totalMembers = getTotalMembers(department);
+  const disabledMemberIds = React.useMemo(
+    () => getDepartmentMemberIds(department),
+    [department],
+  );
 
   //---------------------------------------
   const handleToggle = React.useCallback(() => {
@@ -125,15 +140,50 @@ const DepartmentSection: React.FC<IProps> = ({
   //---------------------------------------
   const handleConfirmAddMember = React.useCallback(
     (member: TMember) => {
+      const position = findMemberCurrentPosition(allDepartments, member.memberId);
+      if (position) {
+        setTransferInfo({
+          member,
+          currentGroupName: position.groupName,
+          transferType: position.type,
+        });
+        return;
+      }
       actions.setDepartmentHead(department.id, member);
     },
-    [actions, department.id],
+    [actions, department.id, allDepartments],
   );
 
   //---------------------------------------
-  const handleRemoveDepartmentHead = React.useCallback(() => {
-    actions.removeDepartmentHead(department.id);
-  }, [actions, department.id]);
+  const handleCloseTransfer = React.useCallback(() => {
+    setTransferInfo(null);
+  }, []);
+
+  //---------------------------------------
+  const handleConfirmTransfer = React.useCallback(() => {
+    if (transferInfo) {
+      actions.setDepartmentHead(department.id, transferInfo.member);
+    }
+    setTransferInfo(null);
+  }, [actions, department.id, transferInfo]);
+
+  //---------------------------------------
+  const handlePressRemoveHead = React.useCallback(() => {
+    setKickHeadVisible(true);
+  }, []);
+
+  //---------------------------------------
+  const handleCloseKickHead = React.useCallback(() => {
+    setKickHeadVisible(false);
+  }, []);
+
+  //---------------------------------------
+  const handleConfirmKickHead = React.useCallback(() => {
+    if (department.departmentHead) {
+      actions.kickMember(department.departmentHead.memberId);
+    }
+    setKickHeadVisible(false);
+  }, [actions, department.departmentHead]);
 
   return (
     <MemoBaseCard style={styles.card}>
@@ -225,7 +275,7 @@ const DepartmentSection: React.FC<IProps> = ({
                 <Pressable
                   hitSlop={8}
                   disabled={!(isEditing && canEditDept)}
-                  onPress={handleRemoveDepartmentHead}
+                  onPress={handlePressRemoveHead}
                   style={!(isEditing && canEditDept) && styles.hidden}
                 >
                   <CloseCircle
@@ -277,6 +327,7 @@ const DepartmentSection: React.FC<IProps> = ({
                 <MemoTeamSection
                   departmentId={department.id}
                   team={team}
+                  allDepartments={allDepartments}
                   isEditing={isEditing}
                   canEditDept={canEditDept}
                 />
@@ -335,8 +386,27 @@ const DepartmentSection: React.FC<IProps> = ({
 
       <MemoAddMemberSheet
         visible={addMemberVisible}
+        disabledMemberIds={disabledMemberIds}
         onClose={handleCloseAddMember}
         onConfirm={handleConfirmAddMember}
+      />
+
+      <MemoKickMemberSheet
+        visible={kickHeadVisible}
+        memberName={department.departmentHead?.fullName ?? ''}
+        kickType="department"
+        onClose={handleCloseKickHead}
+        onConfirm={handleConfirmKickHead}
+      />
+
+      <MemoTransferMemberSheet
+        visible={transferInfo !== null}
+        memberName={transferInfo?.member.fullName ?? ''}
+        currentGroupName={transferInfo?.currentGroupName ?? ''}
+        targetGroupName={department.name}
+        transferType={transferInfo?.transferType ?? 'department'}
+        onClose={handleCloseTransfer}
+        onConfirm={handleConfirmTransfer}
       />
     </MemoBaseCard>
   );

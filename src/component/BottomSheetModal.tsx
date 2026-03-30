@@ -64,7 +64,7 @@ const BottomSheetModal: React.FC<IProps> = ({
           <Animated.View
             style={[styles.sheet, sheetStyle, { transform: [{ translateY }] }]}
           >
-            <Pressable onPress={e => e.stopPropagation()}>
+            <View onStartShouldSetResponder={() => true}>
               <View style={styles.handleBar} />
 
               {title && (
@@ -78,7 +78,7 @@ const BottomSheetModal: React.FC<IProps> = ({
               )}
 
               {children}
-            </Pressable>
+            </View>
           </Animated.View>
         </Pressable>
       </BlurView>

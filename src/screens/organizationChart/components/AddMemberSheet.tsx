@@ -18,6 +18,7 @@ import type { TMember } from '../type';
 
 interface IProps {
   visible: boolean;
+  disabledMemberIds?: string[];
   onClose: () => void;
   onConfirm: (member: TMember) => void;
 }
@@ -26,19 +27,29 @@ interface IProps {
 const MemberRow: React.FC<{
   member: TMember;
   isSelected: boolean;
+  isDisabled: boolean;
   onPress: () => void;
-}> = ({ member, isSelected, onPress }) => {
+}> = ({ member, isSelected, isDisabled, onPress }) => {
   return (
-    <Pressable style={styles.memberRow} onPress={onPress}>
+    <Pressable
+      style={[styles.memberRow, isDisabled && styles.memberRowDisabled]}
+      onPress={onPress}
+      disabled={isDisabled}
+    >
       <View style={styles.memberInfo}>
         {member.avatarUrl ? (
           <Image
             source={{ uri: member.avatarUrl }}
-            style={styles.avatar}
+            style={[styles.avatar, isDisabled && styles.avatarDisabled]}
             resizeMode="cover"
           />
         ) : (
-          <View style={styles.avatarPlaceholder}>
+          <View
+            style={[
+              styles.avatarPlaceholder,
+              isDisabled && styles.avatarDisabled,
+            ]}
+          >
             <AppText variant="body8" color={AppColors.white}>
               {member.fullName.charAt(0)}
             </AppText>
@@ -47,7 +58,13 @@ const MemberRow: React.FC<{
 
         <AppText
           variant={isSelected ? 'body1' : 'body4'}
-          color={isSelected ? AppColors.purple : AppColors.gray90}
+          color={
+            isDisabled
+              ? AppColors.gray40
+              : isSelected
+                ? AppColors.purple
+                : AppColors.gray90
+          }
         >
           {member.fullName}
         </AppText>
@@ -56,12 +73,19 @@ const MemberRow: React.FC<{
           style={[
             styles.dot,
             isSelected && { backgroundColor: AppColors.purple },
+            isDisabled && { backgroundColor: AppColors.gray40 },
           ]}
         />
 
         <AppText
           variant="body4"
-          color={isSelected ? AppColors.purple : AppColors.gray70}
+          color={
+            isDisabled
+              ? AppColors.gray40
+              : isSelected
+                ? AppColors.purple
+                : AppColors.gray70
+          }
         >
           {member.role}
         </AppText>
@@ -77,7 +101,12 @@ const MemberRow: React.FC<{
 };
 
 //---------------------------------------
-const AddMemberSheet: React.FC<IProps> = ({ visible, onClose, onConfirm }) => {
+const AddMemberSheet: React.FC<IProps> = ({
+  visible,
+  disabledMemberIds = [],
+  onClose,
+  onConfirm,
+}) => {
   const { data: memberGroups = [], isLoading } = useGetMembersQuery(undefined, {
     skip: !visible,
   });
@@ -136,6 +165,7 @@ const AddMemberSheet: React.FC<IProps> = ({ visible, onClose, onConfirm }) => {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           {memberGroups.map(group => (
             <View key={group.role} style={styles.sectionContainer}>
@@ -154,6 +184,7 @@ const AddMemberSheet: React.FC<IProps> = ({ visible, onClose, onConfirm }) => {
                   key={member.memberId}
                   member={member}
                   isSelected={selectedId === member.memberId}
+                  isDisabled={disabledMemberIds.includes(member.memberId)}
                   onPress={() =>
                     setSelectedId(prev =>
                       prev === member.memberId ? null : member.memberId,
@@ -231,6 +262,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: ms(16),
   },
+  memberRowDisabled: {
+    opacity: 0.4,
+  },
   memberInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -249,6 +283,9 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.gray50,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarDisabled: {
+    opacity: 0.6,
   },
   dot: {
     width: ms(3),

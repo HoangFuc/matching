@@ -17,17 +17,22 @@ interface IProps {
   isEditing?: boolean;
   canEdit?: boolean;
   isSingleDirectorCompany?: boolean;
+  selectedSlot?: number;
+  onPressDirector?: (slot: number) => void;
 }
 
 //---------------------------------------
 const DirectorCard: React.FC<{
   director: TDirector;
   isEditing?: boolean;
+  isSelected?: boolean;
   onPressRemove?: () => void;
-}> = ({ director, isEditing = false, onPressRemove }) => {
+  onPress?: () => void;
+}> = ({ director, isEditing = false, isSelected = false, onPressRemove, onPress }) => {
   return (
-    <View
-      style={[styles.card, director.isMe && !isEditing && styles.cardActive]}
+    <Pressable
+      onPress={onPress}
+      style={[styles.card, isSelected && styles.cardActive]}
     >
       {director.isMe && (
         <Image
@@ -85,7 +90,7 @@ const DirectorCard: React.FC<{
           variant="Bold"
         />
       </Pressable>
-    </View>
+    </Pressable>
   );
 };
 
@@ -113,6 +118,8 @@ const DirectorsSection: React.FC<IProps> = ({
   isEditing = false,
   canEdit = false,
   isSingleDirectorCompany = false,
+  selectedSlot = 1,
+  onPressDirector,
 }) => {
   const actions = useOrgEditActions();
   const effectiveEditing = isEditing && canEdit;
@@ -153,7 +160,9 @@ const DirectorsSection: React.FC<IProps> = ({
         <DirectorCard
           director={director1}
           isEditing={effectiveEditing}
+          isSelected={selectedSlot === 1}
           onPressRemove={() => handleRemoveDirector(director1.memberId)}
+          onPress={() => onPressDirector?.(1)}
         />
       )}
 
@@ -161,7 +170,9 @@ const DirectorsSection: React.FC<IProps> = ({
         <DirectorCard
           director={director2}
           isEditing={effectiveEditing}
+          isSelected={selectedSlot === 2}
           onPressRemove={() => handleRemoveDirector(director2.memberId)}
+          onPress={() => onPressDirector?.(2)}
         />
       ) : effectiveEditing && !isSingleDirectorCompany && totalMembers > 1 ? (
         <PlaceholderCard onPressAdd={handlePressAddMember} />

@@ -8,16 +8,20 @@ import { AppText } from '@/src/component/AppText';
 import { MemoChip } from '@/src/component/Chip';
 import { AppColors } from '@/src/constants/colors';
 import { useOrgEditActions } from '../context/OrgEditContext';
-import type { TMember, TTeam } from '../type';
+import type { TDepartment, TMember, TTeam } from '../type';
+import { findMemberCurrentPosition, getTeamMemberIds } from '../utils';
 import { MemoAddMemberSheet } from './AddMemberSheet';
+import { MemoKickMemberSheet } from './KickMemberSheet';
 import { MemoMemberItem } from './MemberItem';
 import { MemoRenameOrgSheet } from './RenameOrgSheet';
+import { MemoTransferMemberSheet } from './TransferMemberSheet';
 
 const MAX_VISIBLE_MEMBERS = 4;
 
 interface IProps {
   departmentId: string;
   team: TTeam;
+  allDepartments: TDepartment[];
   isEditing?: boolean;
   canEditDept?: boolean;
 }
@@ -26,15 +30,27 @@ interface IProps {
 const TeamSection: React.FC<IProps> = ({
   departmentId,
   team,
+  allDepartments,
   isEditing = false,
   canEditDept = false,
 }) => {
   const actions = useOrgEditActions();
   const [renameVisible, setRenameVisible] = React.useState(false);
   const [addMemberVisible, setAddMemberVisible] = React.useState(false);
+  const [kickTarget, setKickTarget] = React.useState<TMember | null>(null);
+  const [transferInfo, setTransferInfo] = React.useState<{
+    member: TMember;
+    currentGroupName: string;
+    transferType: 'department' | 'team';
+    addAs: 'leader' | 'member';
+  } | null>(null);
   const teamLeader = team.teamLeader;
   const otherMembers = team.members.filter(m => m.roleSlug !== 'team_leader');
   const canEditTeam = canEditDept || team.canEdit;
+  const disabledMemberIds = React.useMemo(
+    () => getTeamMemberIds(team),
+    [team],
+  );
 
   const visibleMembers = isEditing && canEditTeam
     ? otherMembers
@@ -74,23 +90,62 @@ const TeamSection: React.FC<IProps> = ({
   //---------------------------------------
   const handleConfirmAddMember = React.useCallback(
     (member: TMember) => {
+      const position = findMemberCurrentPosition(allDepartments, member.memberId);
+      if (position) {
+        setTransferInfo({
+          member,
+          currentGroupName: position.groupName,
+          transferType: position.type,
+          addAs: 'member',
+        });
+        return;
+      }
       actions.addTeamMember(departmentId, team.id, member);
     },
-    [actions, departmentId, team.id],
+    [actions, departmentId, team.id, allDepartments],
   );
 
   //---------------------------------------
-  const handleRemoveTeamLeader = React.useCallback(() => {
-    actions.removeTeamLeader(departmentId, team.id);
-  }, [actions, departmentId, team.id]);
+  const handleCloseTransfer = React.useCallback(() => {
+    setTransferInfo(null);
+  }, []);
 
   //---------------------------------------
-  const handleRemoveTeamMember = React.useCallback(
-    (memberId: string) => {
-      actions.removeTeamMember(departmentId, team.id, memberId);
+  const handleConfirmTransfer = React.useCallback(() => {
+    if (transferInfo) {
+      actions.addTeamMember(departmentId, team.id, transferInfo.member);
+    }
+    setTransferInfo(null);
+  }, [actions, departmentId, team.id, transferInfo]);
+
+  //---------------------------------------
+  const handlePressRemoveLeader = React.useCallback(() => {
+    if (teamLeader) {
+      setKickTarget(teamLeader);
+    }
+  }, [teamLeader]);
+
+  //---------------------------------------
+  const handlePressRemoveMember = React.useCallback(
+    (member: TMember) => {
+      setKickTarget(member);
     },
-    [actions, departmentId, team.id],
+    [],
   );
+
+  //---------------------------------------
+  const handleCloseKick = React.useCallback(() => {
+    setKickTarget(null);
+  }, []);
+
+  //---------------------------------------
+  const handleConfirmKick = React.useCallback(() => {
+    if (!kickTarget) {
+      return;
+    }
+    actions.kickMember(kickTarget.memberId);
+    setKickTarget(null);
+  }, [kickTarget, actions]);
 
   return (
     <View style={styles.teamSection}>
@@ -134,7 +189,7 @@ const TeamSection: React.FC<IProps> = ({
             member={teamLeader}
             showRole
             isEditing={isEditing && canEditDept}
-            onPressRemove={handleRemoveTeamLeader}
+            onPressRemove={handlePressRemoveLeader}
           />
         ) : (
           <Pressable
@@ -167,7 +222,7 @@ const TeamSection: React.FC<IProps> = ({
               key={member.memberId}
               member={member}
               isEditing={isEditing && canEditTeam}
-              onPressRemove={() => handleRemoveTeamMember(member.memberId)}
+              onPressRemove={() => handlePressRemoveMember(member)}
             />
           ))}
 
@@ -235,8 +290,27 @@ const TeamSection: React.FC<IProps> = ({
 
       <MemoAddMemberSheet
         visible={addMemberVisible}
+        disabledMemberIds={disabledMemberIds}
         onClose={handleCloseAddMember}
         onConfirm={handleConfirmAddMember}
+      />
+
+      <MemoKickMemberSheet
+        visible={kickTarget !== null}
+        memberName={kickTarget?.fullName ?? ''}
+        kickType="team"
+        onClose={handleCloseKick}
+        onConfirm={handleConfirmKick}
+      />
+
+      <MemoTransferMemberSheet
+        visible={transferInfo !== null}
+        memberName={transferInfo?.member.fullName ?? ''}
+        currentGroupName={transferInfo?.currentGroupName ?? ''}
+        targetGroupName={team.name}
+        transferType={transferInfo?.transferType ?? 'team'}
+        onClose={handleCloseTransfer}
+        onConfirm={handleConfirmTransfer}
       />
     </View>
   );

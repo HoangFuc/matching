@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
+import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
@@ -150,29 +151,24 @@ const MeetingMinutesScreen: React.FC = () => {
       </View>
 
       <MemoScreenBody>
-        {isLoading ? (
-          <ActivityIndicator
-            style={styles.centerLoader}
-            color={AppColors.purple}
-          />
-        ) : (
-          <FlatList
-            data={meetingLogs}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={renderFooter}
-            onRefresh={refetch}
-            refreshing={isLoading}
-            maxToRenderPerBatch={10}
-            windowSize={5}
-            removeClippedSubviews={true}
-          />
-        )}
+        <FlatList
+          data={meetingLogs}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          onRefresh={refetch}
+          refreshing={isLoading}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
+        />
       </MemoScreenBody>
+
+      <FullScreenLoading visible={isLoading} />
 
       <MemoDateRangePickerModal
         visible={showDatePicker}
@@ -222,11 +218,6 @@ const styles = StyleSheet.create({
   list: {
     padding: ms(16),
     gap: ms(12),
-  },
-  centerLoader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   footerLoader: {
     paddingVertical: ms(16),

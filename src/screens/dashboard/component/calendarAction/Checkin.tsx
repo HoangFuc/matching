@@ -1,14 +1,7 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
-import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -21,25 +14,13 @@ import type { RootTabNavigationProp } from '@/src/interface/tab.interface';
 interface IProps {
   checkinTime: string | null;
   onCheckin: () => void;
-  isLoading?: boolean;
 }
 
 const Checkin: React.FC<IProps> = props => {
-  const { checkinTime, onCheckin, isLoading } = props;
+  const { checkinTime, onCheckin } = props;
 
   //---------------------------------------
   const navigation = useNavigation<RootTabNavigationProp>();
-
-  //---------------------------------------
-  if (isLoading) {
-    return (
-      <AppSafeAreaView style={styles.safeAreaTop}>
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={AppColors.purple} />
-        </View>
-      </AppSafeAreaView>
-    );
-  }
 
   //---------------------------------------
   if (checkinTime) {
@@ -160,15 +141,5 @@ const styles = StyleSheet.create({
     padding: ms(12),
     gap: ms(4),
     width: '100%',
-  },
-  safeAreaTop: {
-    flex: 1,
-    backgroundColor: AppColors.purple,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: AppColors.white,
   },
 });

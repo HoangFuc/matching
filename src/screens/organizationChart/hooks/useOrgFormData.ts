@@ -3,11 +3,13 @@ import React from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 
 import {
+  companyApi,
   useGetStructureQuery,
   useUpdateDepartmentsMutation,
 } from '@/src/store/api/company.api';
 import type { TUpdateDepartmentsParams } from '@/src/store/api/company.api';
 import { useToast } from '@/src/providers/ToastProvider';
+import { useAppDispatch } from '@/src/store/hooks';
 import type { TOrgEditActions } from '../context/OrgEditContext';
 import { MOCK_STRUCTURE } from '../mockData';
 import type { TMember, TStructure } from '../type';
@@ -19,6 +21,30 @@ const generateTempId = () =>
 //---------------------------------------
 const deepCloneStructure = (structure: TStructure): TStructure =>
   JSON.parse(JSON.stringify(structure));
+
+//---------------------------------------
+const memberExistsInStructure = (
+  structure: TStructure,
+  memberId: string,
+): boolean => {
+  for (const dept of structure.departments) {
+    if (dept.departmentHead?.memberId === memberId) {
+      return true;
+    }
+    for (const team of dept.teams) {
+      if (team.teamLeader?.memberId === memberId) {
+        return true;
+      }
+      if (team.members.some(m => m.memberId === memberId)) {
+        return true;
+      }
+    }
+  }
+  if (structure.directors.some(d => d.memberId === memberId)) {
+    return true;
+  }
+  return false;
+};
 
 //---------------------------------------
 const removeMemberFromPositions = (
@@ -54,10 +80,11 @@ const buildSavePayload = (
   server: TStructure,
   kickIds: string[],
 ): TUpdateDepartmentsParams => {
-  const isDirector = server.canEdit;
+  const isAdmin = server.canEdit;
+  const isDirector = server.directors.some(d => d.isMe);
 
   const departments = form.departments.map(dept => {
-    const deptCanEdit = isDirector || dept.canEdit;
+    const deptCanEdit = isAdmin || dept.canEdit;
 
     if (!deptCanEdit) {
       return {
@@ -81,9 +108,10 @@ const buildSavePayload = (
     return {
       id: dept.id.startsWith('temp_') ? undefined : dept.id,
       name: dept.name,
+      ...(isAdmin && { managedById: dept.managedById }),
       ...(isDirector && { headId: dept.departmentHead?.memberId }),
       teams: dept.teams.map(team => {
-        const teamCanEdit = isDirector || dept.canEdit || team.canEdit;
+        const teamCanEdit = isAdmin || dept.canEdit || team.canEdit;
 
         if (!teamCanEdit) {
           return { id: team.id, name: team.name };
@@ -106,7 +134,7 @@ const buildSavePayload = (
 
   const payload: TUpdateDepartmentsParams = { departments };
 
-  if (isDirector) {
+  if (isAdmin) {
     payload.companyName = form.companyName;
 
     const originalDirector2 = server.directors[1] ?? null;
@@ -155,16 +183,30 @@ const hasAnyEditPermission = (structure: TStructure): boolean => {
 export const useOrgFormData = (directorSlot: number = 1) => {
   const { data: apiStructure, refetch } = useGetStructureQuery(directorSlot);
 
-  console.log('======================api', apiStructure);
+  const dispatch = useAppDispatch();
   const [updateDepartments] = useUpdateDepartmentsMutation();
   const { showToast } = useToast();
   const [isEditing, setIsEditing] = React.useState(false);
   const [formData, setFormData] = React.useState<TStructure | null>(null);
   const [kickMemberIds, setKickMemberIds] = React.useState<string[]>([]);
+  const formDataCacheRef = React.useRef<Record<number, TStructure>>({});
+  const serverDataCacheRef = React.useRef<Record<number, TStructure>>({});
+  const prevSlotRef = React.useRef(directorSlot);
 
   const serverData = apiStructure ?? MOCK_STRUCTURE;
   const structure = formData ?? serverData;
   const canEditAnything = hasAnyEditPermission(structure);
+
+  const hasChanges = React.useMemo(() => {
+    if (!formData || kickMemberIds.length > 0) {
+      return kickMemberIds.length > 0;
+    }
+    const original = serverDataCacheRef.current[directorSlot];
+    if (!original) {
+      return false;
+    }
+    return JSON.stringify(formData) !== JSON.stringify(original);
+  }, [formData, kickMemberIds, directorSlot]);
 
   //---------------------------------------
   useFocusEffect(
@@ -174,14 +216,46 @@ export const useOrgFormData = (directorSlot: number = 1) => {
   );
 
   //---------------------------------------
+  React.useEffect(() => {
+    if (!isEditing) {
+      prevSlotRef.current = directorSlot;
+      return;
+    }
+
+    if (prevSlotRef.current !== directorSlot) {
+      setFormData(current => {
+        if (current) {
+          formDataCacheRef.current[prevSlotRef.current] = current;
+        }
+        prevSlotRef.current = directorSlot;
+
+        const cached = formDataCacheRef.current[directorSlot];
+        return cached ? deepCloneStructure(cached) : null;
+      });
+    }
+  }, [directorSlot, isEditing]);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    if (isEditing && apiStructure && !formData && !formDataCacheRef.current[directorSlot]) {
+      serverDataCacheRef.current[directorSlot] = deepCloneStructure(apiStructure);
+      setFormData(deepCloneStructure(apiStructure));
+    }
+  }, [apiStructure, isEditing, directorSlot, formData]);
+
+  //---------------------------------------
   const startEditing = React.useCallback(() => {
+    formDataCacheRef.current = {};
+    serverDataCacheRef.current = { [directorSlot]: deepCloneStructure(serverData) };
     setIsEditing(true);
     setFormData(deepCloneStructure(serverData));
     setKickMemberIds([]);
-  }, [serverData]);
+  }, [serverData, directorSlot]);
 
   //---------------------------------------
   const cancelEdit = React.useCallback(() => {
+    formDataCacheRef.current = {};
+    serverDataCacheRef.current = {};
     setIsEditing(false);
     setFormData(null);
     setKickMemberIds([]);
@@ -193,9 +267,49 @@ export const useOrgFormData = (directorSlot: number = 1) => {
       return;
     }
     try {
-      const payload = buildSavePayload(formData, serverData, kickMemberIds);
+      // Fetch departments from director slots not yet cached
+      const totalDirectors = formData.directors.length;
+      for (let slot = 1; slot <= totalDirectors; slot++) {
+        if (!serverDataCacheRef.current[slot]) {
+          const result = await dispatch(
+            companyApi.endpoints.getStructure.initiate(slot),
+          ).unwrap();
+          serverDataCacheRef.current[slot] = deepCloneStructure(result);
+        }
+      }
+
+      // Base: all server departments from all slots
+      const deptMap = new Map<string, TStructure['departments'][number]>();
+      for (const cached of Object.values(serverDataCacheRef.current)) {
+        for (const dept of cached.departments) {
+          deptMap.set(dept.id, dept);
+        }
+      }
+
+      // Override with cached edits from other slots
+      for (const [slot, cached] of Object.entries(formDataCacheRef.current)) {
+        if (Number(slot) !== directorSlot) {
+          for (const dept of cached.departments) {
+            deptMap.set(dept.id, dept);
+          }
+        }
+      }
+
+      // Override with current slot edits (highest priority)
+      for (const dept of formData.departments) {
+        deptMap.set(dept.id, dept);
+      }
+
+      const mergedFormData = {
+        ...formData,
+        departments: Array.from(deptMap.values()),
+      };
+
+      const payload = buildSavePayload(mergedFormData, serverData, kickMemberIds);
       await updateDepartments(payload).unwrap();
       showToast({ type: 'success', message: '조직도가 저장되었습니다.' });
+      formDataCacheRef.current = {};
+      serverDataCacheRef.current = {};
       setIsEditing(false);
       setFormData(null);
       setKickMemberIds([]);
@@ -205,11 +319,13 @@ export const useOrgFormData = (directorSlot: number = 1) => {
     }
   }, [
     formData,
+    directorSlot,
     serverData,
     kickMemberIds,
     updateDepartments,
     showToast,
     refetch,
+    dispatch,
   ]);
 
   //---------------------------------------
@@ -224,27 +340,19 @@ export const useOrgFormData = (directorSlot: number = 1) => {
         });
       },
 
-      createDepartment: (name: string) => {
+      createDepartment: (name: string, managedById?: string) => {
         setFormData(prev => {
           if (!prev) {
             return prev;
           }
+          const myDirector = prev.directors.find(d => d.isMe);
           const newDept = {
             id: generateTempId(),
             name,
             canEdit: true,
+            managedById: managedById ?? myDirector?.memberId,
             departmentHead: null,
-            teams: [
-              {
-                id: generateTempId(),
-                name: '기본팀',
-                isDefault: true,
-                canEdit: true,
-                teamLeader: null,
-                members: [],
-                totalMembers: 0,
-              },
-            ],
+            teams: [],
           };
           return {
             ...prev,
@@ -437,9 +545,6 @@ export const useOrgFormData = (directorSlot: number = 1) => {
       },
 
       removeTeamMember: (deptId: string, teamId: string, memberId: string) => {
-        setKickMemberIds(prev =>
-          prev.includes(memberId) ? prev : [...prev, memberId],
-        );
         setFormData(prev => {
           if (!prev) {
             return prev;
@@ -513,9 +618,14 @@ export const useOrgFormData = (directorSlot: number = 1) => {
       },
 
       kickMember: (memberId: string) => {
-        setKickMemberIds(prev =>
-          prev.includes(memberId) ? prev : [...prev, memberId],
-        );
+        const existsInServer = Object.values(
+          serverDataCacheRef.current,
+        ).some(cached => memberExistsInStructure(cached, memberId));
+        if (existsInServer) {
+          setKickMemberIds(prev =>
+            prev.includes(memberId) ? prev : [...prev, memberId],
+          );
+        }
         setFormData(prev => {
           if (!prev) {
             return prev;
@@ -552,6 +662,7 @@ export const useOrgFormData = (directorSlot: number = 1) => {
   return {
     structure,
     isEditing,
+    hasChanges,
     canEditAnything,
     isSingleDirectorCompany: serverData.directors.length <= 1,
     editActions,

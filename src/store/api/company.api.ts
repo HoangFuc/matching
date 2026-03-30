@@ -26,6 +26,7 @@ export type TUpdateDepartmentsParams = {
   departments: {
     id?: string;
     name: string;
+    managedById?: string;
     headId?: string;
     teams: {
       id?: string;

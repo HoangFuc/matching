@@ -4,7 +4,7 @@ import type { TMember } from '../type';
 
 export type TOrgEditActions = {
   renameCompany: (newName: string) => void;
-  createDepartment: (name: string) => void;
+  createDepartment: (name: string, managedById?: string) => void;
   renameDepartment: (deptId: string, newName: string) => void;
   addTeam: (deptId: string, teamName: string) => void;
   renameTeam: (deptId: string, teamId: string, newName: string) => void;

@@ -42,7 +42,10 @@ const InviteCard: React.FC<IProps> = ({
   onGenerateLink,
   isGeneratingLink,
 }) => {
-  const canGenerate = invite.role !== '' && invite.expiry !== '';
+  const canGenerate =
+    invite.role !== '' &&
+    invite.expiry !== '' &&
+    (!!directorLabel || invite.location !== '');
   const hasLink = invite.generatedLink !== '';
   const isDirector = !!directorLabel;
 

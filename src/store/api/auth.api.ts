@@ -237,13 +237,53 @@ export const authApi = createApi({
       IAuthTokenResponse,
       IRegisterWithInviteParams
     >({
-      query: body => ({
-        url: '/register-with-invite',
-        method: 'POST',
-        body,
-      }),
-      transformResponse: (response: any): IAuthTokenResponse =>
-        response?.data ?? response,
+      async queryFn(params) {
+        try {
+          const formData = new FormData();
+
+          formData.append('inviteCode', params.inviteCode);
+          formData.append('fullName', params.fullName);
+          formData.append('phone', params.phone);
+          formData.append('password', params.password);
+          formData.append('passwordConfirm', params.passwordConfirm);
+          formData.append(
+            'phoneVerificationToken',
+            params.phoneVerificationToken,
+          );
+          formData.append('termsAgreed', String(params.termsAgreed));
+          formData.append('privacyAgreed', String(params.privacyAgreed));
+          formData.append('marketingAgreed', String(params.marketingAgreed));
+
+          if (params.avatar) {
+            formData.append('avatar', {
+              uri: params.avatar.uri,
+              type: params.avatar.type || 'image/jpeg',
+              name: params.avatar.name || 'avatar.jpg',
+            } as any);
+          }
+
+          const commonHeaders = await getCommonHeaders();
+          const { 'Content-Type': _ct, ...headersWithoutCT } = commonHeaders;
+          const res = await fetch(`${API_BASE_URL}/auth/register-with-invite`, {
+            method: 'POST',
+            headers: headersWithoutCT,
+            body: formData as unknown as BodyInit_,
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            return { error: { status: res.status, data: errorData } };
+          }
+
+          const json: any = await res.json();
+          const data = json?.data?.data ?? json?.data ?? json;
+          return { data: data as IAuthTokenResponse };
+        } catch (error: any) {
+          return {
+            error: { status: 'FETCH_ERROR', error: error.message },
+          };
+        }
+      },
     }),
 
     //---------------------------------------
@@ -298,8 +338,8 @@ export const authApi = createApi({
     }),
 
     //---------------------------------------
-    getInvitablePositions: builder.query<TInvitablePosition[], void>({
-      query: () => '/company/invitable-positions',
+    getInvitablePositions: builder.query<TInvitablePosition[], string>({
+      query: (roleSlug) => `/company/invitable-positions?roleSlug=${roleSlug}`,
       transformResponse: (response: any): TInvitablePosition[] => {
         const data = response?.data ?? response;
         return data;
@@ -325,4 +365,5 @@ export const {
 
   useGetInvitableRolesQuery,
   useGetInvitablePositionsQuery,
+  useLazyGetInvitablePositionsQuery,
 } = authApi;

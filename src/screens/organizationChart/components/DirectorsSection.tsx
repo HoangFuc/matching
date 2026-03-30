@@ -7,6 +7,7 @@ import { ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { AppImages } from '@/src/constants/images';
+import { useOrgEditActions } from '../context/OrgEditContext';
 import type { TDirector, TMember } from '../type';
 import { MemoAddMemberSheet } from './AddMemberSheet';
 
@@ -15,13 +16,15 @@ interface IProps {
   totalMembers: number;
   isEditing?: boolean;
   canEdit?: boolean;
+  isSingleDirectorCompany?: boolean;
 }
 
 //---------------------------------------
 const DirectorCard: React.FC<{
   director: TDirector;
   isEditing?: boolean;
-}> = ({ director, isEditing = false }) => {
+  onPressRemove?: () => void;
+}> = ({ director, isEditing = false, onPressRemove }) => {
   return (
     <View
       style={[styles.card, director.isMe && !isEditing && styles.cardActive]}
@@ -73,6 +76,7 @@ const DirectorCard: React.FC<{
       <Pressable
         hitSlop={8}
         disabled={!isEditing}
+        onPress={onPressRemove}
         style={!isEditing && styles.hidden}
       >
         <CloseCircle
@@ -108,7 +112,9 @@ const DirectorsSection: React.FC<IProps> = ({
   totalMembers,
   isEditing = false,
   canEdit = false,
+  isSingleDirectorCompany = false,
 }) => {
+  const actions = useOrgEditActions();
   const effectiveEditing = isEditing && canEdit;
   const [addMemberVisible, setAddMemberVisible] = React.useState(false);
   const director1 = directors[0] ?? null;
@@ -126,9 +132,16 @@ const DirectorsSection: React.FC<IProps> = ({
 
   //---------------------------------------
   const handleConfirmAddMember = React.useCallback((member: TMember) => {
-    // TODO: call API to add director
-    console.log('Add director', member);
-  }, []);
+    actions.addDirector(member);
+  }, [actions]);
+
+  //---------------------------------------
+  const handleRemoveDirector = React.useCallback(
+    (memberId: string) => {
+      actions.removeDirector(memberId);
+    },
+    [actions],
+  );
 
   if (!director1 && !director2) {
     return null;
@@ -136,11 +149,21 @@ const DirectorsSection: React.FC<IProps> = ({
 
   return (
     <View style={styles.container}>
-      {director1 && <DirectorCard director={director1} isEditing={effectiveEditing} />}
+      {director1 && (
+        <DirectorCard
+          director={director1}
+          isEditing={effectiveEditing}
+          onPressRemove={() => handleRemoveDirector(director1.memberId)}
+        />
+      )}
 
       {director2 ? (
-        <DirectorCard director={director2} isEditing={effectiveEditing} />
-      ) : effectiveEditing && totalMembers > 1 ? (
+        <DirectorCard
+          director={director2}
+          isEditing={effectiveEditing}
+          onPressRemove={() => handleRemoveDirector(director2.memberId)}
+        />
+      ) : effectiveEditing && !isSingleDirectorCompany && totalMembers > 1 ? (
         <PlaceholderCard onPressAdd={handlePressAddMember} />
       ) : null}
 

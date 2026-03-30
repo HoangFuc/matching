@@ -11,6 +11,7 @@ interface IProps {
   member: TMember;
   showRole?: boolean;
   isEditing?: boolean;
+  onPressRemove?: () => void;
 }
 
 //---------------------------------------
@@ -18,6 +19,7 @@ const MemberItem: React.FC<IProps> = ({
   member,
   showRole = false,
   isEditing = false,
+  onPressRemove,
 }) => {
   if (showRole) {
     return (
@@ -55,7 +57,7 @@ const MemberItem: React.FC<IProps> = ({
         </AppText>
 
         {isEditing && (
-          <Pressable hitSlop={8}>
+          <Pressable hitSlop={8} onPress={onPressRemove}>
             <CloseCircle
               size={`${ms(16)}`}
               color={AppColors.gray50}
@@ -97,7 +99,7 @@ const MemberItem: React.FC<IProps> = ({
         )}
 
         {isEditing && (
-          <Pressable hitSlop={8}>
+          <Pressable hitSlop={8} onPress={onPressRemove}>
             <CloseCircle
               size={`${ms(16)}`}
               color={AppColors.gray50}

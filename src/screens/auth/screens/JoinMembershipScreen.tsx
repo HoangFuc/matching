@@ -11,7 +11,7 @@ import {
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ms } from 'react-native-size-matters/extend';
 
@@ -21,6 +21,7 @@ import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { MemoBottomButtonGroup } from '@/src/component/BottomButtonGroup';
+import { MemoBottomSheetModal } from '@/src/component/BottomSheetModal';
 import { MemoPasswordInput } from '@/src/component/PasswordInput';
 import { MemoPhoneInput } from '@/src/component/PhoneInput';
 import { RHFFormInput } from '@/src/component/RHFFormInput';
@@ -29,7 +30,7 @@ import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
 import { MemoVerificationCodeSection } from '@/src/component/VerificationCodeSection';
 import { AppColors } from '@/src/constants/colors';
-import { User } from '@/src/constants/icons';
+import { Edit2, User } from '@/src/constants/icons';
 import { useVerificationCode } from '@/src/hooks/useVerificationCode';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
 import {
@@ -79,6 +80,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
   const [avatarImage, setAvatarImage] = React.useState<
     { uri: string; type: string; name: string } | undefined
   >();
+  const [avatarSheetVisible, setAvatarSheetVisible] = React.useState(false);
 
   const [phoneError, setPhoneError] = React.useState('');
   const [agreements, setAgreements] = React.useState({
@@ -126,6 +128,44 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const handlePickAvatar = React.useCallback(() => {
+    setAvatarSheetVisible(true);
+  }, []);
+
+  //---------------------------------------
+  const processImageResponse = React.useCallback(
+    (response: import('react-native-image-picker').ImagePickerResponse) => {
+      if (response.didCancel || response.errorCode) {
+        return;
+      }
+      const asset = response.assets?.[0];
+      if (!asset?.uri) {
+        return;
+      }
+
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      if (asset.type && !allowedTypes.includes(asset.type)) {
+        Alert.alert('', 'PNG 또는 JPG 형식의 이미지만 업로드할 수 있습니다.');
+        return;
+      }
+
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (asset.fileSize && asset.fileSize > maxSize) {
+        Alert.alert('', '이미지 크기는 최대 5MB까지 업로드할 수 있습니다.');
+        return;
+      }
+
+      setAvatarImage({
+        uri: asset.uri,
+        type: asset.type || 'image/jpeg',
+        name: asset.fileName || 'avatar.jpg',
+      });
+    },
+    [],
+  );
+
+  //---------------------------------------
+  const handlePickFromLibrary = React.useCallback(() => {
+    setAvatarSheetVisible(false);
     launchImageLibrary(
       {
         mediaType: 'photo',
@@ -134,35 +174,24 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
         maxHeight: 500,
         presentationStyle: 'popover',
       },
-      response => {
-        if (response.didCancel || response.errorCode) {
-          return;
-        }
-        const asset = response.assets?.[0];
-        if (!asset?.uri) {
-          return;
-        }
-
-        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-        if (asset.type && !allowedTypes.includes(asset.type)) {
-          Alert.alert('', 'PNG 또는 JPG 형식의 이미지만 업로드할 수 있습니다.');
-          return;
-        }
-
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        if (asset.fileSize && asset.fileSize > maxSize) {
-          Alert.alert('', '이미지 크기는 최대 5MB까지 업로드할 수 있습니다.');
-          return;
-        }
-
-        setAvatarImage({
-          uri: asset.uri,
-          type: asset.type || 'image/jpeg',
-          name: asset.fileName || 'avatar.jpg',
-        });
-      },
+      processImageResponse,
     );
-  }, []);
+  }, [processImageResponse]);
+
+  //---------------------------------------
+  const handlePickFromCamera = React.useCallback(() => {
+    setAvatarSheetVisible(false);
+    launchCamera(
+      {
+        mediaType: 'photo',
+        quality: 0.8,
+        maxWidth: 500,
+        maxHeight: 500,
+        cameraType: 'front',
+      },
+      processImageResponse,
+    );
+  }, [processImageResponse]);
 
   //---------------------------------------
   const toggleAgreement = React.useCallback((key: AgreementKey) => {
@@ -232,7 +261,7 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
         termsAgreed: agreements.terms,
         privacyAgreed: agreements.privacy,
         marketingAgreed: agreements.marketing,
-        avatarImage,
+        avatar: avatarImage,
       };
       if (withSteps) {
         setStepData(stepData);
@@ -301,6 +330,14 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
               ) : (
                 <User size={ms(40)} color={AppColors.gray30} variant="Linear" />
               )}
+
+              <View style={styles.cameraIconWrapper}>
+                <Edit2
+                  size={ms(20)}
+                  color={AppColors.gray100}
+                  variant="Linear"
+                />
+              </View>
             </Pressable>
           </View>
 
@@ -449,6 +486,24 @@ const JoinMembershipScreen: React.FC<Props> = ({ navigation, route }) => {
           />
         </MemoBottomButtonGroup>
       </MemoScreenBody>
+
+      <MemoBottomSheetModal
+        visible={avatarSheetVisible}
+        onClose={() => setAvatarSheetVisible(false)}
+        title="아바타"
+      >
+        <Pressable style={styles.sheetOption} onPress={handlePickFromLibrary}>
+          <AppText variant="body4" color={AppColors.gray80}>
+            사진 보관함
+          </AppText>
+        </Pressable>
+
+        <Pressable style={styles.sheetOption} onPress={handlePickFromCamera}>
+          <AppText variant="body4" color={AppColors.gray80}>
+            사진 찍기
+          </AppText>
+        </Pressable>
+      </MemoBottomSheetModal>
     </AppSafeAreaView>
   );
 };
@@ -503,14 +558,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: ms(26),
-    height: ms(26),
-    borderRadius: ms(13),
-    backgroundColor: AppColors.gray50,
+    width: ms(32),
+    height: ms(32),
+    backgroundColor: AppColors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: ms(2),
-    borderColor: AppColors.white,
   },
   agreementSection: {
     gap: ms(12),
@@ -519,5 +571,9 @@ const styles = StyleSheet.create({
   stepBarContainer: {
     paddingHorizontal: ms(16),
     paddingTop: ms(16),
+  },
+  sheetOption: {
+    paddingVertical: ms(14),
+    alignItems: 'center',
   },
 });

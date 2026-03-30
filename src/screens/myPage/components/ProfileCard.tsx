@@ -5,7 +5,6 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
-import { AppImages } from '@/src/constants/images';
 
 interface IProfileCardProps {
   avatarUrl?: string | null;
@@ -25,7 +24,11 @@ const ProfileCard: React.FC<IProfileCardProps> = ({
       {avatarUrl ? (
         <Image source={{ uri: avatarUrl }} style={styles.avatar} />
       ) : (
-        <Image source={AppImages.avatar} style={styles.avatar} />
+        <View style={[styles.avatar, styles.avatarPlaceholder]}>
+          <AppText variant="heading2" color={AppColors.white}>
+            {name.charAt(0)}
+          </AppText>
+        </View>
       )}
 
       <AppText variant="heading2" color={AppColors.gray90}>
@@ -54,6 +57,10 @@ const styles = StyleSheet.create({
     height: ms(72),
     borderRadius: ms(36),
     marginBottom: ms(8),
-    backgroundColor: AppColors.gray20,
+  },
+  avatarPlaceholder: {
+    backgroundColor: AppColors.gray50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

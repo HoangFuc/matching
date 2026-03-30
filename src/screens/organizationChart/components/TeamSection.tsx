@@ -7,6 +7,7 @@ import { ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { MemoChip } from '@/src/component/Chip';
 import { AppColors } from '@/src/constants/colors';
+import { useOrgEditActions } from '../context/OrgEditContext';
 import type { TMember, TTeam } from '../type';
 import { MemoAddMemberSheet } from './AddMemberSheet';
 import { MemoMemberItem } from './MemberItem';
@@ -15,13 +16,20 @@ import { MemoRenameOrgSheet } from './RenameOrgSheet';
 const MAX_VISIBLE_MEMBERS = 4;
 
 interface IProps {
+  departmentId: string;
   team: TTeam;
   isEditing?: boolean;
   canEditDept?: boolean;
 }
 
 //---------------------------------------
-const TeamSection: React.FC<IProps> = ({ team, isEditing = false, canEditDept = false }) => {
+const TeamSection: React.FC<IProps> = ({
+  departmentId,
+  team,
+  isEditing = false,
+  canEditDept = false,
+}) => {
+  const actions = useOrgEditActions();
   const [renameVisible, setRenameVisible] = React.useState(false);
   const [addMemberVisible, setAddMemberVisible] = React.useState(false);
   const teamLeader = team.teamLeader;
@@ -48,10 +56,9 @@ const TeamSection: React.FC<IProps> = ({ team, isEditing = false, canEditDept = 
   //---------------------------------------
   const handleSaveRename = React.useCallback(
     (newName: string) => {
-      // TODO: call API to rename team
-      console.log('Rename team', team.id, newName);
+      actions.renameTeam(departmentId, team.id, newName);
     },
-    [team.id],
+    [actions, departmentId, team.id],
   );
 
   //---------------------------------------
@@ -67,10 +74,22 @@ const TeamSection: React.FC<IProps> = ({ team, isEditing = false, canEditDept = 
   //---------------------------------------
   const handleConfirmAddMember = React.useCallback(
     (member: TMember) => {
-      // TODO: call API to add member to team
-      console.log('Add member to team', team.id, member);
+      actions.addTeamMember(departmentId, team.id, member);
     },
-    [team.id],
+    [actions, departmentId, team.id],
+  );
+
+  //---------------------------------------
+  const handleRemoveTeamLeader = React.useCallback(() => {
+    actions.removeTeamLeader(departmentId, team.id);
+  }, [actions, departmentId, team.id]);
+
+  //---------------------------------------
+  const handleRemoveTeamMember = React.useCallback(
+    (memberId: string) => {
+      actions.removeTeamMember(departmentId, team.id, memberId);
+    },
+    [actions, departmentId, team.id],
   );
 
   return (
@@ -111,7 +130,12 @@ const TeamSection: React.FC<IProps> = ({ team, isEditing = false, canEditDept = 
 
         {/* Team Leader */}
         {teamLeader ? (
-          <MemoMemberItem member={teamLeader} showRole isEditing={isEditing && canEditDept} />
+          <MemoMemberItem
+            member={teamLeader}
+            showRole
+            isEditing={isEditing && canEditDept}
+            onPressRemove={handleRemoveTeamLeader}
+          />
         ) : (
           <Pressable
             style={styles.addLeaderRow}
@@ -143,6 +167,7 @@ const TeamSection: React.FC<IProps> = ({ team, isEditing = false, canEditDept = 
               key={member.memberId}
               member={member}
               isEditing={isEditing && canEditTeam}
+              onPressRemove={() => handleRemoveTeamMember(member.memberId)}
             />
           ))}
 

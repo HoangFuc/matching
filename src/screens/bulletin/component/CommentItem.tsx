@@ -20,7 +20,6 @@ import {
   useUpdateCommentMutation,
 } from '@/src/store/api/bulletin.api';
 import { MemoPostStats } from './PostStats';
-import { AppImages } from '@/src/constants/images';
 import { formatTimeAgo } from '@/src/utils/date';
 
 interface IProps {
@@ -101,15 +100,19 @@ const CommentItem: React.FC<IProps> = ({
   }, [comment.id, comment.postId, deleteComment]);
 
   //---------------------------------------
-  const avatarSource = comment.author.avatarUrl
-    ? { uri: comment.author.avatarUrl }
-    : AppImages.avatar;
-
   return (
     <View style={[styles.container, isReply && styles.replyContainer]}>
       {/* Author row */}
       <View style={styles.authorRow}>
-        <Image source={avatarSource} style={styles.avatar} />
+        {comment.author.avatarUrl ? (
+          <Image source={{ uri: comment.author.avatarUrl }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, styles.avatarPlaceholder]}>
+            <AppText variant="body8" color={AppColors.white}>
+              {comment.author.fullName.charAt(0)}
+            </AppText>
+          </View>
+        )}
 
         <View style={styles.authorInfo}>
           <View style={styles.nameRow}>
@@ -279,6 +282,11 @@ const styles = StyleSheet.create({
     width: ms(30),
     height: ms(30),
     borderRadius: ms(14),
+  },
+  avatarPlaceholder: {
+    backgroundColor: AppColors.gray50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   authorInfo: {
     flex: 1,

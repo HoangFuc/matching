@@ -13,6 +13,7 @@ export type TDropdownOption = {
   value: string;
   departmentId?: string;
   teamId?: string;
+  disabled?: boolean;
 };
 
 interface IProps {
@@ -42,18 +43,26 @@ const InviteDropdownField: React.FC<IProps> = ({
     <>
       {options.map(option => {
         const isSelected = value === option.label;
+        const isDisabled = option.disabled;
         return (
           <Pressable
             key={option.value}
-            style={useBottomSheet ? styles.sheetItem : styles.dropdownItem}
-            onPress={() => {
-              onSelect(option);
-              setShowDropdown(false);
-            }}
+            style={[
+              useBottomSheet ? styles.sheetItem : styles.dropdownItem,
+              isDisabled && styles.optionDisabled,
+            ]}
+            onPress={
+              isDisabled
+                ? undefined
+                : () => {
+                    onSelect(option);
+                    setShowDropdown(false);
+                  }
+            }
           >
             <AppText
               variant={isSelected ? 'body1' : 'body4'}
-              color={AppColors.gray100}
+              color={isDisabled ? AppColors.gray40 : AppColors.gray100}
             >
               {option.label}
             </AppText>
@@ -139,5 +148,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: ms(10),
     paddingHorizontal: ms(16),
+  },
+  optionDisabled: {
+    opacity: 0.4,
   },
 });

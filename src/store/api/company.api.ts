@@ -19,13 +19,20 @@ export type TCompanyDepartment = {
 };
 
 export type TUpdateDepartmentsParams = {
+  companyName?: string;
+  removeDirector2Id?: string;
+  appointDirector2Id?: string;
+  kickMemberIds?: string[];
   departments: {
     id?: string;
     name: string;
+    headId?: string;
     teams: {
       id?: string;
       name: string;
-      isDefault: boolean;
+      isDefault?: boolean;
+      leaderId?: string;
+      memberIds?: string[];
     }[];
   }[];
 };
@@ -38,7 +45,7 @@ export type TMemberGroup = {
 export const companyApi = createApi({
   reducerPath: 'companyApi',
   baseQuery: createBaseQuery('/company'),
-  tagTypes: ['Departments', 'Members'],
+  tagTypes: ['Departments', 'Members', 'Structure'],
   endpoints: builder => ({
     //---------------------------------------
     getDepartments: builder.query<TCompanyDepartment[], void>({
@@ -57,12 +64,15 @@ export const companyApi = createApi({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['Departments'],
+      invalidatesTags: ['Departments', 'Members', 'Structure'],
     }),
 
     //---------------------------------------
-    getStructure: builder.query<TStructure, void>({
-      query: () => '/structure',
+    getStructure: builder.query<TStructure, number | void>({
+      query: (directorSlot = 1) => ({
+        url: '/structure',
+        params: { directorSlot },
+      }),
       transformResponse: (response: any): TStructure => {
         const data = response?.data?.data ?? response?.data ?? response;
         return {
@@ -74,6 +84,7 @@ export const companyApi = createApi({
           })),
         };
       },
+      providesTags: ['Structure'],
     }),
 
     //---------------------------------------

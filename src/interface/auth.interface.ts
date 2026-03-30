@@ -73,7 +73,7 @@ export interface IRegisterCompanyParams {
   termsAgreed: boolean;
   privacyAgreed: boolean;
   marketingAgreed: boolean;
-  avatarImage?: { uri: string; type: string; name: string };
+  avatar?: { uri: string; type: string; name: string };
   // Step 2 - CreateAgency
   companyName: string;
   directorCount: number; // 1 = single, 2 = dual
@@ -101,6 +101,7 @@ export interface IRegisterWithInviteParams {
   termsAgreed: boolean;
   privacyAgreed: boolean;
   marketingAgreed: boolean;
+  avatar?: { uri: string; type: string; name: string };
 }
 
 // ── Role Slugs ──────────────────────────────────────

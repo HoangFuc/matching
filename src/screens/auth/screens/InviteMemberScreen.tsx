@@ -9,14 +9,13 @@ import {
   View,
 } from 'react-native';
 
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Add, InfoCircle } from 'iconsax-react-nativejs';
-import { ms } from 'react-native-size-matters/extend';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
-import { useToast } from '@/src/providers/ToastProvider';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppText } from '@/src/component/AppText';
 import { MemoBottomButtonGroup } from '@/src/component/BottomButtonGroup';
@@ -24,12 +23,19 @@ import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { MemoStepProgressBar } from '@/src/component/StepProgressBar';
 import { AppColors } from '@/src/constants/colors';
-import { ROLE_SLUGS, type TRoleSlug } from '@/src/interface/auth.interface';
+import {
+  ROLE_SLUGS,
+  type ICompanyResponse,
+  type TRoleSlug,
+} from '@/src/interface/auth.interface';
+import { getCompanyInfo } from '@/src/services/tokenService';
 import type { AuthStackParamList } from '@/src/interface/tab.interface';
+import { useToast } from '@/src/providers/ToastProvider';
+import type { TInvitablePosition } from '@/src/store/api/auth.api';
 import {
   useCreateInvitationMutation,
-  useGetInvitablePositionsQuery,
   useGetInvitableRolesQuery,
+  useLazyGetInvitablePositionsQuery,
 } from '@/src/store/api/auth.api';
 import { MemoInviteCard } from '../components/inviteMember/InviteCard';
 import type { TDropdownOption } from '../components/inviteMember/InviteDropdownField';
@@ -72,8 +78,17 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   const hideStepBar = route.params?.hideStepBar;
   const directorCount = route.params?.directorCount ?? 1;
 
-  const { data: invitableRoles } = useGetInvitableRolesQuery();
-  const { data: invitablePositions } = useGetInvitablePositionsQuery();
+  const { data: invitableRoles, refetch: refetchRoles } =
+    useGetInvitableRolesQuery();
+  const [fetchPositions] = useLazyGetInvitablePositionsQuery();
+
+  const [positionsByRoleSlug, setPositionsByRoleSlug] = React.useState<
+    Record<string, TInvitablePosition[]>
+  >({});
+
+  const [companyInfo, setCompanyInfo] = React.useState<ICompanyResponse | null>(
+    null,
+  );
 
   const [createInvitation, { isLoading: isCreatingInvitation }] =
     useCreateInvitationMutation();
@@ -102,47 +117,59 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [invitableRoles, directorCount]);
 
   //---------------------------------------
-  const deptLocationOptions = React.useMemo<TDropdownOption[]>(() => {
-    if (invitablePositions) {
-      return invitablePositions.map(p => ({
-        label: `본부${p.departmentName}`,
-        value: `dept-${p.departmentId}`,
-        departmentId: p.departmentId,
-      }));
-    }
-    return [];
-  }, [invitablePositions]);
+  const getDeptLocationOptions = React.useCallback(
+    (roleSlug: string): TDropdownOption[] => {
+      const positions = positionsByRoleSlug[roleSlug];
+      if (positions) {
+        return positions.map(p => ({
+          label: `본부${p.departmentName}`,
+          value: `dept-${p.departmentId}`,
+          departmentId: p.departmentId,
+          disabled: false,
+        }));
+      }
+      return [];
+    },
+    [positionsByRoleSlug],
+  );
 
   //---------------------------------------
-  const teamLocationOptions = React.useMemo<TDropdownOption[]>(() => {
-    if (invitablePositions) {
-      return invitablePositions.flatMap(p =>
-        p.teams.map(t => ({
-          label: `본부${p.departmentName} > 팀${t.teamName}`,
-          value: `team-${p.departmentId}-${t.teamId}`,
-          departmentId: p.departmentId,
-          teamId: t.teamId,
-        })),
-      );
-    }
-    return [];
-  }, [invitablePositions]);
+  const getTeamLocationOptions = React.useCallback(
+    (roleSlug: string): TDropdownOption[] => {
+      const positions = positionsByRoleSlug[roleSlug];
+      if (positions) {
+        return positions.flatMap(p =>
+          p.teams.map(t => ({
+            label: `본부${p.departmentName} > 팀${t.teamName}`,
+            value: `team-${p.departmentId}-${t.teamId}`,
+            departmentId: p.departmentId,
+            teamId: t.teamId,
+            disabled:
+              roleSlug === ROLE_SLUGS.TEAM_LEADER &&
+              companyInfo?.teamId === t.teamId,
+          })),
+        );
+      }
+      return [];
+    },
+    [positionsByRoleSlug, companyInfo],
+  );
 
   //---------------------------------------
   const getLocationOptionsForRoleSlug = React.useCallback(
     (roleSlug: string): TDropdownOption[] => {
       if (roleSlug === ROLE_SLUGS.DEPARTMENT_HEAD) {
-        return deptLocationOptions;
+        return getDeptLocationOptions(roleSlug);
       }
       if (
         roleSlug === ROLE_SLUGS.TEAM_LEADER ||
         roleSlug === ROLE_SLUGS.MEMBER
       ) {
-        return teamLocationOptions;
+        return getTeamLocationOptions(roleSlug);
       }
       return [];
     },
-    [deptLocationOptions, teamLocationOptions],
+    [getDeptLocationOptions, getTeamLocationOptions],
   );
 
   //---------------------------------------
@@ -167,12 +194,13 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   //---------------------------------------
   const getDirectorLabel = React.useCallback(
     (roleSlug: string): string | undefined => {
-      if (!isDirectorSlug(roleSlug) || !invitablePositions) {
+      const positions = positionsByRoleSlug[roleSlug];
+      if (!isDirectorSlug(roleSlug) || !positions) {
         return undefined;
       }
-      return invitablePositions.map(p => `${p.departmentName}본부`).join(', ');
+      return positions.map(p => `${p.departmentName}본부`).join(', ');
     },
-    [isDirectorSlug, invitablePositions],
+    [isDirectorSlug, positionsByRoleSlug],
   );
 
   //---------------------------------------
@@ -185,14 +213,16 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   //---------------------------------------
   const hasUnsavedChanges = React.useMemo(() => {
     return invites.some(
-      inv =>
-        (inv.role || inv.location || inv.expiry) && !inv.generatedLink,
+      inv => (inv.role || inv.location || inv.expiry) && !inv.generatedLink,
     );
   }, [invites]);
 
   //---------------------------------------
   const handleShare = React.useCallback(() => {
-    showToast({ type: 'success', message: '초대장이 성공적으로 생성되었습니다' });
+    showToast({
+      type: 'success',
+      message: '초대장이 성공적으로 생성되었습니다',
+    });
     navigation.navigate('OrganizationChart' as any);
   }, [navigation, showToast]);
 
@@ -224,7 +254,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
 
   //---------------------------------------
   const handleSelectRole = React.useCallback(
-    (inviteId: string, option: TDropdownOption) => {
+    async (inviteId: string, option: TDropdownOption) => {
       const slug = invitableRoles
         ? option.value
         : ROLE_SLUG_MAP[option.value] ?? option.value;
@@ -244,8 +274,19 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
           };
         }),
       );
+
+      if (slug && !positionsByRoleSlug[slug]) {
+        const result = await fetchPositions(slug);
+        if (result.data) {
+          const data = result.data;
+          setPositionsByRoleSlug(prev => ({
+            ...prev,
+            [slug]: data,
+          }));
+        }
+      }
     },
-    [invitableRoles],
+    [invitableRoles, positionsByRoleSlug, fetchPositions],
   );
 
   //---------------------------------------
@@ -298,6 +339,8 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         return;
       }
 
+      setGeneratingInviteId(inviteId);
+
       const params: {
         roleSlug: TRoleSlug;
         departmentId?: string;
@@ -312,21 +355,33 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
         params.teamId = invite.teamId;
       }
 
-      setGeneratingInviteId(inviteId);
       const response = await createInvitation(params);
-      setGeneratingInviteId(null);
 
       if ('data' in response) {
         setInvites(prev =>
           prev.map(inv =>
             inv.id === inviteId
-              ? { ...inv, generatedLink: response.data!.inviteUrl }
+              ? { ...inv, generatedLink: response.data.inviteUrl }
               : inv,
           ),
         );
       }
+
+      setGeneratingInviteId(null);
     },
     [invites, createInvitation],
+  );
+
+  //---------------------------------------
+  useFocusEffect(
+    React.useCallback(() => {
+      refetchRoles();
+      getCompanyInfo().then(info => {
+        if (info) {
+          setCompanyInfo(info);
+        }
+      });
+    }, [refetchRoles]),
   );
 
   //---------------------------------------

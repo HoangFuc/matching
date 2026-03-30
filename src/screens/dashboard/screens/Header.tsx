@@ -108,7 +108,11 @@ const HeaderDashboard: React.FC = () => {
               style={styles.avatar}
             />
           ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]} />
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <AppText variant="body5" color={AppColors.white}>
+                {fullName.charAt(0)}
+              </AppText>
+            </View>
           )}
         </Pressable>
 
@@ -154,7 +158,9 @@ const styles = StyleSheet.create({
     borderRadius: ms(20),
   },
   avatarPlaceholder: {
-    backgroundColor: AppColors.gray20,
+    backgroundColor: AppColors.gray50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   info: {
     flexDirection: 'row',

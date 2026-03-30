@@ -218,7 +218,11 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
                       resizeMode="cover"
                     />
                   ) : (
-                    <View style={[styles.avatar, styles.avatarPlaceholder]} />
+                    <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                      <AppText variant="body8" color={AppColors.white}>
+                        {invitation.inviter.fullName.charAt(0)}
+                      </AppText>
+                    </View>
                   )}
 
                   <AppText variant="body6" color={AppColors.gray90}>
@@ -382,7 +386,9 @@ const styles = StyleSheet.create({
     borderRadius: ms(16),
   },
   avatarPlaceholder: {
-    backgroundColor: AppColors.gray20,
+    backgroundColor: AppColors.gray50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   noticeSection: {
     flexDirection: 'row',

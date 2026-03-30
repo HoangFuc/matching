@@ -6,7 +6,6 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
-import { AppImages } from '@/src/constants/images';
 import { IBulletinPost } from '@/src/interface/bulletin.interface';
 import { formatTimeAgo } from '@/src/utils/date';
 import { MemoPostStats } from './PostStats';
@@ -22,15 +21,19 @@ const BulletinPostCard: React.FC<IProps> = ({ post, onPress }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
   //---------------------------------------
-  const avatarSource = post.author.avatarUrl
-    ? { uri: post.author.avatarUrl }
-    : AppImages.avatar;
-
   return (
     <MemoBaseCard style={styles.card} onPress={onPress}>
       {/* Author row */}
       <View style={styles.authorRow}>
-        <Image source={avatarSource} style={styles.avatar} />
+        {post.author.avatarUrl ? (
+          <Image source={{ uri: post.author.avatarUrl }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, styles.avatarPlaceholder]}>
+            <AppText variant="body8" color={AppColors.white}>
+              {post.author.fullName.charAt(0)}
+            </AppText>
+          </View>
+        )}
 
         <View style={styles.authorInfo}>
           <AppText variant="body6" color={AppColors.gray100}>
@@ -104,6 +107,11 @@ const styles = StyleSheet.create({
     width: ms(30),
     height: ms(30),
     borderRadius: ms(100),
+  },
+  avatarPlaceholder: {
+    backgroundColor: AppColors.gray50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   authorInfo: {
     flex: 1,

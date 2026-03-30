@@ -13,6 +13,7 @@ import { ms } from 'react-native-size-matters/extend';
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
+import { useOrgEditActions } from '../context/OrgEditContext';
 import type { TDepartment, TMember } from '../type';
 import { MemoAddMemberSheet } from './AddMemberSheet';
 import { MemoRenameOrgSheet } from './RenameOrgSheet';
@@ -27,11 +28,12 @@ interface IProps {
 
 //---------------------------------------
 const getTotalMembers = (department: TDepartment): number => {
-  let count = department.departmentHead ? 1 : 0;
-  department.teams.forEach(team => {
-    count += team.members.length;
-  });
-  return count;
+  const headCount = department.departmentHead ? 1 : 0;
+  const teamCount = department.teams.reduce(
+    (sum, team) => sum + team.totalMembers,
+    0,
+  );
+  return headCount + teamCount;
 };
 
 //---------------------------------------
@@ -61,6 +63,7 @@ const DepartmentSection: React.FC<IProps> = ({
   canEditRoot = false,
   defaultExpanded = true,
 }) => {
+  const actions = useOrgEditActions();
   const canEditDept = canEditRoot || department.canEdit;
   const [expanded, setExpanded] = React.useState(defaultExpanded);
   const [renameVisible, setRenameVisible] = React.useState(false);
@@ -86,10 +89,9 @@ const DepartmentSection: React.FC<IProps> = ({
   //---------------------------------------
   const handleSaveRename = React.useCallback(
     (newName: string) => {
-      // TODO: call API to rename department
-      console.log('Rename department', department.id, newName);
+      actions.renameDepartment(department.id, newName);
     },
-    [department.id],
+    [actions, department.id],
   );
 
   //---------------------------------------
@@ -105,10 +107,9 @@ const DepartmentSection: React.FC<IProps> = ({
   //---------------------------------------
   const handleSaveAddTeam = React.useCallback(
     (teamName: string) => {
-      // TODO: call API to add team
-      console.log('Add team to department', department.id, teamName);
+      actions.addTeam(department.id, teamName);
     },
-    [department.id],
+    [actions, department.id],
   );
 
   //---------------------------------------
@@ -124,11 +125,15 @@ const DepartmentSection: React.FC<IProps> = ({
   //---------------------------------------
   const handleConfirmAddMember = React.useCallback(
     (member: TMember) => {
-      // TODO: call API to add member as department head
-      console.log('Add department head', department.id, member);
+      actions.setDepartmentHead(department.id, member);
     },
-    [department.id],
+    [actions, department.id],
   );
+
+  //---------------------------------------
+  const handleRemoveDepartmentHead = React.useCallback(() => {
+    actions.removeDepartmentHead(department.id);
+  }, [actions, department.id]);
 
   return (
     <MemoBaseCard style={styles.card}>
@@ -151,7 +156,10 @@ const DepartmentSection: React.FC<IProps> = ({
               e.stopPropagation();
               handlePressEdit();
             }}
-            style={[styles.editButton, !(isEditing && canEditDept) && styles.hidden]}
+            style={[
+              styles.editButton,
+              !(isEditing && canEditDept) && styles.hidden,
+            ]}
           >
             <Edit2
               size={`${ms(20)}`}
@@ -217,6 +225,7 @@ const DepartmentSection: React.FC<IProps> = ({
                 <Pressable
                   hitSlop={8}
                   disabled={!(isEditing && canEditDept)}
+                  onPress={handleRemoveDepartmentHead}
                   style={!(isEditing && canEditDept) && styles.hidden}
                 >
                   <CloseCircle
@@ -265,7 +274,12 @@ const DepartmentSection: React.FC<IProps> = ({
                   )}
                 </View>
 
-                <MemoTeamSection team={team} isEditing={isEditing} canEditDept={canEditDept} />
+                <MemoTeamSection
+                  departmentId={department.id}
+                  team={team}
+                  isEditing={isEditing}
+                  canEditDept={canEditDept}
+                />
               </View>
             );
           })}
@@ -288,7 +302,10 @@ const DepartmentSection: React.FC<IProps> = ({
                 />
               </View>
 
-              <Pressable style={styles.addTeamButton} onPress={handlePressAddTeam}>
+              <Pressable
+                style={styles.addTeamButton}
+                onPress={handlePressAddTeam}
+              >
                 <AppText variant="body8" color={AppColors.gray70}>
                   + 팀 추가
                 </AppText>

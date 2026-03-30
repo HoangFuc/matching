@@ -1,5 +1,12 @@
 import React from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { ms } from 'react-native-size-matters/extend';
 
 import { MemoAppButton } from '@/src/component/AppButton';
@@ -70,11 +77,7 @@ const MemberRow: React.FC<{
 };
 
 //---------------------------------------
-const AddMemberSheet: React.FC<IProps> = ({
-  visible,
-  onClose,
-  onConfirm,
-}) => {
+const AddMemberSheet: React.FC<IProps> = ({ visible, onClose, onConfirm }) => {
   const { data: memberGroups = [], isLoading } = useGetMembersQuery(undefined, {
     skip: !visible,
   });
@@ -92,7 +95,9 @@ const AddMemberSheet: React.FC<IProps> = ({
       return;
     }
     for (const group of memberGroups) {
-      const found = group.members.find((m: TMember) => m.memberId === selectedId);
+      const found = group.members.find(
+        (m: TMember) => m.memberId === selectedId,
+      );
       if (found) {
         onConfirm(found);
         break;
@@ -119,6 +124,12 @@ const AddMemberSheet: React.FC<IProps> = ({
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={AppColors.purple} />
+        </View>
+      ) : memberGroups.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <AppText variant="body4" color={AppColors.gray50}>
+            초대 목록이 비어 있습니다
+          </AppText>
         </View>
       ) : (
         <ScrollView
@@ -183,8 +194,14 @@ export const MemoAddMemberSheet = React.memo(AddMemberSheet);
 const styles = StyleSheet.create({
   sheet: {
     maxHeight: '100%',
+    paddingBottom: ms(10),
   },
   loadingContainer: {
+    height: ms(200),
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  emptyContainer: {
     height: ms(200),
     alignItems: 'center' as const,
     justifyContent: 'center' as const,

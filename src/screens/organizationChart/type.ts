@@ -6,6 +6,8 @@ export type TMember = {
   role: string;
   roleSlug: string;
   isMe: boolean;
+  teamName?: string | null;
+  departmentName?: string | null;
 };
 
 export type TTeam = {

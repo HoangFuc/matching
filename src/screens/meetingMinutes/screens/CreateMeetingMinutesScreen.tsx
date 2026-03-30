@@ -11,6 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -56,6 +57,7 @@ interface IFormData {
 
 const CreateMeetingMinutesScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
+  const insets = useSafeAreaInsets();
 
   //---------------------------------------
   const { uploadMeetingLog } = useMeetingLogUploadWithProgress();
@@ -424,7 +426,12 @@ const CreateMeetingMinutesScreen: React.FC = () => {
           </View>
         </KeyboardAwareScrollView>
 
-        <View style={styles.bottomContainer}>
+        <View
+          style={[
+            styles.bottomContainer,
+            { marginBottom: Math.max(insets.bottom, ms(10)) },
+          ]}
+        >
           <MemoAppButton
             label="등록"
             onPress={handleSubmit(onSubmit)}
@@ -461,7 +468,6 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     paddingVertical: ms(16),
     alignItems: 'center',
-    marginBottom: ms(10),
   },
   submitBtn: {
     width: ms(163),

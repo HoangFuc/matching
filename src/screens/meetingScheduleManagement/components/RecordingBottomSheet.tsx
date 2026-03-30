@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  Image,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { Stop } from 'iconsax-react-nativejs';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
@@ -10,6 +16,7 @@ import Toast from 'react-native-toast-message';
 import { AppText } from '@/src/component/AppText';
 import { MemoBottomSheetModal } from '@/src/component/BottomSheetModal';
 import { AppColors } from '@/src/constants/colors';
+import { AppImages } from '@/src/constants/images';
 
 interface IProps {
   visible: boolean;
@@ -56,9 +63,15 @@ const RecordingBottomSheet: React.FC<IProps> = ({
 
       const recordPath = Platform.select({
         ios: `recording_${Date.now()}.m4a`,
-        android: `${ReactNativeBlobUtil.fs.dirs.CacheDir}/recording_${Date.now()}.m4a`,
+        android: `${
+          ReactNativeBlobUtil.fs.dirs.CacheDir
+        }/recording_${Date.now()}.m4a`,
       });
-      const path = await AudioRecorderPlayer.startRecorder(recordPath, undefined, true);
+      const path = await AudioRecorderPlayer.startRecorder(
+        recordPath,
+        undefined,
+        true,
+      );
       filePathRef.current = path;
       isRecordingRef.current = true;
       setIsRecording(true);
@@ -190,8 +203,22 @@ const RecordingBottomSheet: React.FC<IProps> = ({
 
               <TouchableOpacity
                 onPress={handleTogglePause}
-                style={isPaused ? styles.playTriangle : styles.recordButton}
-              />
+                style={styles.recordButton}
+              >
+                {isPaused && (
+                  <Image
+                    source={AppImages.playVector}
+                    style={styles.playIcon}
+                  />
+                )}
+
+                {!isPaused && (
+                  <Image
+                    source={AppImages.ellipse}
+                    style={styles.ellipseIcon}
+                  />
+                )}
+              </TouchableOpacity>
 
               <View style={styles.controlSpacer}>
                 <TouchableOpacity
@@ -255,7 +282,6 @@ const styles = StyleSheet.create({
     width: ms(26),
     height: ms(26),
     borderRadius: ms(28),
-    backgroundColor: AppColors.negative,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -277,15 +303,14 @@ const styles = StyleSheet.create({
     borderRadius: ms(2),
     backgroundColor: AppColors.gray80,
   },
-  playTriangle: {
-    marginLeft: ms(4),
-    width: 0,
-    height: 0,
-    borderLeftWidth: ms(20),
-    borderTopWidth: ms(12),
-    borderBottomWidth: ms(12),
-    borderLeftColor: AppColors.negative,
-    borderTopColor: 'transparent',
-    borderBottomColor: 'transparent',
+  playIcon: {
+    width: ms(24),
+    height: ms(26),
+    resizeMode: 'contain' as const,
+  },
+  ellipseIcon: {
+    width: ms(24),
+    height: ms(26),
+    resizeMode: 'contain' as const,
   },
 });

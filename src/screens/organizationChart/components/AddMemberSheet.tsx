@@ -89,6 +89,35 @@ const MemberRow: React.FC<{
         >
           {member.role}
         </AppText>
+
+        {(() => {
+          const hasDept = !!member.departmentName;
+          const hasTeam = !!member.teamName;
+          const label = member.teamName ?? member.departmentName;
+          if (!label) {
+            return null;
+          }
+          const isUnassigned = label === '미배정';
+          const badgeStyle = isUnassigned
+            ? styles.teamBadgeUnassigned
+            : hasTeam
+              ? styles.teamBadgeTeam
+              : hasDept
+                ? styles.teamBadgeDept
+                : null;
+          const textColor = isUnassigned
+            ? AppColors.gray60
+            : hasTeam
+              ? AppColors.strongBlue
+              : AppColors.green;
+          return (
+            <View style={[styles.teamBadge, badgeStyle]}>
+              <AppText variant="detail" color={textColor}>
+                {label}
+              </AppText>
+            </View>
+          );
+        })()}
       </View>
 
       {isSelected && (
@@ -292,6 +321,20 @@ const styles = StyleSheet.create({
     height: ms(3),
     borderRadius: ms(1.5),
     backgroundColor: AppColors.gray90,
+  },
+  teamBadge: {
+    borderRadius: ms(4),
+    paddingHorizontal: ms(6),
+    paddingVertical: ms(2),
+  },
+  teamBadgeDept: {
+    backgroundColor: AppColors.lightLime,
+  },
+  teamBadgeTeam: {
+    backgroundColor: AppColors.lightBlue,
+  },
+  teamBadgeUnassigned: {
+    backgroundColor: AppColors.gray10,
   },
   radioOuter: {
     width: ms(20),

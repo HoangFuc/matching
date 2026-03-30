@@ -31,4 +31,6 @@ export const AppImages = {
   star1: require('@/src/assets/images/star1.png'),
   vector: require('@/src/assets/images/vector.png'),
   siren: require('@/src/assets/images/siren.png'),
+  playVector: require('@/src/assets/images/playVector.png'),
+  ellipse: require('@/src/assets/images/ellipse.png'),
 };

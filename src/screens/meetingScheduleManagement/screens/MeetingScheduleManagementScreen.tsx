@@ -14,7 +14,6 @@ import dayjs from 'dayjs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
-import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
@@ -77,8 +76,8 @@ const MeetingScheduleManagementScreen: React.FC = () => {
       setActiveTab(MeetingScheduleScopeEnum.COMPANY);
       setShowDatePicker(false);
       setPage(1);
-      refetch();
-    }, [refetch]),
+      // không cần gọi refetch() vì thay đổi state sẽ tự trigger query mới
+    }, []),
   );
 
   //---------------------------------------
@@ -250,14 +249,12 @@ const MeetingScheduleManagementScreen: React.FC = () => {
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
           onRefresh={refetch}
-          refreshing={isLoading}
+          refreshing={false}
           maxToRenderPerBatch={10}
           windowSize={5}
           removeClippedSubviews={true}
         />
       </MemoScreenBody>
-
-      <FullScreenLoading visible={isLoading} />
 
       <MemoDateRangePickerModal
         visible={showDatePicker}

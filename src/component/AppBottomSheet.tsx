@@ -113,11 +113,14 @@ const AppBottomSheet: React.FC<IProps> = ({
     >
       <GestureHandlerRootView style={styles.flex}>
         <KeyboardAvoidingView style={styles.flex} behavior="padding">
-          <Animated.View style={[styles.flex, { opacity: backdropOpacity }]}>
-            <BlurView style={styles.overlay} blurType="dark" blurAmount={8}>
-              <Pressable style={styles.overlayPressable} onPress={handleClose} />
-            </BlurView>
+          <Animated.View
+            style={[StyleSheet.absoluteFill, { opacity: backdropOpacity }]}
+            pointerEvents="none"
+          >
+            <BlurView style={styles.overlay} blurType="dark" blurAmount={8} />
           </Animated.View>
+
+          <Pressable style={styles.flex} onPress={handleClose} />
 
           <Animated.View
             style={[
@@ -125,10 +128,7 @@ const AppBottomSheet: React.FC<IProps> = ({
               { transform: [{ translateY: slideAnim }] },
             ]}
           >
-            <Pressable
-              style={[styles.sheet, { maxHeight }]}
-              onPress={e => e.stopPropagation()}
-            >
+            <View style={[styles.sheet, { maxHeight }]}>
               {showHandle && <View style={styles.handleBar} />}
 
               {title && (
@@ -178,7 +178,7 @@ const AppBottomSheet: React.FC<IProps> = ({
                   {footer}
                 </View>
               )}
-            </Pressable>
+            </View>
           </Animated.View>
         </KeyboardAvoidingView>
       </GestureHandlerRootView>

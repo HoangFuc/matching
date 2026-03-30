@@ -23,7 +23,6 @@ import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
-import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { formatKoreanPhone } from '@/src/component/PhoneInput';
 import {
   MemoDetailInfoRow,
@@ -278,8 +277,6 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   return (
     <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="미팅록 세부 정보" />
-
-      <FullScreenLoading visible={isLoading || !item} />
 
       {item && (
         <MemoScreenBody>

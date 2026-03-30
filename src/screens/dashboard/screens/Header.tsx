@@ -13,7 +13,6 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
 
 import { AppText } from '@/src/component/AppText';
-import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { AppColors } from '@/src/constants/colors';
 import { HamburgerMenu, Notification } from '@/src/constants/icons';
 import { AppImages } from '@/src/constants/images';
@@ -127,7 +126,6 @@ const HeaderDashboard: React.FC = () => {
         </View>
       </View>
 
-      <FullScreenLoading visible={isLoading} />
     </ImageBackground>
   );
 };

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
 import { MemoTimePickerModal } from '@/src/component/calendar/TimePickerModal';
@@ -25,6 +27,7 @@ import { useCreateMeetingScheduleMutation } from '@/src/store/api/meetingSchedul
 
 const CreateMeetingScheduleScreen: React.FC = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   //---------------------------------------
   const [showDatePicker, setShowDatePicker] = React.useState(false);
@@ -300,7 +303,9 @@ const CreateMeetingScheduleScreen: React.FC = () => {
           />
         </KeyboardAwareScrollView>
 
-        <View style={styles.bottomContainer}>
+        <View
+          style={[styles.bottomContainer, { paddingBottom: insets.bottom || ms(16) }]}
+        >
           <MemoAppButton
             label="등록"
             onPress={handleSubmit(onSubmit)}

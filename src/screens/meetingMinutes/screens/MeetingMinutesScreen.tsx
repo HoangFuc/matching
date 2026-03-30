@@ -14,7 +14,6 @@ import dayjs from 'dayjs';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
-import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
@@ -167,8 +166,6 @@ const MeetingMinutesScreen: React.FC = () => {
           removeClippedSubviews={true}
         />
       </MemoScreenBody>
-
-      <FullScreenLoading visible={isLoading} />
 
       <MemoDateRangePickerModal
         visible={showDatePicker}

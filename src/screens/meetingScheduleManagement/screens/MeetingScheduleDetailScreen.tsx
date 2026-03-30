@@ -6,6 +6,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNavigation, useRoute } from '@react-navigation/native';
 import {
@@ -94,7 +95,11 @@ const buildInfoRows = (item: IMeetingScheduleManagement): TDetailInfoRow[] => {
     },
     { label: '방문 장소', type: 'text', value: item.address, flex: true },
     { label: '고객명', type: 'text', value: item.customerName },
-    { label: '연락처', type: 'text', value: formatKoreanPhone(item.customerPhone ?? '') },
+    {
+      label: '연락처',
+      type: 'text',
+      value: formatKoreanPhone(item.customerPhone ?? ''),
+    },
     { label: '일정명', type: 'text', value: item.title },
     { label: '메모', type: 'text', value: item.memo, flex: true },
   ];
@@ -103,6 +108,7 @@ const buildInfoRows = (item: IMeetingScheduleManagement): TDetailInfoRow[] => {
 //---------------------------------------
 const MeetingScheduleDetailScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<TRoute>();
   const { item } = route.params;
 
@@ -353,9 +359,14 @@ const MeetingScheduleDetailScreen: React.FC = () => {
 
         {/* Bottom Button */}
         {!isCompleted && (
-          <View style={styles.bottomContainer}>
+          <View
+            style={[
+              styles.bottomContainer,
+              { paddingBottom: insets.bottom || ms(16) },
+            ]}
+          >
             <MemoAppButton
-              label={isUploading ? '업로드 중...' : '저장'}
+              label={isUploading ? '업로드 중...' : '회의 완료'}
               onPress={handleComplete}
               style={styles.completeBtn}
               disabled={!recordedFile || isUploading}

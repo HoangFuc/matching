@@ -7,7 +7,6 @@ import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
-import FullScreenLoading from '@/src/component/FullScreenLoading';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { AppColors } from '@/src/constants/colors';
 import { IBulletinPost } from '@/src/interface/bulletin.interface';
@@ -116,7 +115,6 @@ const BulletinBoard: React.FC = () => {
         />
       </MemoScreenBody>
 
-      <FullScreenLoading visible={isLoading} />
     </AppSafeAreaView>
   );
 };

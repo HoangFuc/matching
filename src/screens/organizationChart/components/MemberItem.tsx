@@ -56,7 +56,7 @@ const MemberItem: React.FC<IProps> = ({
           {member.role}
         </AppText>
 
-        {isEditing && (
+        {isEditing && !member.isMe && (
           <Pressable hitSlop={8} onPress={onPressRemove}>
             <CloseCircle
               size={`${ms(16)}`}
@@ -98,7 +98,7 @@ const MemberItem: React.FC<IProps> = ({
           </View>
         )}
 
-        {isEditing && (
+        {isEditing && !member.isMe && (
           <Pressable hitSlop={8} onPress={onPressRemove}>
             <CloseCircle
               size={`${ms(16)}`}

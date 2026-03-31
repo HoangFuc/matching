@@ -11,8 +11,17 @@ import type { TUpdateDepartmentsParams } from '@/src/store/api/company.api';
 import { useToast } from '@/src/providers/ToastProvider';
 import { useAppDispatch } from '@/src/store/hooks';
 import type { TOrgEditActions } from '../context/OrgEditContext';
-import { MOCK_STRUCTURE } from '../mockData';
 import type { TMember, TStructure } from '../type';
+
+//---------------------------------------
+const EMPTY_STRUCTURE: TStructure = {
+  companyName: '',
+  totalMembers: 0,
+  canEdit: false,
+  directors: [],
+  departments: [],
+  totalDepartments: 0,
+};
 
 //---------------------------------------
 const generateTempId = () =>
@@ -166,6 +175,9 @@ const hasAnyEditPermission = (structure: TStructure): boolean => {
   if (structure.canEdit) {
     return true;
   }
+  if (structure.directors.some(d => d.isMe)) {
+    return true;
+  }
   for (const dept of structure.departments) {
     if (dept.canEdit) {
       return true;
@@ -180,8 +192,11 @@ const hasAnyEditPermission = (structure: TStructure): boolean => {
 };
 
 //---------------------------------------
-export const useOrgFormData = (directorSlot: number = 1) => {
-  const { data: apiStructure, refetch } = useGetStructureQuery(directorSlot);
+export const useOrgFormData = (directorSlot: number | null) => {
+  const slot = directorSlot ?? 1;
+  const { data: apiStructure, isLoading, refetch } = useGetStructureQuery(slot, {
+    skip: directorSlot === null,
+  });
 
   const dispatch = useAppDispatch();
   const [updateDepartments] = useUpdateDepartmentsMutation();
@@ -191,66 +206,72 @@ export const useOrgFormData = (directorSlot: number = 1) => {
   const [kickMemberIds, setKickMemberIds] = React.useState<string[]>([]);
   const formDataCacheRef = React.useRef<Record<number, TStructure>>({});
   const serverDataCacheRef = React.useRef<Record<number, TStructure>>({});
-  const prevSlotRef = React.useRef(directorSlot);
+  const prevSlotRef = React.useRef(slot);
 
-  const serverData = apiStructure ?? MOCK_STRUCTURE;
+  const serverData = apiStructure ?? EMPTY_STRUCTURE;
   const structure = formData ?? serverData;
   const canEditAnything = hasAnyEditPermission(structure);
+
+  React.useEffect(() => {
+    console.log('[OrgChart] directors:', JSON.stringify(structure.directors, null, 2));
+  }, [structure.directors]);
 
   const hasChanges = React.useMemo(() => {
     if (!formData || kickMemberIds.length > 0) {
       return kickMemberIds.length > 0;
     }
-    const original = serverDataCacheRef.current[directorSlot];
+    const original = serverDataCacheRef.current[slot];
     if (!original) {
       return false;
     }
     return JSON.stringify(formData) !== JSON.stringify(original);
-  }, [formData, kickMemberIds, directorSlot]);
+  }, [formData, kickMemberIds, slot]);
 
   //---------------------------------------
   useFocusEffect(
     React.useCallback(() => {
-      refetch();
-    }, [refetch]),
+      if (directorSlot !== null) {
+        refetch();
+      }
+    }, [directorSlot, refetch]),
   );
 
   //---------------------------------------
   React.useEffect(() => {
     if (!isEditing) {
-      prevSlotRef.current = directorSlot;
+      prevSlotRef.current = slot;
       return;
     }
 
-    if (prevSlotRef.current !== directorSlot) {
+    if (prevSlotRef.current !== slot) {
       setFormData(current => {
         if (current) {
           formDataCacheRef.current[prevSlotRef.current] = current;
         }
-        prevSlotRef.current = directorSlot;
+        prevSlotRef.current = slot;
 
-        const cached = formDataCacheRef.current[directorSlot];
+        const cached = formDataCacheRef.current[slot];
         return cached ? deepCloneStructure(cached) : null;
       });
     }
-  }, [directorSlot, isEditing]);
+  }, [slot, isEditing]);
 
   //---------------------------------------
   React.useEffect(() => {
-    if (isEditing && apiStructure && !formData && !formDataCacheRef.current[directorSlot]) {
-      serverDataCacheRef.current[directorSlot] = deepCloneStructure(apiStructure);
+    if (isEditing && apiStructure && !formData && !formDataCacheRef.current[slot]) {
+      serverDataCacheRef.current[slot] = deepCloneStructure(apiStructure);
       setFormData(deepCloneStructure(apiStructure));
     }
-  }, [apiStructure, isEditing, directorSlot, formData]);
+  }, [apiStructure, isEditing, slot, formData]);
 
   //---------------------------------------
   const startEditing = React.useCallback(() => {
     formDataCacheRef.current = {};
-    serverDataCacheRef.current = { [directorSlot]: deepCloneStructure(serverData) };
+    serverDataCacheRef.current = { [slot]: deepCloneStructure(serverData) };
     setIsEditing(true);
     setFormData(deepCloneStructure(serverData));
     setKickMemberIds([]);
-  }, [serverData, directorSlot]);
+  }, [serverData, slot]);
 
   //---------------------------------------
   const cancelEdit = React.useCallback(() => {
@@ -287,8 +308,8 @@ export const useOrgFormData = (directorSlot: number = 1) => {
       }
 
       // Override with cached edits from other slots
-      for (const [slot, cached] of Object.entries(formDataCacheRef.current)) {
-        if (Number(slot) !== directorSlot) {
+      for (const [cachedSlot, cached] of Object.entries(formDataCacheRef.current)) {
+        if (Number(cachedSlot) !== slot) {
           for (const dept of cached.departments) {
             deptMap.set(dept.id, dept);
           }
@@ -319,7 +340,7 @@ export const useOrgFormData = (directorSlot: number = 1) => {
     }
   }, [
     formData,
-    directorSlot,
+    slot,
     serverData,
     kickMemberIds,
     updateDepartments,
@@ -578,12 +599,11 @@ export const useOrgFormData = (directorSlot: number = 1) => {
           if (!prev) {
             return prev;
           }
+          const newDirectors = [...prev.directors];
+          newDirectors[1] = { ...member, role: '총괄 2', roleSlug: 'director_2' };
           return {
             ...prev,
-            directors: [
-              ...prev.directors,
-              { ...member, role: '총괄 2', roleSlug: 'director_2' },
-            ],
+            directors: newDirectors,
             departments: prev.departments.map(dept => ({
               ...dept,
               departmentHead:
@@ -661,6 +681,7 @@ export const useOrgFormData = (directorSlot: number = 1) => {
 
   return {
     structure,
+    isLoading,
     isEditing,
     hasChanges,
     canEditAnything,

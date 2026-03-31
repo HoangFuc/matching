@@ -225,9 +225,18 @@ const ConfirmOrganizationInvitationScreen: React.FC<Props> = ({
                     </View>
                   )}
 
-                  <AppText variant="body6" color={AppColors.gray90}>
-                    {invitation.inviter.fullName} {invitation.inviter.roleName}
-                  </AppText>
+                  <MemoAppTooltip
+                    text={`${invitation.inviter.fullName} ${invitation.inviter.roleName}`}
+                    style={styles.inviterNameTooltip}
+                  >
+                    <AppText
+                      variant="body6"
+                      color={AppColors.gray90}
+                      numberOfLines={1}
+                    >
+                      {invitation.inviter.fullName} {invitation.inviter.roleName}
+                    </AppText>
+                  </MemoAppTooltip>
                 </View>
               </MemoBaseCard>
 
@@ -399,5 +408,8 @@ const styles = StyleSheet.create({
   noticeText: {
     flex: 1,
     lineHeight: ms(18),
+  },
+  inviterNameTooltip: {
+    flex: 1,
   },
 });

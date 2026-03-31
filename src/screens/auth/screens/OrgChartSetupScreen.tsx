@@ -186,21 +186,7 @@ const OrgChartSetupScreen: React.FC<Props> = ({ navigation, route }) => {
       console.error('Registration failed:', error);
       setIsSubmitting(false);
     }
-  }, [
-    isSubmitting,
-    departments,
-    hideStepBar,
-    updateDepartments,
-    toJson,
-    setStepData,
-    getFormData,
-    resetFormData,
-    registerCompany,
-    createCompany,
-    fromSocialLogin,
-    showToast,
-    navigation,
-  ]);
+  }, [isSubmitting, hideStepBar, setStepData, toJson, getFormData, fromSocialLogin, resetFormData, initialJson, navigation, departments, updateDepartments, showToast, createCompany, registerCompany]);
 
   return (
     <AppSafeAreaView style={styles.safeArea}>

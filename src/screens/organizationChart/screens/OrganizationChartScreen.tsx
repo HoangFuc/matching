@@ -19,6 +19,9 @@ import { MemoBottomButtonGroup } from '@/src/component/BottomButtonGroup';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
+import FullScreenLoading from '@/src/component/FullScreenLoading';
+import { useUserRole } from '@/src/hooks/useUserRole';
+import { ROLE_SLUGS } from '@/src/interface/auth.interface';
 import type { RootStackParamList } from '@/src/interface/tab.interface';
 import { MemoDepartmentSection } from '../components/DepartmentSection';
 import { MemoDirectorsSection } from '../components/DirectorsSection';
@@ -31,13 +34,23 @@ type Props = NativeStackScreenProps<RootStackParamList, 'OrganizationChart'>;
 //---------------------------------------
 const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const [directorSlot, setDirectorSlot] = React.useState(1);
+  const userRole = useUserRole();
+  const [directorSlot, setDirectorSlot] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (userRole !== null) {
+      setDirectorSlot(prev =>
+        prev === null ? (userRole === ROLE_SLUGS.DIRECTOR_2 ? 2 : 1) : prev,
+      );
+    }
+  }, [userRole]);
+
   const {
     structure,
+    isLoading,
     isEditing,
     hasChanges,
     canEditAnything,
-    isSingleDirectorCompany,
     editActions,
     startEditing,
     cancelEdit,
@@ -58,9 +71,12 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
   }, []);
 
   //---------------------------------------
-  const handleSaveRename = React.useCallback((newName: string) => {
-    editActions.renameCompany(newName);
-  }, [editActions]);
+  const handleSaveRename = React.useCallback(
+    (newName: string) => {
+      editActions.renameCompany(newName);
+    },
+    [editActions],
+  );
 
   //---------------------------------------
   const handleOpenCreateDept = React.useCallback(() => {
@@ -73,15 +89,36 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
   }, []);
 
   //---------------------------------------
-  const handleSaveCreateDept = React.useCallback((name: string) => {
-    const director = structure.directors[directorSlot - 1];
-    editActions.createDepartment(name, director?.memberId);
-  }, [editActions, structure.directors, directorSlot]);
+  const handleSaveCreateDept = React.useCallback(
+    (name: string) => {
+      const director = structure.directors[(directorSlot ?? 1) - 1];
+      editActions.createDepartment(name, director?.memberId);
+    },
+    [editActions, structure.directors, directorSlot],
+  );
 
   //---------------------------------------
-  const handlePressDirector = React.useCallback((slot: number) => {
-    setDirectorSlot(slot);
-  }, []);
+  const handlePressDirector = React.useCallback(
+    (slot: number) => {
+      const isDirector2 = userRole === ROLE_SLUGS.DIRECTOR_2;
+
+      if (isEditing && isDirector2) {
+        return;
+      }
+
+      setDirectorSlot(slot);
+    },
+    [isEditing, userRole],
+  );
+
+  //---------------------------------------
+  const handleStartEditing = React.useCallback(() => {
+    const mySlotIndex = structure.directors.findIndex(d => d.isMe);
+    if (mySlotIndex !== -1) {
+      setDirectorSlot(mySlotIndex + 1);
+    }
+    startEditing();
+  }, [structure.directors, startEditing]);
 
   //---------------------------------------
   const handlePressInvite = React.useCallback(() => {
@@ -94,7 +131,7 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
       isEditing ? null : (
         <View style={styles.headerRight}>
           {canEditAnything && (
-            <Pressable hitSlop={8} onPress={startEditing}>
+            <Pressable hitSlop={8} onPress={handleStartEditing}>
               <Edit2
                 size={`${ms(20)}`}
                 color={AppColors.white}
@@ -112,13 +149,20 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
           </Pressable>
         </View>
       ),
-    [isEditing, canEditAnything, startEditing, handlePressInvite],
+    [isEditing, canEditAnything, handleStartEditing, handlePressInvite],
   );
+
+  const isDirector = structure.directors.some(d => d.isMe);
+  const canCreateDept = isEditing && (structure.canEdit || isDirector);
+  const canSetDeptHead = structure.canEdit || isDirector;
 
   return (
     <OrgEditContext.Provider value={editActions}>
       <AppSafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor={AppColors.purple} />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={AppColors.purple}
+        />
 
         <MemoScreenHeader
           title="조직도"
@@ -172,9 +216,9 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
                 textColor={AppColors.purple}
                 style={[
                   styles.addDepartmentButton,
-                  !(isEditing && structure.canEdit) && styles.hidden,
+                  !canCreateDept && styles.hidden,
                 ]}
-                disabled={!(isEditing && structure.canEdit)}
+                disabled={!canCreateDept}
                 onPress={handleOpenCreateDept}
               />
             </View>
@@ -183,11 +227,9 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
             {structure.directors.length > 0 && (
               <MemoDirectorsSection
                 directors={structure.directors}
-                totalMembers={structure.totalMembers}
                 isEditing={isEditing}
                 canEdit={structure.canEdit}
-                isSingleDirectorCompany={isSingleDirectorCompany}
-                selectedSlot={directorSlot}
+                selectedSlot={directorSlot ?? 1}
                 onPressDirector={handlePressDirector}
               />
             )}
@@ -201,6 +243,7 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
                   allDepartments={structure.departments}
                   isEditing={isEditing}
                   canEditRoot={structure.canEdit}
+                  canSetDeptHead={canSetDeptHead}
                   defaultExpanded={index < 2}
                 />
               ))}
@@ -244,6 +287,8 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
           placeholder="조직명을 입력해 주세요"
         />
       </AppSafeAreaView>
+
+      <FullScreenLoading visible={isLoading} />
     </OrgEditContext.Provider>
   );
 };

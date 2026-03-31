@@ -23,6 +23,7 @@ const ToastErrorSilentEndpoints = new Set<string>(['verifyOtp']);
 const ToastErrorCodeMap: Record<string, string> = {
   AUTH_PHONE_EXISTS: '해당 전화번호는 이미 존재합니다.',
   AUTH_INVALID_CREDENTIALS: '전화번호 또는 비밀번호가 올바르지 않습니다.',
+  AUTH_UNASSIGNED: '귀하의 계정은 어떤 직책에도 배정되어 있지 않습니다. 담당 디렉터에게 문의하십시오.',
   DEPT_INVALID_DEFAULT_TEAM: '각 본부에는 최소 1개의 기본 팀이 필요합니다.',
   INVITE_NOT_FOUND: '초대 코드를 찾을 수 없습니다.',
   INVITE_INACTIVE: '비활성화된 초대 코드입니다.',
@@ -74,18 +75,18 @@ export const toastMiddleware: Middleware = () => next => action => {
       return result;
     }
 
-    // 403 업데이트 필요 — UpdateRequiredProvider에서 처리
+    const errorCode = (action.payload as any)?.data?.errorCode;
+    const mappedMessage = errorCode ? ToastErrorCodeMap[errorCode] : undefined;
+
+    // 403 업데이트 필요 — UpdateRequiredProvider에서 처리 (단, 알려진 errorCode는 toast로 처리)
     const errorStatus = (action.payload as any)?.status;
-    if (errorStatus === 403) {
+    if (errorStatus === 403 && !mappedMessage) {
       const updateUrl = (action.payload as any)?.data?.data;
       if (updateUrl) {
         showUpdateRequired(updateUrl);
       }
       return result;
     }
-
-    const errorCode = (action.payload as any)?.data?.errorCode;
-    const mappedMessage = errorCode ? ToastErrorCodeMap[errorCode] : undefined;
 
     const message =
       mappedMessage ||

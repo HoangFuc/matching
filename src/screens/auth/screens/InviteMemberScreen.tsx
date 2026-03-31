@@ -100,7 +100,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
   const roleOptions = React.useMemo<TDropdownOption[]>(() => {
     if (invitableRoles) {
       return invitableRoles.map(r => ({
-        label: r.slug === ROLE_SLUGS.DIRECTOR_2 ? `${r.name} 2` : r.name,
+        label: r.name,
         value: r.slug,
       }));
     }
@@ -357,12 +357,11 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
 
       const response = await createInvitation(params);
 
-      if ('data' in response) {
+      if ('data' in response && response.data) {
+        const inviteUrl = response.data.inviteUrl;
         setInvites(prev =>
           prev.map(inv =>
-            inv.id === inviteId
-              ? { ...inv, generatedLink: response.data.inviteUrl }
-              : inv,
+            inv.id === inviteId ? { ...inv, generatedLink: inviteUrl } : inv,
           ),
         );
       }

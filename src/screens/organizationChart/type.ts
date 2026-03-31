@@ -47,6 +47,7 @@ export type TDirector = {
   role: string;
   roleSlug: string;
   isMe: boolean;
+  isAdmin?: boolean;
 };
 
 export type TStructure = {

@@ -27,6 +27,7 @@ interface IProps {
   allDepartments: TDepartment[];
   isEditing?: boolean;
   canEditRoot?: boolean;
+  canSetDeptHead?: boolean;
   defaultExpanded?: boolean;
 }
 
@@ -66,6 +67,7 @@ const DepartmentSection: React.FC<IProps> = ({
   allDepartments,
   isEditing = false,
   canEditRoot = false,
+  canSetDeptHead = false,
   defaultExpanded = true,
 }) => {
   const actions = useOrgEditActions();
@@ -274,9 +276,9 @@ const DepartmentSection: React.FC<IProps> = ({
 
                 <Pressable
                   hitSlop={8}
-                  disabled={!(isEditing && canEditDept)}
+                  disabled={!(isEditing && canSetDeptHead) || department.departmentHead?.isMe}
                   onPress={handlePressRemoveHead}
-                  style={!(isEditing && canEditDept) && styles.hidden}
+                  style={(!(isEditing && canSetDeptHead) || department.departmentHead?.isMe) && styles.hidden}
                 >
                   <CloseCircle
                     size={`${ms(16)}`}
@@ -288,7 +290,7 @@ const DepartmentSection: React.FC<IProps> = ({
             </View>
           ) : (
             <DepartmentHeadPlaceholder
-              isEditing={isEditing && canEditDept}
+              isEditing={isEditing && canSetDeptHead}
               onPressAdd={handlePressAddMember}
             />
           )}

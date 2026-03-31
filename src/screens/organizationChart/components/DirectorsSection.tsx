@@ -13,10 +13,8 @@ import { MemoAddMemberSheet } from './AddMemberSheet';
 
 interface IProps {
   directors: TDirector[];
-  totalMembers: number;
   isEditing?: boolean;
   canEdit?: boolean;
-  isSingleDirectorCompany?: boolean;
   selectedSlot?: number;
   onPressDirector?: (slot: number) => void;
 }
@@ -26,15 +24,16 @@ const DirectorCard: React.FC<{
   director: TDirector;
   isEditing?: boolean;
   isSelected?: boolean;
+  canRemove?: boolean;
   onPressRemove?: () => void;
   onPress?: () => void;
-}> = ({ director, isEditing = false, isSelected = false, onPressRemove, onPress }) => {
+}> = ({ director, isEditing = false, isSelected = false, canRemove = true, onPressRemove, onPress }) => {
   return (
     <Pressable
       onPress={onPress}
       style={[styles.card, isSelected && styles.cardActive]}
     >
-      {director.isMe && (
+      {director.isAdmin && (
         <Image
           source={AppImages.star1}
           style={styles.starImage}
@@ -78,35 +77,35 @@ const DirectorCard: React.FC<{
         </AppText>
       </View>
 
-      <Pressable
-        hitSlop={8}
-        disabled={!isEditing}
-        onPress={onPressRemove}
-        style={!isEditing && styles.hidden}
-      >
-        <CloseCircle
-          size={`${ms(16)}`}
-          color={AppColors.gray50}
-          variant="Bold"
-        />
-      </Pressable>
+      {isEditing && canRemove && (
+        <Pressable hitSlop={8} onPress={onPressRemove}>
+          <CloseCircle
+            size={`${ms(16)}`}
+            color={AppColors.gray50}
+            variant="Bold"
+          />
+        </Pressable>
+      )}
     </Pressable>
   );
 };
 
 //---------------------------------------
-const PlaceholderCard: React.FC<{ onPressAdd?: () => void }> = ({
+const PlaceholderCard: React.FC<{ showAdd?: boolean; onPressAdd?: () => void }> = ({
+  showAdd = false,
   onPressAdd,
 }) => {
   return (
-    <Pressable style={styles.placeholderCard} onPress={onPressAdd}>
+    <Pressable style={styles.placeholderCard} onPress={showAdd ? onPressAdd : undefined}>
       <AppText variant="body6" color={AppColors.gray70}>
         총괄 2
       </AppText>
 
-      <View style={styles.placeholderAddButton}>
-        <Add size={`${ms(12)}`} color={AppColors.gray50} variant="Linear" />
-      </View>
+      {showAdd && (
+        <View style={styles.placeholderAddButton}>
+          <Add size={`${ms(12)}`} color={AppColors.gray50} variant="Linear" />
+        </View>
+      )}
     </Pressable>
   );
 };
@@ -114,10 +113,8 @@ const PlaceholderCard: React.FC<{ onPressAdd?: () => void }> = ({
 //---------------------------------------
 const DirectorsSection: React.FC<IProps> = ({
   directors,
-  totalMembers,
   isEditing = false,
   canEdit = false,
-  isSingleDirectorCompany = false,
   selectedSlot = 1,
   onPressDirector,
 }) => {
@@ -161,6 +158,7 @@ const DirectorsSection: React.FC<IProps> = ({
           director={director1}
           isEditing={effectiveEditing}
           isSelected={selectedSlot === 1}
+          canRemove={false}
           onPressRemove={() => handleRemoveDirector(director1.memberId)}
           onPress={() => onPressDirector?.(1)}
         />
@@ -171,11 +169,12 @@ const DirectorsSection: React.FC<IProps> = ({
           director={director2}
           isEditing={effectiveEditing}
           isSelected={selectedSlot === 2}
+          canRemove={!director2.isMe}
           onPressRemove={() => handleRemoveDirector(director2.memberId)}
           onPress={() => onPressDirector?.(2)}
         />
-      ) : effectiveEditing && !isSingleDirectorCompany && totalMembers > 1 ? (
-        <PlaceholderCard onPressAdd={handlePressAddMember} />
+      ) : directors.length > 1 ? (
+        <PlaceholderCard showAdd={effectiveEditing} onPressAdd={handlePressAddMember} />
       ) : null}
 
       <MemoAddMemberSheet

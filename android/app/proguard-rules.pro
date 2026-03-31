@@ -35,3 +35,15 @@
 # Keep model/data classes used with Gson/serialization
 -keepattributes Signature
 -keepattributes *Annotation*
+-keepattributes Exceptions
+
+# Kakao SDK
+-keep class com.kakao.sdk.** { *; }
+-keep interface com.kakao.sdk.** { *; }
+-keep class com.dooboolab.kakaologins.** { *; }
+
+# Retrofit (used internally by Kakao SDK)
+-keep class retrofit2.** { *; }
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}

@@ -135,6 +135,14 @@ export const authApi = createApi({
           formData.append('privacyAgreed', String(params.privacyAgreed));
           formData.append('marketingAgreed', String(params.marketingAgreed));
 
+          if (params.avatar) {
+            formData.append('avatar', {
+              uri: params.avatar.uri,
+              type: params.avatar.type || 'image/jpeg',
+              name: params.avatar.name || 'avatar.jpg',
+            } as any);
+          }
+
           // Step 2 - CreateAgency
           formData.append('companyName', params.companyName);
           formData.append('directorCount', String(params.directorCount));

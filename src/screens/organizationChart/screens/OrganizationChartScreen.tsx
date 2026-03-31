@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Pressable,
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -48,6 +49,8 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
   const {
     structure,
     isLoading,
+    isFetching,
+    refetch,
     isEditing,
     hasChanges,
     canEditAnything,
@@ -184,6 +187,16 @@ const OrganizationChartScreen: React.FC<Props> = ({ navigation }) => {
             ]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            refreshControl={
+              !isEditing ? (
+                <RefreshControl
+                  refreshing={isFetching && !isLoading}
+                  onRefresh={refetch}
+                  colors={[AppColors.purple]}
+                  tintColor={AppColors.purple}
+                />
+              ) : undefined
+            }
           >
             {/* Company Header */}
             <View style={styles.companyHeader}>

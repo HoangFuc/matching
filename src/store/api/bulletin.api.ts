@@ -60,6 +60,9 @@ export const bulletinApi = createApi({
       }),
       transformResponse: (response: any): IToggleLikeResponse =>
         response?.data ?? response,
+      invalidatesTags: (_result, _error, postId) => [
+        { type: 'BulletinDetail', id: postId },
+      ],
     }),
 
     //---------------------------------------

@@ -72,3 +72,14 @@ export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+export const resetAllApiCaches = () => (dispatch: AppDispatch) => {
+  dispatch(authApi.util.resetApiState());
+  dispatch(checkinApi.util.resetApiState());
+  dispatch(scheduleApi.util.resetApiState());
+  dispatch(dataRoomApi.util.resetApiState());
+  dispatch(bulletinApi.util.resetApiState());
+  dispatch(companyApi.util.resetApiState());
+  dispatch(meetingScheduleManagementApi.util.resetApiState());
+  dispatch(meetingLogApi.util.resetApiState());
+};

@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { RefreshControl, StyleSheet, View } from "react-native";
 
 import { moderateScale as ms } from "react-native-size-matters/extend";
 import Animated, {
@@ -9,6 +9,9 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from "react-native-reanimated";
+
+import { AppColors } from "@/src/constants/colors";
+import { DashboardRefreshContext } from "../context/DashboardRefreshContext";
 
 import { MemoScreenBody } from "@/src/component/ScreenBody";
 import { MemoCalendarAction } from "../component/body/CalendarAction";
@@ -44,6 +47,16 @@ const GradientOverlay: React.FC = React.memo(() => {
 
 const BodyDashboard: React.FC = () => {
   const scrollY = useSharedValue(0);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshKey, setRefreshKey] = React.useState(0);
+
+  //---------------------------------------
+
+  const handleRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setRefreshKey(prev => prev + 1);
+    setTimeout(() => setRefreshing(false), 1500);
+  }, []);
 
   //---------------------------------------
 
@@ -80,29 +93,39 @@ const BodyDashboard: React.FC = () => {
   //---------------------------------------
 
   return (
-    <MemoScreenBody style={styles.body}>
-      <Animated.View style={[styles.gradientWrapper, animatedGradientStyle]} pointerEvents="none">
-        <GradientOverlay />
-      </Animated.View>
-
-      <Animated.ScrollView
-        showsVerticalScrollIndicator={false}
-        onScroll={scrollHandler}
-        scrollEventThrottle={16}
-      >
-        <Animated.View style={animatedPaddingStyle}>
-          <MemoCalendarAction />
-
-          <MemoRanking />
-
-          <MemoMeetingSchedule />
-
-          <MemoMoreActions />
-
-          <MemoDraft />
+    <DashboardRefreshContext.Provider value={refreshKey}>
+      <MemoScreenBody style={styles.body}>
+        <Animated.View style={[styles.gradientWrapper, animatedGradientStyle]} pointerEvents="none">
+          <GradientOverlay />
         </Animated.View>
-      </Animated.ScrollView>
-    </MemoScreenBody>
+
+        <Animated.ScrollView
+          showsVerticalScrollIndicator={false}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[AppColors.purple]}
+              tintColor={AppColors.purple}
+            />
+          }
+        >
+          <Animated.View style={animatedPaddingStyle}>
+            <MemoCalendarAction />
+
+            <MemoRanking />
+
+            <MemoMeetingSchedule />
+
+            <MemoMoreActions />
+
+            <MemoDraft />
+          </Animated.View>
+        </Animated.ScrollView>
+      </MemoScreenBody>
+    </DashboardRefreshContext.Provider>
   );
 };
 

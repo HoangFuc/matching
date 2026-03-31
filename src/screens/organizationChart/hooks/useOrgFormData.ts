@@ -194,7 +194,7 @@ const hasAnyEditPermission = (structure: TStructure): boolean => {
 //---------------------------------------
 export const useOrgFormData = (directorSlot: number | null) => {
   const slot = directorSlot ?? 1;
-  const { data: apiStructure, isLoading, refetch } = useGetStructureQuery(slot, {
+  const { data: apiStructure, isLoading, isFetching, refetch } = useGetStructureQuery(slot, {
     skip: directorSlot === null,
   });
 
@@ -682,6 +682,8 @@ export const useOrgFormData = (directorSlot: number | null) => {
   return {
     structure,
     isLoading,
+    isFetching,
+    refetch,
     isEditing,
     hasChanges,
     canEditAnything,

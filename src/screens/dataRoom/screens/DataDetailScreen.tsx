@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -47,7 +47,7 @@ const DataDetailScreen: React.FC = () => {
 
   //---------------------------------------
   const { folderId, folderName, tabType } = route.params;
-  const { data: files = [] } = useGetFilesByFolderQuery(folderId);
+  const { data: files = [], isFetching, refetch } = useGetFilesByFolderQuery(folderId);
   const { pickAndUpload } = useFilePicker(folderId);
   const progress = useAppSelector(state => state.dataRoom.uploadProgress);
   const { cancelUpload } = useFileUploadWithProgress();
@@ -175,6 +175,14 @@ const DataDetailScreen: React.FC = () => {
             maxToRenderPerBatch={10}
             windowSize={5}
             removeClippedSubviews={true}
+            refreshControl={
+              <RefreshControl
+                refreshing={isFetching}
+                onRefresh={refetch}
+                colors={[AppColors.purple]}
+                tintColor={AppColors.purple}
+              />
+            }
           />
         ) : (
           <FlatList
@@ -193,6 +201,14 @@ const DataDetailScreen: React.FC = () => {
             maxToRenderPerBatch={10}
             windowSize={5}
             removeClippedSubviews={true}
+            refreshControl={
+              <RefreshControl
+                refreshing={isFetching}
+                onRefresh={refetch}
+                colors={[AppColors.purple]}
+                tintColor={AppColors.purple}
+              />
+            }
           />
         )}
 

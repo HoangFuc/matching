@@ -20,6 +20,8 @@ import { RootStackParamList } from '@/src/interface/tab.interface';
 import { getUserInfo, removeToken } from '@/src/services/tokenService';
 import { _retrieveData } from '@/src/api/async.storage';
 import { useLogoutMutation } from '@/src/store/api/auth.api';
+import { resetAllApiCaches } from '@/src/store';
+import { useDispatch } from 'react-redux';
 
 //---------------------------------------
 const DAYS_KR = [
@@ -46,6 +48,7 @@ const formatDateKR = (timestamp?: string | number): string => {
 const HeaderDashboard: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const dispatch = useDispatch();
   const [logout, { isLoading }] = useLogoutMutation();
   const [fullName, setFullName] = React.useState('');
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
@@ -77,8 +80,9 @@ const HeaderDashboard: React.FC = () => {
       await removeToken();
       Toast.show({ type: 'success', text1: '로그아웃되었습니다' });
       navigation.reset({ index: 0, routes: [{ name: 'Auth' }] });
+      dispatch(resetAllApiCaches());
     }
-  }, [logout, navigation]);
+  }, [dispatch, logout, navigation]);
 
   return (
     <ImageBackground source={AppImages.headerBg} resizeMode="cover">

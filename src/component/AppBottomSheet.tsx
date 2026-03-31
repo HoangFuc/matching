@@ -78,30 +78,18 @@ const AppBottomSheet: React.FC<IProps> = ({
           duration: ANIM_DURATION,
           useNativeDriver: true,
         }),
-      ]).start(() => {
-        setModalVisible(false);
+      ]).start(({ finished }) => {
+        if (finished) {
+          setModalVisible(false);
+        }
       });
     }
   }, [visible, backdropOpacity, slideAnim]);
 
   //---------------------------------------
   const handleClose = React.useCallback(() => {
-    Animated.parallel([
-      Animated.timing(backdropOpacity, {
-        toValue: 0,
-        duration: ANIM_DURATION,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: SCREEN_HEIGHT,
-        duration: ANIM_DURATION,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setModalVisible(false);
-      onClose();
-    });
-  }, [backdropOpacity, slideAnim, onClose]);
+    onClose();
+  }, [onClose]);
 
   return (
     <Modal

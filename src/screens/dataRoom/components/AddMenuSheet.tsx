@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ms } from 'react-native-size-matters/extend';
 
@@ -22,12 +23,20 @@ const AddMenuSheet: React.FC<IProps> = ({
   onCreateFolder,
   showCreateFolder = true,
 }) => {
+  const { bottom } = useSafeAreaInsets();
+
+  console.log('=======visible', visible);
+
   return (
     <MemoAppBottomSheet
       visible={visible}
       onClose={onClose}
       title="추가"
-      contentContainerStyle={styles.content}
+      contentContainerStyle={{
+        ...styles.content,
+        paddingBottom: ms(40),
+        marginBottom: ms(10) + bottom,
+      }}
     >
       <Pressable
         style={styles.menuItem}
@@ -63,7 +72,7 @@ export const MemoAddMenuSheet = React.memo(AddMenuSheet);
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 0,
-    paddingBottom: ms(40),
+    paddingBottom: 0,
     marginBottom: ms(20),
     gap: 0,
   },

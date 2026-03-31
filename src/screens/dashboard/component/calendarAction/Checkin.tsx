@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -20,7 +20,21 @@ const Checkin: React.FC<IProps> = props => {
   const { checkinTime, onCheckin } = props;
 
   //---------------------------------------
+  const [isLoading, setIsLoading] = useState(false);
+
+  //---------------------------------------
   const navigation = useNavigation<RootTabNavigationProp>();
+
+  //---------------------------------------
+  const handleCheckin = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      await onCheckin();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   //---------------------------------------
   if (checkinTime) {
@@ -87,10 +101,14 @@ const Checkin: React.FC<IProps> = props => {
         {'오늘 출근을 체크하세요'}
       </AppText>
 
-      <Pressable style={styles.button} onPress={onCheckin}>
-        <AppText variant="body7" color={AppColors.purple}>
-          {'출근 체크'}
-        </AppText>
+      <Pressable style={styles.button} onPress={handleCheckin} disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator size="small" color={AppColors.purple} />
+        ) : (
+          <AppText variant="body7" color={AppColors.purple}>
+            {'출근 체크'}
+          </AppText>
+        )}
       </Pressable>
     </MemoBaseCard>
   );

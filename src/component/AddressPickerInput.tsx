@@ -1,5 +1,10 @@
 import React from 'react';
-import { InteractionManager, Pressable, StyleSheet } from 'react-native';
+import {
+  InteractionManager,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+} from 'react-native';
 
 import Postcode from '@actbase/react-daum-postcode';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
@@ -38,7 +43,10 @@ const AddressPickerInput: React.FC<IProps> = ({
     <>
       <Pressable
         style={styles.dropdownBtn}
-        onPress={() => setShowPostcode(true)}
+        onPress={() => {
+          Keyboard.dismiss();
+          setShowPostcode(true);
+        }}
       >
         <AppText
           variant="body7"

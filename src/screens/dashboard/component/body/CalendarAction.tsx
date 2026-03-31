@@ -10,15 +10,23 @@ import {
   useGetAttendanceTodayQuery,
 } from '@/src/store/api/checkin.api';
 import { useHasCompany } from '@/src/hooks/useHasCompany';
+import { DashboardRefreshContext } from '../../context/DashboardRefreshContext';
 import { MemoCheckin } from '../calendarAction/Checkin';
 import { MemoSchedule } from '../calendarAction/Schedule';
 
 const CalendarAction: React.FC = () => {
   const hasCompany = useHasCompany();
+  const refreshKey = React.useContext(DashboardRefreshContext);
 
-  const { data: attendance } = useGetAttendanceTodayQuery(undefined, {
+  const { data: attendance, refetch } = useGetAttendanceTodayQuery(undefined, {
     skip: !hasCompany,
   });
+
+  React.useEffect(() => {
+    if (refreshKey > 0 && hasCompany) {
+      refetch();
+    }
+  }, [refreshKey, hasCompany, refetch]);
   const [checkin, { isLoading: isCheckinLoading }] = useCheckinMutation();
   const [isGettingLocation, setIsGettingLocation] = React.useState(false);
   const isLoading = isCheckinLoading || isGettingLocation;

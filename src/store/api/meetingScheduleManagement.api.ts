@@ -82,6 +82,9 @@ export const meetingScheduleManagementApi = createApi({
         body: { content },
       }),
       transformResponse: (response: any) => response?.data ?? response,
+      invalidatesTags: (_result, _error, body) => [
+        { type: 'MeetingScheduleManagement', id: body.scheduleId },
+      ],
     }),
     //---------------------------------------
     cancelRecordingUpload: builder.mutation<void, string>({
@@ -89,6 +92,7 @@ export const meetingScheduleManagementApi = createApi({
         url: `/meeting-logs/uploads/${uploadId}`,
         method: 'DELETE',
       }),
+      invalidatesTags: ['MeetingScheduleManagement'],
     }),
   }),
 });

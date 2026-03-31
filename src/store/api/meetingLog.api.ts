@@ -28,6 +28,7 @@ export const meetingLogApi = createApi({
       transformResponse: (response: any) => {
         return response?.data;
       },
+      invalidatesTags: ['MeetingLogList'],
     }),
     //---------------------------------------
     updateMeetingLog: builder.mutation<TMeetingMinutes, IUpdateMeetingLogPayload>(

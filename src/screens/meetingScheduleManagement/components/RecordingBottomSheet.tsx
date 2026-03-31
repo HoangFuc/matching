@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Image,
-  Platform,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -61,12 +60,7 @@ const RecordingBottomSheet: React.FC<IProps> = ({
       setCurrentPosition(0);
       allMeteringRef.current = [];
 
-      const recordPath = Platform.select({
-        ios: `recording_${Date.now()}.m4a`,
-        android: `${
-          ReactNativeBlobUtil.fs.dirs.CacheDir
-        }/recording_${Date.now()}.m4a`,
-      });
+      const recordPath = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/recording_${Date.now()}.m4a`;
       const path = await AudioRecorderPlayer.startRecorder(
         recordPath,
         undefined,
@@ -241,7 +235,12 @@ const RecordingBottomSheet: React.FC<IProps> = ({
               <TouchableOpacity
                 style={styles.recordButton}
                 onPress={handleStartRecording}
-              />
+              >
+                <Image
+                  source={AppImages.ellipse}
+                  style={styles.ellipseIcon}
+                />
+              </TouchableOpacity>
               <View style={styles.controlSpacer} />
             </>
           )}

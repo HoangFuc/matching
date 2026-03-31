@@ -1,26 +1,31 @@
 import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Add } from '@/src/constants/icons';
 import { ms } from 'react-native-size-matters/extend';
 import { AppColors } from '@/src/constants/colors';
 import { MemoAddMenuSheet } from './AddMenuSheet';
 import { MemoCreateFolderSheet } from './folder';
+import type { TDataRoomTabType } from '../constants';
 
 interface FABWithMenuProps {
   variant?: 'white' | 'purple';
   onUploadFile?: () => void;
   showCreateFolder?: boolean;
+  activeTab?: TDataRoomTabType;
 }
 
 const FABWithMenu: React.FC<FABWithMenuProps> = ({
   variant = 'white',
   onUploadFile,
   showCreateFolder = true,
+  activeTab,
 }) => {
   const [addMenuVisible, setAddMenuVisible] = React.useState(false);
   const [createFolderVisible, setCreateFolderVisible] = React.useState(false);
 
+  const { bottom } = useSafeAreaInsets();
   const isPurple = variant === 'purple';
 
   const handleUploadFile = React.useCallback(() => {
@@ -31,11 +36,20 @@ const FABWithMenu: React.FC<FABWithMenuProps> = ({
     setCreateFolderVisible(true);
   }, []);
 
+  const handleOpenAddMenu = React.useCallback(() => {
+    console.log('==========asdad');
+    setAddMenuVisible(true);
+  }, []);
+
   return (
     <>
       <Pressable
-        style={[styles.fab, isPurple ? styles.fabPurple : styles.fabWhite]}
-        onPress={() => setAddMenuVisible(true)}
+        style={[
+          styles.fab,
+          isPurple ? styles.fabPurple : styles.fabWhite,
+          { bottom: ms(32) + bottom },
+        ]}
+        onPress={handleOpenAddMenu}
       >
         <Add
           size={`${ms(28)}`}
@@ -55,6 +69,7 @@ const FABWithMenu: React.FC<FABWithMenuProps> = ({
       <MemoCreateFolderSheet
         visible={createFolderVisible}
         onClose={() => setCreateFolderVisible(false)}
+        initialType={activeTab}
       />
     </>
   );

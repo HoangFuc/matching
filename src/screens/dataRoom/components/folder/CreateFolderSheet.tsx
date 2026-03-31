@@ -11,11 +11,12 @@ import { MemoAppSheetInput } from '@/src/component/AppSheetInput';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
 import { useCreateFolderMutation } from '@/src/store/api/dataRoom.api';
-import { DATA_ROOM_LABEL_TO_TYPE } from '../../constants';
+import { DATA_ROOM_LABEL_TO_TYPE, DATA_ROOM_TAB_LABEL, type TDataRoomTabType } from '../../constants';
 
 interface IProps {
   visible: boolean;
   onClose: () => void;
+  initialType?: TDataRoomTabType;
 }
 
 interface IFormValues {
@@ -25,7 +26,7 @@ interface IFormValues {
 
 const FOLDER_TYPES = ['시세 자료', '분양자료'] as const;
 
-const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
+const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose, initialType }) => {
   const [createFolder, { isLoading }] = useCreateFolderMutation();
   const [showTypeDropdown, setShowTypeDropdown] = React.useState(false);
 
@@ -38,10 +39,20 @@ const CreateFolderSheet: React.FC<IProps> = ({ visible, onClose }) => {
     formState: { errors },
   } = useForm<IFormValues>({
     defaultValues: {
-      folderType: '시세 자료',
+      folderType: initialType ? DATA_ROOM_TAB_LABEL[initialType] : '시세 자료',
       folderName: '',
     },
   });
+
+  //---------------------------------------
+  React.useEffect(() => {
+    if (visible) {
+      reset({
+        folderType: initialType ? DATA_ROOM_TAB_LABEL[initialType] : '시세 자료',
+        folderName: '',
+      });
+    }
+  }, [visible, initialType, reset]);
 
   //---------------------------------------
   const formValue = watch();

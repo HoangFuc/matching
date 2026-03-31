@@ -93,6 +93,12 @@ const MeetingScheduleManagementScreen: React.FC = () => {
   }, []);
 
   //---------------------------------------
+  const handleRefresh = React.useCallback(() => {
+    setPage(1);
+    refetch();
+  }, [refetch]);
+
+  //---------------------------------------
   const handleLoadMore = React.useCallback(() => {
     if (hasMore && !isFetching && !isLoading) {
       setPage(prev => prev + 1);
@@ -248,8 +254,8 @@ const MeetingScheduleManagementScreen: React.FC = () => {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
-          onRefresh={refetch}
-          refreshing={false}
+          onRefresh={handleRefresh}
+          refreshing={isFetching && page === 1}
           maxToRenderPerBatch={10}
           windowSize={5}
           removeClippedSubviews={true}

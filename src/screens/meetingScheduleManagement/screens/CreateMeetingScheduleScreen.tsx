@@ -1,5 +1,13 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
@@ -9,7 +17,6 @@ import { MemoPhoneInput, stripDashes } from '@/src/component/PhoneInput';
 import Postcode from '@actbase/react-daum-postcode';
 import { useNavigation } from '@react-navigation/native';
 import { Controller, useForm } from 'react-hook-form';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   moderateScale as ms,
   scale as s,
@@ -86,12 +93,15 @@ const CreateMeetingScheduleScreen: React.FC = () => {
       <MemoScreenHeader title="방문 일정 등록" />
 
       <MemoScreenBody>
-        <KeyboardAwareScrollView
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          enableOnAndroid
-          extraScrollHeight={ms(20)}
+          keyboardDismissMode="on-drag"
         >
           {/* Date & Time */}
           <View>
@@ -301,7 +311,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
             placeholder="메모를 입력하세요"
             multiline
           />
-        </KeyboardAwareScrollView>
+        </ScrollView>
 
         <View
           style={[styles.bottomContainer, { paddingBottom: insets.bottom || ms(16) }]}
@@ -314,6 +324,7 @@ const CreateMeetingScheduleScreen: React.FC = () => {
             disabled={isDisableButton}
           />
         </View>
+        </KeyboardAvoidingView>
       </MemoScreenBody>
     </AppSafeAreaView>
   );
@@ -327,6 +338,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: AppColors.purple,
+  },
+  flex: {
+    flex: 1,
   },
   scrollContent: {
     padding: ms(16),

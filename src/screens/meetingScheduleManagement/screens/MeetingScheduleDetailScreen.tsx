@@ -8,17 +8,16 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
-import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
-import { moderateScale as ms } from 'react-native-size-matters/extend';
 import ReactNativeBlobUtil from 'react-native-blob-util';
+import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
 
-import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
@@ -26,6 +25,7 @@ import {
   MemoDetailInfoRow,
   TDetailInfoRow,
 } from '@/src/component/DetailInfoRow';
+import { formatKoreanPhone } from '@/src/component/PhoneInput';
 import { MemoRecordedAudioCard } from '@/src/component/RecordedAudioCard';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
@@ -38,13 +38,13 @@ import {
   TMeetingScheduleStatus,
 } from '@/src/interface/meetingScheduleManagement.interface';
 import { RootStackParamList } from '@/src/interface/tab.interface';
+import { MemoUploadProgressBar } from '@/src/screens/dataRoom/components/UploadProgressBar';
 import { useGetMeetingScheduleDetailQuery } from '@/src/store/api/meetingScheduleManagement.api';
+import { useAppSelector } from '@/src/store/hooks';
+import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
 import dayjs from 'dayjs';
 import { MemoRecordingBottomSheet } from '../components/RecordingBottomSheet';
-import { MemoUploadProgressBar } from '@/src/screens/dataRoom/components/UploadProgressBar';
-import { useAppSelector } from '@/src/store/hooks';
 import { useRecordingUploadWithProgress } from '../hooks/useRecordingUploadWithProgress';
-import { formatKoreanPhone } from '@/src/component/PhoneInput';
 
 type TRoute = NativeStackScreenProps<
   RootStackParamList,
@@ -89,9 +89,7 @@ const buildInfoRows = (item: IMeetingScheduleManagement): TDetailInfoRow[] => {
     {
       label: '날짜',
       type: 'text',
-      value: `${dayjs(item.scheduleDate).format('YYYY.MM.DD')} ${dayjs(
-        item.startTime,
-      ).format('HH:mm')}`,
+      value: `${dayjs(item.scheduleDate).format('YYYY.MM.DD')}`,
     },
     { label: '방문 장소', type: 'text', value: item.address, flex: true },
     { label: '고객명', type: 'text', value: item.customerName },
@@ -130,6 +128,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   const [showRecording, setShowRecording] = React.useState(false);
   const [recordedFile, setRecordedFile] = React.useState<{
     path: string;
+    mediaPath: string | null;
     name: string;
     waveformData: number[];
     durationMs: number;
@@ -184,7 +183,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
 
   //---------------------------------------
   const saveRecordingToLocal = React.useCallback(
-    async (sourcePath: string, fileName: string) => {
+    async (sourcePath: string, fileName: string): Promise<string | null> => {
       try {
         const ext = fileName.split('.').pop()?.toLowerCase() ?? 'm4a';
         const mimeMap: Record<string, string> = {
@@ -196,27 +195,25 @@ const MeetingScheduleDetailScreen: React.FC = () => {
         const mimeType = mimeMap[ext] ?? 'audio/m4a';
 
         if (Platform.OS === 'android') {
-          await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
-            {
-              name: fileName,
-              parentFolder: 'Recordings',
-              mimeType,
-            },
+          const uri = await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
+            { name: fileName, parentFolder: 'Recordings', mimeType },
             'Audio',
             sourcePath,
           );
+          return uri ?? null;
         } else {
           const destDir = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Recordings`;
           const dirExists = await ReactNativeBlobUtil.fs.isDir(destDir);
           if (!dirExists) {
             await ReactNativeBlobUtil.fs.mkdir(destDir);
           }
-          await ReactNativeBlobUtil.fs.cp(sourcePath, `${destDir}/${fileName}`);
+          const destPath = `${destDir}/${fileName}`;
+          await ReactNativeBlobUtil.fs.cp(sourcePath, destPath);
+          return destPath;
         }
-
-        Toast.show({ type: 'success', text1: '녹음 파일이 저장되었습니다' });
       } catch (error) {
         console.error('Failed to save recording to local:', error);
+        return null;
       }
     },
     [],
@@ -231,11 +228,11 @@ const MeetingScheduleDetailScreen: React.FC = () => {
       const now = dayjs();
       const fileName = `녹음_${now.format('YYYYMMDD_HHmm')}.${ext}`;
 
-      // Save recording to phone's local storage
-      await saveRecordingToLocal(filePath, fileName);
+      const mediaPath = await saveRecordingToLocal(filePath, fileName);
 
       setRecordedFile({
         path: filePath,
+        mediaPath,
         name: fileName,
         waveformData,
         durationMs,
@@ -259,7 +256,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
       : `${recordedFile.name}.m4a`;
     const memo = displayItem.memo ?? '';
 
-    const durationSeconds = Math.round(recordedFile.durationMs / 1000);
+    const durationSeconds = recordedFile.durationMs / 1000;
     console.log('[handleComplete] recordedFile:', recordedFile);
     console.log(
       '[handleComplete] durationMs:',
@@ -287,10 +284,16 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   //---------------------------------------
   React.useEffect(() => {
     if (isUploadCompleted) {
+      if (recordedFile?.path) {
+        ReactNativeBlobUtil.fs.unlink(recordedFile.path).catch(() => {});
+      }
+      if (recordedFile?.mediaPath) {
+        ReactNativeBlobUtil.fs.unlink(recordedFile.mediaPath).catch(() => {});
+      }
       dismissUpload();
       navigation.goBack();
     }
-  }, [isUploadCompleted, dismissUpload, navigation]);
+  }, [isUploadCompleted, dismissUpload, navigation, recordedFile?.path, recordedFile?.mediaPath]);
 
   return (
     <AppSafeAreaView style={styles.safeArea}>

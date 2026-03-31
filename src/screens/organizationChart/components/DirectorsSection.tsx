@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View, Text } from 'react-native';
 
 import { Add, CloseCircle } from 'iconsax-react-nativejs';
 import { ms } from 'react-native-size-matters/extend';
@@ -28,6 +28,27 @@ const DirectorCard: React.FC<{
   onPressRemove?: () => void;
   onPress?: () => void;
 }> = ({ director, isEditing = false, isSelected = false, canRemove = true, onPressRemove, onPress }) => {
+  const [showTooltip, setShowTooltip] = React.useState(false);
+  const tooltipTimer = React.useRef<ReturnType<typeof setTimeout>>();
+
+  //---------------------------------------
+  const handleLongPressName = React.useCallback(() => {
+    if (tooltipTimer.current) {
+      clearTimeout(tooltipTimer.current);
+    }
+    setShowTooltip(true);
+    tooltipTimer.current = setTimeout(() => setShowTooltip(false), 2000);
+  }, []);
+
+  //---------------------------------------
+  React.useEffect(() => {
+    return () => {
+      if (tooltipTimer.current) {
+        clearTimeout(tooltipTimer.current);
+      }
+    };
+  }, []);
+
   return (
     <Pressable
       onPress={onPress}
@@ -58,19 +79,32 @@ const DirectorCard: React.FC<{
       </View>
 
       <View style={styles.infoWrapper}>
-        <View style={styles.nameRow}>
-          <AppText variant="body7" color={AppColors.gray90}>
-            {director.fullName}
-          </AppText>
-
-          {director.isMe && (
-            <View style={styles.meBadge}>
-              <AppText variant="detail" color={AppColors.purple}>
-                나
-              </AppText>
+        <Pressable onLongPress={handleLongPressName} style={styles.nameRowContainer}>
+          {showTooltip && (
+            <View style={styles.tooltip}>
+              <Text style={styles.tooltipText}>{director.fullName}</Text>
             </View>
           )}
-        </View>
+
+          <View style={styles.nameRow}>
+            <AppText
+              variant="body7"
+              color={AppColors.gray90}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {director.fullName}
+            </AppText>
+
+            {director.isMe && (
+              <View style={styles.meBadge}>
+                <AppText variant="detail" color={AppColors.purple}>
+                  나
+                </AppText>
+              </View>
+            )}
+          </View>
+        </Pressable>
 
         <AppText variant="detail" color={AppColors.gray60}>
           {director.role}
@@ -229,7 +263,7 @@ const styles = StyleSheet.create({
   },
   starImage: {
     position: 'absolute',
-    top: ms(6),
+    bottom: ms(6),
     right: ms(6),
     width: ms(11),
     height: ms(10),
@@ -238,11 +272,31 @@ const styles = StyleSheet.create({
   infoWrapper: {
     flex: 1,
     gap: ms(2),
+    minWidth: 0,
+  },
+  nameRowContainer: {
+    position: 'relative',
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: ms(4),
+  },
+  tooltip: {
+    position: 'absolute',
+    bottom: '100%',
+    left: 0,
+    backgroundColor: AppColors.gray90,
+    borderRadius: ms(6),
+    paddingHorizontal: ms(8),
+    paddingVertical: ms(4),
+    zIndex: 999,
+    maxWidth: ms(160),
+    marginBottom: ms(4),
+  },
+  tooltipText: {
+    color: AppColors.white,
+    fontSize: ms(11),
   },
   meBadge: {
     backgroundColor: AppColors.pastelLavendar,

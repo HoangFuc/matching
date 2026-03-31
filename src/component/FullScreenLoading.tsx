@@ -1,7 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Modal, StyleSheet, View } from 'react-native';
 
-import { BlurView } from '@react-native-community/blur';
 import { ms } from 'react-native-size-matters';
 
 import { AppColors } from '../constants/colors';
@@ -16,9 +15,9 @@ const FullScreenLoading: React.FC<FullScreenLoadingProps> = ({ visible }) => {
   return (
     <Modal transparent animationType="fade" visible={visible}>
       <View style={styles.container}>
-        <BlurView style={styles.overlay} blurType="light" blurAmount={8}>
+        <View style={styles.overlay}>
           <ActivityIndicator size="small" color={AppColors.purple} />
-        </BlurView>
+        </View>
       </View>
     </Modal>
   );
@@ -39,5 +38,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
   },
 });

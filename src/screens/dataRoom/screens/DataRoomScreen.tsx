@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { ArrowLeft2, SearchNormal1 } from '@/src/constants/icons';
 import {
@@ -53,7 +53,7 @@ const DataRoomScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
   const [activeTab, setActiveTab] =
     React.useState<TDataRoomTabType>('MARKET_PRICE');
-  const { data } = useGetFoldersQuery(activeTab);
+  const { data, isFetching, refetch } = useGetFoldersQuery(activeTab);
   const folders = data?.folders ?? [];
   const files = data?.files ?? [];
 
@@ -238,6 +238,14 @@ const DataRoomScreen: React.FC = () => {
           maxToRenderPerBatch={10}
           windowSize={5}
           removeClippedSubviews={true}
+          refreshControl={
+            <RefreshControl
+              refreshing={isFetching}
+              onRefresh={refetch}
+              colors={[AppColors.purple]}
+              tintColor={AppColors.purple}
+            />
+          }
           ListEmptyComponent={
             <MemoNoData message="데이터가 없습니다" />
           }
@@ -253,7 +261,7 @@ const DataRoomScreen: React.FC = () => {
         )}
 
         {/* FAB + Menu */}
-        <MemoFABWithMenu variant="white" onUploadFile={handleUploadFile} />
+        <MemoFABWithMenu variant="white" onUploadFile={handleUploadFile} activeTab={activeTab} />
       </View>
 
       {/* Folder Action Sheet */}

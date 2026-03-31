@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -35,17 +35,27 @@ const MyPageScreen: React.FC = () => {
 
   const [userInfo, setUserInfo] = React.useState<any>(null);
   const [companyInfo, setCompanyInfo] = React.useState<any>(null);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  //---------------------------------------
+  const loadData = React.useCallback(async () => {
+    const user = await getUserInfo();
+    const company = await getCompanyInfo();
+    setUserInfo(user);
+    setCompanyInfo(company);
+  }, []);
 
   //---------------------------------------
   React.useEffect(() => {
-    const loadData = async () => {
-      const user = await getUserInfo();
-      const company = await getCompanyInfo();
-      setUserInfo(user);
-      setCompanyInfo(company);
-    };
     loadData();
-  }, []);
+  }, [loadData]);
+
+  //---------------------------------------
+  const handleRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
 
   //---------------------------------------
   const handlePressOrgChart = React.useCallback(() => {
@@ -61,6 +71,14 @@ const MyPageScreen: React.FC = () => {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[AppColors.purple]}
+              tintColor={AppColors.purple}
+            />
+          }
         >
           <MemoProfileCard
             avatarUrl={userInfo?.avatarUrl}

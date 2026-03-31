@@ -74,10 +74,25 @@ export const dataRoomApi = createApi({
         url: '/folders',
         params: { type },
       }),
-      transformResponse: (response: any): ISearchResponse => ({
-        folders: response?.data?.folders ?? [],
-        files: response?.data?.files ?? [],
-      }),
+      transformResponse: (response: any): ISearchResponse => {
+        const data = response?.data?.data;
+        if (Array.isArray(data)) {
+          const folders: IFolder[] = [];
+          const files: IFile[] = [];
+          data.forEach((item: any) => {
+            if (item.fileUrl) {
+              files.push(item);
+            } else {
+              folders.push(item);
+            }
+          });
+          return { folders, files };
+        }
+        return {
+          folders: data?.folders ?? [],
+          files: data?.files ?? [],
+        };
+      },
       providesTags: (_result, _error, type) => [{ type: 'Folders', id: type }],
     }),
     createFolder: builder.mutation<IFolder, ICreateFolderPayload>({

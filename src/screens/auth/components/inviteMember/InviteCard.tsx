@@ -21,6 +21,7 @@ interface IProps {
   locationDisabled: boolean;
   expiryOptions: TDropdownOption[];
   directorLabel?: string;
+  companyName?: string;
   onSelectRole: (id: string, option: TDropdownOption) => void;
   onSelectLocation: (id: string, option: TDropdownOption) => void;
   onSelectExpiry: (id: string, option: TDropdownOption) => void;
@@ -36,6 +37,7 @@ const InviteCard: React.FC<IProps> = ({
   locationDisabled,
   expiryOptions,
   directorLabel,
+  companyName,
   onSelectRole,
   onSelectLocation,
   onSelectExpiry,
@@ -97,14 +99,14 @@ const InviteCard: React.FC<IProps> = ({
 
           <View style={styles.rowItemRight}>
             {isDirector ? (
-              <View style={[styles.directorRow, styles.directorDisabled]}>
+              <View style={[styles.directorRow]}>
                 <AppText variant="body7" color={AppColors.gray90}>
                   소속 위치
                 </AppText>
 
                 <View style={styles.directorLabelRow}>
                   <AppText variant="body8" color={AppColors.gray90}>
-                    {directorLabel}
+                    {`${companyName ?? ''} 총괄 2`}
                   </AppText>
                 </View>
               </View>

@@ -2,7 +2,6 @@ import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import ReactNativeBlobUtil from 'react-native-blob-util';
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
 
@@ -15,6 +14,7 @@ import {
   Pause,
   Play,
 } from '@/src/constants/icons';
+import { AudioService } from '@/src/services/audioRecorderService';
 import { getToken } from '@/src/services/tokenService';
 
 interface IProps {
@@ -27,7 +27,7 @@ interface IProps {
 const WAVEFORM_BAR_COUNT = 30;
 const SEEK_OFFSET_MS = 10_000;
 
-const audioPlayer = AudioRecorderPlayer;
+const audioPlayer = AudioService;
 
 const generatePlaceholderWaveform = (barCount: number): number[] => {
   const pattern = [
@@ -80,6 +80,50 @@ const RecordedAudioCard: React.FC<IProps> = ({
     () => downsampleWaveform(waveformData ?? [], WAVEFORM_BAR_COUNT),
     [waveformData],
   );
+
+  const [detectedDurationMs, setDetectedDurationMs] = React.useState(0);
+  const durationMs = initialDurationMs || detectedDurationMs;
+
+  // Tự đọc duration từ file khi không có initialDurationMs (ví dụ: file recovered sau crash)
+  React.useEffect(() => {
+    if (initialDurationMs && initialDurationMs > 0) {
+      return;
+    }
+    if (isRemoteUrl(filePath)) {
+      return;
+    }
+
+    let mounted = true;
+    const detectDuration = async () => {
+      try {
+        await audioPlayer.stopPlayer().catch(() => {});
+        const result = await audioPlayer.startPlayer(filePath);
+        if (result && mounted) {
+          // Đợi listener trả về duration
+          audioPlayer.addPlayBackListener(e => {
+            if (e.duration > 0 && mounted) {
+              setDetectedDurationMs(e.duration);
+              audioPlayer.stopPlayer().catch(() => {});
+              audioPlayer.removePlayBackListener();
+            }
+          });
+          // Dừng ngay sau khi lấy được duration
+          setTimeout(() => {
+            if (mounted) {
+              audioPlayer.stopPlayer().catch(() => {});
+              audioPlayer.removePlayBackListener();
+            }
+          }, 500);
+        }
+      } catch {
+        // Không detect được duration → giữ 0
+      }
+    };
+    detectDuration();
+    return () => {
+      mounted = false;
+    };
+  }, [filePath, initialDurationMs]);
 
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [hasEnded, setHasEnded] = React.useState(false);
@@ -225,14 +269,14 @@ const RecordedAudioCard: React.FC<IProps> = ({
   //---------------------------------------
   const handleSeekForward = React.useCallback(async () => {
     try {
-      const maxPos = initialDurationMs || currentPositionMs;
+      const maxPos = durationMs || currentPositionMs;
       const newPos = Math.min(maxPos, currentPositionMs + SEEK_OFFSET_MS);
       await audioPlayer.seekToPlayer(newPos);
       setCurrentPositionMs(newPos);
     } catch {
       Toast.show({ type: 'error', text1: '탐색에 실패했습니다' });
     }
-  }, [currentPositionMs, initialDurationMs]);
+  }, [currentPositionMs, durationMs]);
 
   //---------------------------------------
   React.useEffect(() => {
@@ -245,8 +289,8 @@ const RecordedAudioCard: React.FC<IProps> = ({
 
   //---------------------------------------
   const progress =
-    initialDurationMs && initialDurationMs > 0
-      ? currentPositionMs / initialDurationMs
+    durationMs && durationMs > 0
+      ? currentPositionMs / durationMs
       : 0;
 
   return (
@@ -325,7 +369,7 @@ const RecordedAudioCard: React.FC<IProps> = ({
         </View>
 
         <AppText variant="detail" color={AppColors.gray50}>
-          {formatTime(initialDurationMs || 0)}
+          {durationMs > 0 ? formatTime(durationMs) : '--:--'}
         </AppText>
       </View>
     </MemoBaseCard>

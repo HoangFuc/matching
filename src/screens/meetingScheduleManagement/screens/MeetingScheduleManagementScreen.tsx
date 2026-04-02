@@ -68,16 +68,8 @@ const MeetingScheduleManagementScreen: React.FC = () => {
   //---------------------------------------
   useFocusEffect(
     React.useCallback(() => {
-      const todayDayjs = dayjs();
-      const todayStr = todayDayjs.format('YYYY-MM-DD');
-      const nextWeekStr = todayDayjs.add(6, 'day').format('YYYY-MM-DD');
-      setStartDate(todayStr);
-      setEndDate(nextWeekStr);
-      setActiveTab(MeetingScheduleScopeEnum.COMPANY);
-      setShowDatePicker(false);
-      setPage(1);
-      // không cần gọi refetch() vì thay đổi state sẽ tự trigger query mới
-    }, []),
+      refetch();
+    }, [refetch]),
   );
 
   //---------------------------------------

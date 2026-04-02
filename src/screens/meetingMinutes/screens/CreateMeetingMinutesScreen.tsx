@@ -15,8 +15,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-
 import Postcode from '@actbase/react-daum-postcode';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
@@ -26,6 +24,7 @@ import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
+import { AudioService } from '@/src/services/audioRecorderService';
 import { AppColors } from '@/src/constants/colors';
 import { Calendar } from '@/src/constants/icons';
 import {
@@ -101,23 +100,23 @@ const CreateMeetingMinutesScreen: React.FC = () => {
       try {
         const durationMs = await new Promise<number>(resolve => {
           const timeout = setTimeout(() => {
-            AudioRecorderPlayer.stopPlayer().catch(() => {});
-            AudioRecorderPlayer.removePlayBackListener();
+            AudioService.stopPlayer().catch(() => {});
+            AudioService.removePlayBackListener();
             resolve(0);
           }, 5000);
 
-          AudioRecorderPlayer.addPlayBackListener(e => {
+          AudioService.addPlayBackListener(e => {
             if (e.duration > 0) {
               clearTimeout(timeout);
-              AudioRecorderPlayer.stopPlayer().catch(() => {});
-              AudioRecorderPlayer.removePlayBackListener();
+              AudioService.stopPlayer().catch(() => {});
+              AudioService.removePlayBackListener();
               resolve(e.duration);
             }
           });
 
-          AudioRecorderPlayer.startPlayer(uri).catch(() => {
+          AudioService.startPlayer(uri).catch(() => {
             clearTimeout(timeout);
-            AudioRecorderPlayer.removePlayBackListener();
+            AudioService.removePlayBackListener();
             resolve(0);
           });
         });
@@ -135,12 +134,18 @@ const CreateMeetingMinutesScreen: React.FC = () => {
     isPickingRef.current = true;
     try {
       const result = await pick({
-        type: [types.audio],
+        type: [types.allFiles],
         allowMultiSelection: false,
       });
 
       const file = result[0];
       if (!file) return;
+
+      const fileName = file.name ?? '';
+      if (!fileName.toLowerCase().endsWith('.enc')) {
+        Alert.alert('', '.enc 파일만 업로드할 수 있습니다.');
+        return;
+      }
 
       const fileSizeBytes = file.size ?? 0;
       const MAX_SIZE = 100 * 1024 * 1024; // 100MB

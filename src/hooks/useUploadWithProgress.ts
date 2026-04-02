@@ -3,11 +3,11 @@ import React from 'react';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import EventSource from 'react-native-sse';
 
-import type { AppDispatch, RootState } from '@/src/store/index';
-import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
-import { prepareUploadData, fetchUpload } from '@/src/services/uploadService';
-import { API_BASE_URL } from '@env';
 import { getToken } from '@/src/services/tokenService';
+import { fetchUpload, prepareUploadData } from '@/src/services/uploadService';
+import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
+import type { AppDispatch, RootState } from '@/src/store/index';
+import { API_BASE_URL } from '@env';
 import type {
   ActionCreatorWithoutPayload,
   ActionCreatorWithPayload,
@@ -270,11 +270,12 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
         extraFields?: Record<string, string>,
       ) => {
         updateProgressState({ uploadId });
-        await listenProgress(uploadId);
 
+        // 1. Upload file to server first
         const token = await getToken();
         const encoding = config.encoding ?? 'stream';
         const uploadData = await prepareUploadData(file, encoding, extraFields);
+
         const task = fetchUpload(
           `${config.basePath}/${uploadId}`,
           uploadData,
@@ -293,6 +294,9 @@ export function createUploadProgressHook(config: UploadProgressConfig) {
           );
           throw uploadErr;
         }
+
+        // 2. After upload completes, listen for server-side processing progress via SSE
+        await listenProgress(uploadId);
       },
       [
         updateProgressState,

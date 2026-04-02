@@ -1,7 +1,8 @@
 import React from 'react';
 
 import { createUploadProgressHook } from '@/src/hooks/useUploadWithProgress';
-import { API_BASE_URL } from '@env';
+import { TMeetingTypeKey } from '@/src/interface/meetingMinutes.interface';
+import { fetchEncryptionKey } from '@/src/services/encryptionService';
 import { getToken } from '@/src/services/tokenService';
 import {
   meetingLogApi,
@@ -12,7 +13,7 @@ import {
   setMeetingLogUploadProgress,
   updateMeetingLogUploadProgress,
 } from '@/src/store/slices/meetingMinutesSlice';
-import { TMeetingTypeKey } from '@/src/interface/meetingMinutes.interface';
+import { API_BASE_URL } from '@env';
 
 const useMeetingLogProgress = createUploadProgressHook({
   progressSelector: state => state.meetingMinutes.meetingLogUploadProgress,
@@ -75,10 +76,13 @@ export const useMeetingLogUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        const extraFields =
-          durationSeconds != null
-            ? { duration: String(durationSeconds) }
-            : undefined;
+        const { key, iv: serverIv, algorithm } = await fetchEncryptionKey();
+
+        const extraFields = {
+          encryptionIv: serverIv,
+          encryptionTag: key,
+          encryptionAlgo: algorithm
+        }
 
         await performUpload(uploadId, file, extraFields);
       } catch (err) {
@@ -148,7 +152,7 @@ export const useMeetingLogUploadWithProgress = () => {
           ? { duration: String(durationSeconds) }
           : undefined;
       initProgress(file.name);
-      performUpload(uploadId, file, extraFields).catch(() => {});
+      performUpload(uploadId, file, extraFields).catch(() => { });
     },
     [initProgress, performUpload],
   );

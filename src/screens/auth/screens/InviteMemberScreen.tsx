@@ -465,6 +465,7 @@ const InviteMemberScreen: React.FC<Props> = ({ navigation, route }) => {
               locationDisabled={isLocationDisabledBySlug(invite.roleSlug)}
               expiryOptions={EXPIRY_OPTIONS}
               directorLabel={getDirectorLabel(invite.roleSlug)}
+              companyName={companyInfo?.companyName}
               onSelectRole={handleSelectRole}
               onSelectLocation={handleSelectLocation}
               onSelectExpiry={handleSelectExpiry}

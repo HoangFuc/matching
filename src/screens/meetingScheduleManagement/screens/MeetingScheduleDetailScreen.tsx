@@ -14,6 +14,7 @@ import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
+import { API_BASE_URL } from '@env';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
@@ -42,8 +43,13 @@ import { MemoUploadProgressBar } from '@/src/screens/dataRoom/components/UploadP
 import { useGetMeetingScheduleDetailQuery } from '@/src/store/api/meetingScheduleManagement.api';
 import { useAppSelector } from '@/src/store/hooks';
 import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
+import {
+  encryptFile,
+  fetchEncryptionKey,
+} from '@/src/services/encryptionService';
 import dayjs from 'dayjs';
 import { MemoRecordingBottomSheet } from '../components/RecordingBottomSheet';
+import { saveRecordingMetadata } from '../hooks/useRecordingRecovery';
 import { useRecordingUploadWithProgress } from '../hooks/useRecordingUploadWithProgress';
 
 type TRoute = NativeStackScreenProps<
@@ -128,10 +134,13 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   const [showRecording, setShowRecording] = React.useState(false);
   const [recordedFile, setRecordedFile] = React.useState<{
     path: string;
-    mediaPath: string | null;
+    m4aPath?: string;
+    localEncPath?: string;
     name: string;
-    waveformData: number[];
     durationMs: number;
+    iv?: string;
+    authTag?: string;
+    algorithm?: string;
   } | null>(null);
 
   const infoRows = React.useMemo(
@@ -182,25 +191,24 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   }, []);
 
   //---------------------------------------
-  const saveRecordingToLocal = React.useCallback(
-    async (sourcePath: string, fileName: string): Promise<string | null> => {
+  const saveEncFileToLocal = React.useCallback(
+    async (
+      sourcePath: string,
+      fileName: string,
+    ): Promise<string | undefined> => {
       try {
-        const ext = fileName.split('.').pop()?.toLowerCase() ?? 'm4a';
-        const mimeMap: Record<string, string> = {
-          m4a: 'audio/m4a',
-          '3gp': 'audio/3gpp',
-          wav: 'audio/wav',
-          aac: 'audio/aac',
-        };
-        const mimeType = mimeMap[ext] ?? 'audio/m4a';
-
         if (Platform.OS === 'android') {
-          const uri = await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
-            { name: fileName, parentFolder: 'Recordings', mimeType },
-            'Audio',
-            sourcePath,
-          );
-          return uri ?? null;
+          const contentUri =
+            await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
+              {
+                name: fileName,
+                parentFolder: 'Recordings',
+                mimeType: 'application/octet-stream',
+              },
+              'Download',
+              sourcePath,
+            );
+          return contentUri;
         } else {
           const destDir = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Recordings`;
           const dirExists = await ReactNativeBlobUtil.fs.isDir(destDir);
@@ -212,8 +220,8 @@ const MeetingScheduleDetailScreen: React.FC = () => {
           return destPath;
         }
       } catch (error) {
-        console.error('Failed to save recording to local:', error);
-        return null;
+        console.error('Failed to save .enc to local:', error);
+        return undefined;
       }
     },
     [],
@@ -221,24 +229,61 @@ const MeetingScheduleDetailScreen: React.FC = () => {
 
   //---------------------------------------
   const handleRecordingComplete = React.useCallback(
-    async (filePath: string, waveformData: number[], durationMs: number) => {
+    async (filePath: string, _waveformData: number[], durationMs: number) => {
       setShowRecording(false);
-      const originalName = filePath.split('/').pop() ?? 'recording.m4a';
-      const ext = originalName.split('.').pop()?.toLowerCase() ?? 'm4a';
-      const now = dayjs();
-      const fileName = `녹음_${now.format('YYYYMMDD_HHmm')}.${ext}`;
 
-      const mediaPath = await saveRecordingToLocal(filePath, fileName);
+      try {
+        // 1. Fetch encryption key + iv (held in RAM only)
+        const { key, iv: serverIv, algorithm } = await fetchEncryptionKey();
 
-      setRecordedFile({
-        path: filePath,
-        mediaPath,
-        name: fileName,
-        waveformData,
-        durationMs,
-      });
+        // 2. Encrypt the raw .m4a → .enc
+        const {
+          encryptedFilePath,
+          iv: encIv,
+          authTag,
+          algorithm: algo,
+        } = await encryptFile(filePath, key, serverIv);
+
+        // 3. Save .enc to device storage
+        const now = dayjs();
+        const fileName = `녹음_${now.format('YYYYMMDD_HHmm')}.enc`;
+        const localEncPath = await saveEncFileToLocal(
+          encryptedFilePath,
+          fileName,
+        );
+
+        // 4. Update recovery metadata (lưu cả m4aPath để recovery có thể phát lại)
+        await saveRecordingMetadata({
+          filePath: encryptedFilePath,
+          m4aPath: filePath.replace('file://', ''),
+          scheduleId: item.id,
+          startTime: Date.now(),
+          encrypted: true,
+          iv: encIv,
+          authTag,
+          algorithm: algo,
+        });
+
+        // 5. Store .enc file info + keep m4a path for playback
+        setRecordedFile({
+          path: encryptedFilePath,
+          m4aPath: filePath.replace('file://', ''),
+          localEncPath,
+          name: fileName,
+          durationMs,
+          iv: encIv,
+          authTag,
+          algorithm: algorithm ?? algo,
+        });
+      } catch (error) {
+        console.error('[Encryption] Failed:', error);
+        await ReactNativeBlobUtil.fs
+          .unlink(filePath.replace('file://', ''))
+          .catch(() => {});
+        Toast.show({ type: 'error', text1: '녹음 암호화에 실패했습니다' });
+      }
     },
-    [saveRecordingToLocal],
+    [item.id, saveEncFileToLocal],
   );
 
   //---------------------------------------
@@ -251,19 +296,21 @@ const MeetingScheduleDetailScreen: React.FC = () => {
       return;
     }
 
-    const uploadName = recordedFile.name.endsWith('.m4a')
-      ? recordedFile.name
-      : `${recordedFile.name}.m4a`;
+    const uploadName = recordedFile.name;
     const memo = displayItem.memo ?? '';
-
     const durationSeconds = recordedFile.durationMs / 1000;
-    console.log('[handleComplete] recordedFile:', recordedFile);
-    console.log(
-      '[handleComplete] durationMs:',
-      recordedFile.durationMs,
-      '-> durationSeconds:',
-      durationSeconds,
-    );
+
+    // Build encryption metadata for multipart fields
+    const encryptionFields: Record<string, string> = {};
+    if (recordedFile.iv) {
+      encryptionFields.encryptionIv = recordedFile.iv;
+    }
+    if (recordedFile.authTag) {
+      encryptionFields.encryptionTag = recordedFile.authTag;
+    }
+    if (recordedFile.algorithm) {
+      encryptionFields.encryptionAlgo = recordedFile.algorithm;
+    }
 
     try {
       await uploadRecording(
@@ -271,10 +318,11 @@ const MeetingScheduleDetailScreen: React.FC = () => {
         {
           uri: recordedFile.path,
           name: uploadName,
-          type: 'audio/m4a',
+          type: 'application/octet-stream',
         },
         memo,
         durationSeconds,
+        Object.keys(encryptionFields).length > 0 ? encryptionFields : undefined,
       );
     } catch {
       // error is handled via Redux progress state
@@ -284,16 +332,29 @@ const MeetingScheduleDetailScreen: React.FC = () => {
   //---------------------------------------
   React.useEffect(() => {
     if (isUploadCompleted) {
+      // Upload thành công → xóa file .enc tạm, .m4a, và bản .enc trong Download
       if (recordedFile?.path) {
         ReactNativeBlobUtil.fs.unlink(recordedFile.path).catch(() => {});
       }
-      if (recordedFile?.mediaPath) {
-        ReactNativeBlobUtil.fs.unlink(recordedFile.mediaPath).catch(() => {});
+      if (recordedFile?.m4aPath) {
+        ReactNativeBlobUtil.fs.unlink(recordedFile.m4aPath).catch(() => {});
+      }
+      if (recordedFile?.localEncPath) {
+        ReactNativeBlobUtil.fs
+          .unlink(recordedFile.localEncPath)
+          .catch(() => {});
       }
       dismissUpload();
       navigation.goBack();
     }
-  }, [isUploadCompleted, dismissUpload, navigation, recordedFile?.path, recordedFile?.mediaPath]);
+  }, [
+    isUploadCompleted,
+    dismissUpload,
+    navigation,
+    recordedFile?.path,
+    recordedFile?.m4aPath,
+    recordedFile?.localEncPath,
+  ]);
 
   return (
     <AppSafeAreaView style={styles.safeArea}>
@@ -315,7 +376,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
           {/* Recording Section */}
           {isCompleted && serverRecording ? (
             <MemoRecordedAudioCard
-              filePath={serverRecording.playUrl}
+              filePath={`${API_BASE_URL}/recordings/${serverRecording.id}/stream`}
               fileName={fixBrokenUtf8Encoding(serverRecording.fileName)}
               durationMs={
                 serverRecording.durationSeconds
@@ -331,9 +392,8 @@ const MeetingScheduleDetailScreen: React.FC = () => {
             />
           ) : recordedFile ? (
             <MemoRecordedAudioCard
-              filePath={recordedFile.path}
+              filePath={recordedFile.m4aPath ?? recordedFile.path}
               fileName={recordedFile.name}
-              waveformData={recordedFile.waveformData}
               durationMs={recordedFile.durationMs}
             />
           ) : (
@@ -381,6 +441,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
       {!isCompleted && showRecording && (
         <MemoRecordingBottomSheet
           visible={showRecording}
+          scheduleId={item.id}
           onClose={handleCloseRecording}
           onRecordingComplete={handleRecordingComplete}
         />

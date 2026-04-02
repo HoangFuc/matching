@@ -1,12 +1,7 @@
 import React from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import {
   errorCodes,
   isErrorWithCode,
@@ -14,22 +9,19 @@ import {
   types,
 } from '@react-native-documents/picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
-import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
-import { formatKoreanPhone } from '@/src/component/PhoneInput';
 import {
   MemoDetailInfoRow,
   TDetailInfoRow,
 } from '@/src/component/DetailInfoRow';
+import { formatKoreanPhone } from '@/src/component/PhoneInput';
 import { MemoRecordedAudioCard } from '@/src/component/RecordedAudioCard';
-import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { AppColors } from '@/src/constants/colors';
@@ -46,8 +38,10 @@ import {
 } from '@/src/interface/meetingMinutes.interface';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
 import { MemoUploadProgressBar } from '@/src/screens/dataRoom/components/UploadProgressBar';
+import { AudioService } from '@/src/services/audioRecorderService';
 import { useGetMeetingLogDetailQuery } from '@/src/store/api/meetingLog.api';
 import { useAppSelector } from '@/src/store/hooks';
+import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
 import { formatFileSize } from '@/src/utils/format';
 import { MemoFileUploadSection } from '../components/FileUploadSection';
 import { useMeetingLogUploadWithProgress } from '../hooks/useMeetingLogUploadWithProgress';
@@ -123,12 +117,13 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   const { id } = route.params;
 
   //---------------------------------------
-  const { data: item, isLoading, refetch } = useGetMeetingLogDetailQuery(id);
+  const { data: item, refetch } = useGetMeetingLogDetailQuery(id);
 
   //---------------------------------------
   const uploadProgress = useAppSelector(
     state => state.meetingMinutes.meetingLogUploadProgress,
   );
+
   const {
     uploadRecordingToExisting,
     cancelUpload,
@@ -174,8 +169,8 @@ const MeetingMinutesDetailScreen: React.FC = () => {
           const cleanup = () => {
             if (!resolved) {
               resolved = true;
-              AudioRecorderPlayer.stopPlayer().catch(() => {});
-              AudioRecorderPlayer.removePlayBackListener();
+              AudioService.stopPlayer().catch(() => {});
+              AudioService.removePlayBackListener();
             }
           };
 
@@ -184,7 +179,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
             resolve(0);
           }, 5000);
 
-          AudioRecorderPlayer.addPlayBackListener(e => {
+          AudioService.addPlayBackListener(e => {
             if (e.duration > 0) {
               clearTimeout(timeout);
               cleanup();
@@ -192,7 +187,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
             }
           });
 
-          AudioRecorderPlayer.startPlayer(uri).catch(() => {
+          AudioService.startPlayer(uri).catch(() => {
             clearTimeout(timeout);
             cleanup();
             resolve(0);
@@ -212,12 +207,18 @@ const MeetingMinutesDetailScreen: React.FC = () => {
     isPickingRef.current = true;
     try {
       const result = await pick({
-        type: [types.audio],
+        type: [types.allFiles],
         allowMultiSelection: false,
       });
 
       const file = result[0];
       if (!file) return;
+
+      const fileName = file.name ?? '';
+      if (!fileName.toLowerCase().endsWith('.enc')) {
+        Alert.alert('', '.enc 파일만 업로드할 수 있습니다.');
+        return;
+      }
 
       const fileSizeBytes = file.size ?? 0;
       const MAX_SIZE = 100 * 1024 * 1024;

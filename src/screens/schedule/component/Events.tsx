@@ -17,7 +17,7 @@ const Events: React.FC<IProps> = props => {
   return (
     events.length > 0 && (
       <View style={[styles.container, containerStyle]}>
-        {events.slice(0, 2).map((event, index) => (
+        {events.slice(0, events.length > 2 ? 1 : 2).map((event, index) => (
           <View
             key={`${event.id}_${index}`}
             style={[
@@ -35,7 +35,7 @@ const Events: React.FC<IProps> = props => {
           </View>
         ))}
         {events.length > 2 && (
-          <Text style={styles.moreText}>+{events.length - 2}</Text>
+          <Text style={styles.moreText}>+{events.length - 1}</Text>
         )}
       </View>
     )

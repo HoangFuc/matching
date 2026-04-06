@@ -2,7 +2,9 @@ import { Alert } from 'react-native';
 
 import { API_BASE_URL } from '@env';
 import { getCommonHeaders } from '@/src/services/apiHeaderService';
+import { refreshAccessTokenOnce } from '@/src/services/tokenService';
 import { showUpdateRequired } from '@/src/utils/updateRequiredDispatcher';
+import { triggerLogout } from '@/src/utils/logoutDispatcher';
 
 const API_URL = API_BASE_URL;
 
@@ -27,6 +29,7 @@ export const apiGet = async (
   params?: Record<string, any>,
   headers: Record<string, string> = {},
   timeout = TIME_OUT_API,
+  _retried = false,
 ): Promise<any> => {
   const commonHeaders = await getCommonHeaders();
 
@@ -53,18 +56,29 @@ export const apiGet = async (
       contentType && contentType.match('json')
         ? await result.json()
         : await result.text();
-    // console.log(path, json)
     const responseStatus = result.status;
 
     if (responseStatus >= 400) {
-      let message = json?.error?.message ?? result.status;
       if (responseStatus === 403 && json?.data) {
         showUpdateRequired(json.data);
       }
       if (responseStatus === 401) {
-        Alert.alert('Phiên đăng nhập hết hạn', 'Vui lòng đăng nhập lại!');
+        if (!_retried) {
+          try {
+            await refreshAccessTokenOnce();
+            return apiGet(path, params, headers, timeout, true);
+          } catch {
+            triggerLogout();
+          }
+        } else {
+          triggerLogout();
+        }
+        const error = new Error('인증이 만료되었습니다');
+        (error as any).code = 401;
+        throw error;
       }
 
+      let message = json?.error?.message ?? result.status;
       const error = new Error(message);
       (error as any).code = responseStatus;
       throw error;
@@ -89,6 +103,7 @@ export const apiRest = async (
   params: Record<string, any>,
   headers: Record<string, string> = {},
   timeout = TIME_OUT_API,
+  _retried = false,
 ): Promise<any> => {
   const commonHeaders = await getCommonHeaders();
 
@@ -116,19 +131,28 @@ export const apiRest = async (
       contentType && contentType.match('json')
         ? await result.json()
         : await result.text();
-    // console.log(path, json)
     const responseStatus = result.status;
 
     if (responseStatus >= 400) {
-      let message =
-        json?.error?.message ?? `${responseStatus}: ${JSON.stringify(json)}`;
       if (responseStatus === 403 && json?.data) {
         showUpdateRequired(json.data);
       }
       if (responseStatus === 401) {
-        Alert.alert('Phiên đăng nhập hết hạn', 'Vui lòng đăng nhập lại!');
+        if (!_retried) {
+          try {
+            await refreshAccessTokenOnce();
+            return apiRest(method, path, params, headers, timeout, true);
+          } catch {
+            triggerLogout();
+          }
+        } else {
+          triggerLogout();
+        }
+        throw new Error('인증이 만료되었습니다');
       }
 
+      const message =
+        json?.error?.message ?? `${responseStatus}: ${JSON.stringify(json)}`;
       throw new Error(message);
     }
 

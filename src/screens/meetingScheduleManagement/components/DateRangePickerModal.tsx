@@ -6,6 +6,7 @@ import { moderateScale as ms } from 'react-native-size-matters/extend';
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
 import { MemoAppButton } from '@/src/component/AppButton';
 import { AppText } from '@/src/component/AppText';
+import { MemoMonthYearPickerModal } from '@/src/component/calendar/MonthYearPickerModal';
 import { AppColors } from '@/src/constants/colors';
 import { ArrowLeft2, ArrowRight2 } from '@/src/constants/icons';
 import { TDayCell } from '@/src/interface/schedule.interface';
@@ -37,6 +38,7 @@ const DateRangePickerModal: React.FC<IProps> = ({
   const [endDate, setEndDate] = React.useState<string | null>(
     initialEndDate ?? null,
   );
+  const [pickerVisible, setPickerVisible] = React.useState(false);
 
   //---------------------------------------
   React.useEffect(() => {
@@ -134,6 +136,15 @@ const DateRangePickerModal: React.FC<IProps> = ({
   }, [startDate, endDate, onConfirm, onClose]);
 
   //---------------------------------------
+  const handleSelectYearMonth = React.useCallback(
+    (selectedYear: number, selectedMonth: number) => {
+      setYear(selectedYear);
+      setMonth(selectedMonth);
+    },
+    [],
+  );
+
+  //---------------------------------------
   const handleCancel = React.useCallback(() => {
     onClose();
   }, [onClose]);
@@ -169,9 +180,11 @@ const DateRangePickerModal: React.FC<IProps> = ({
           />
         </Pressable>
 
-        <AppText variant="body1" color={AppColors.gray90}>
-          {year}년 {month + 1}월
-        </AppText>
+        <Pressable onPress={() => setPickerVisible(true)}>
+          <AppText variant="body1" color={AppColors.gray90}>
+            {year}년 {month + 1}월
+          </AppText>
+        </Pressable>
 
         <Pressable onPress={handleNext} hitSlop={8}>
           <ArrowRight2
@@ -234,6 +247,13 @@ const DateRangePickerModal: React.FC<IProps> = ({
           })}
         </View>
       ))}
+      <MemoMonthYearPickerModal
+        visible={pickerVisible}
+        year={year}
+        month={month}
+        onClose={() => setPickerVisible(false)}
+        onConfirm={handleSelectYearMonth}
+      />
     </MemoAppBottomSheet>
   );
 };

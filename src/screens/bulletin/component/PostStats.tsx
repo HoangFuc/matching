@@ -30,14 +30,17 @@ const PostStats: React.FC<IProps> = ({
   extra,
   isAuthor,
 }) => {
-  const [toggleLike, { data: postLikeResponse }] = useToggleLikeMutation();
+  const [toggleLike] = useToggleLikeMutation();
   const [toggleCommentLike, { data: commentLikeResponse }] =
     useToggleCommentLikeMutation();
 
   //---------------------------------------
-  const likeResponse = commentId ? commentLikeResponse : postLikeResponse;
-  const currentLikeCount = likeResponse?.likeCount ?? likes;
-  const currentLiked = likeResponse?.isLiked ?? isLiked ?? false;
+  const currentLikeCount = commentId
+    ? (commentLikeResponse?.likeCount ?? likes)
+    : likes;
+  const currentLiked = commentId
+    ? (commentLikeResponse?.isLiked ?? isLiked ?? false)
+    : (isLiked ?? false);
 
   //---------------------------------------
   const handleLike = React.useCallback(() => {

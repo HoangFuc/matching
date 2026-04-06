@@ -2,7 +2,7 @@ import React from 'react';
 
 import { createUploadProgressHook } from '@/src/hooks/useUploadWithProgress';
 import { TMeetingTypeKey } from '@/src/interface/meetingMinutes.interface';
-import { fetchEncryptionKey } from '@/src/services/encryptionService';
+import { parseEncFileHeaders } from '@/src/services/encryptionService';
 import { getToken } from '@/src/services/tokenService';
 import {
   meetingLogApi,
@@ -76,13 +76,14 @@ export const useMeetingLogUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        const { key, iv: serverIv, algorithm } = await fetchEncryptionKey();
+        const { iv, authTag } = await parseEncFileHeaders(file.uri);
 
-        const extraFields = {
-          encryptionIv: serverIv,
-          encryptionTag: key,
-          encryptionAlgo: algorithm
-        }
+        const extraFields: Record<string, string> = {
+          encryptionIv: iv,
+          encryptionTag: authTag,
+          encryptionAlgo: 'aes-256-gcm',
+          ...(durationSeconds != null ? { duration: String(durationSeconds) } : {}),
+        };
 
         await performUpload(uploadId, file, extraFields);
       } catch (err) {

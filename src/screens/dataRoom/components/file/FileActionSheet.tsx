@@ -6,6 +6,7 @@ import { ms } from 'react-native-size-matters/extend';
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type TAction = 'share' | 'move' | 'rename' | 'info';
 
@@ -29,9 +30,11 @@ const FileActionSheet: React.FC<IProps> = ({
   fileName,
   onAction,
 }) => {
+  const insets = useSafeAreaInsets();
+
   return (
     <MemoAppBottomSheet visible={visible} onClose={onClose} title={fileName}>
-      <View style={{ gap: 16, paddingBottom: 20, paddingTop: 16 }}>
+      <View style={{ gap: 16, paddingBottom: 20 + insets.bottom, paddingTop: 16 }}>
         {ACTIONS.map(action => (
           <Pressable
             key={action.key}

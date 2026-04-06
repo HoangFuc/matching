@@ -6,10 +6,12 @@ import {
   signInWithProvider,
   type TSocialProvider,
 } from '@/src/services/socialLoginService';
+import { useToast } from '@/src/providers/ToastProvider';
 
 export const useSocialLogin = () => {
   const navigation = useNavigation();
   const [socialLogin, { isLoading }] = useSocialLoginMutation();
+  const { showToast } = useToast();
 
   //---------------------------------------
   const handleSocialLogin = React.useCallback(
@@ -34,10 +36,10 @@ export const useSocialLogin = () => {
           );
         }
       } catch (error: any) {
-        // Error handled by toastMiddleware
+        showToast({ type: 'error', message: error?.data?.message ?? '소셜 로그인에 실패했습니다.' });
       }
     },
-    [navigation, socialLogin],
+    [navigation, socialLogin, showToast],
   );
 
   return { handleSocialLogin, isSocialLoading: isLoading };

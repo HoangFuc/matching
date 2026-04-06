@@ -376,7 +376,7 @@ const MeetingScheduleDetailScreen: React.FC = () => {
           {/* Recording Section */}
           {isCompleted && serverRecording ? (
             <MemoRecordedAudioCard
-              filePath={`${API_BASE_URL}/recordings/${serverRecording.id}/stream`}
+              filePath={`${API_BASE_URL}/schedules/recordings/${serverRecording.id}/stream`}
               fileName={fixBrokenUtf8Encoding(serverRecording.fileName)}
               durationMs={
                 serverRecording.durationSeconds

@@ -1,6 +1,13 @@
 import React from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from 'react-native';
 
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { ArrowLeft2, SearchNormal1 } from '@/src/constants/icons';
 import {
   errorCodes,
@@ -8,9 +15,9 @@ import {
   pick,
   types,
 } from '@react-native-documents/picker';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -23,10 +30,6 @@ import {
   useGetFoldersQuery,
 } from '@/src/store/api/dataRoom.api';
 import { useAppSelector } from '@/src/store/hooks';
-
-type TGridItem =
-  | { type: 'folder'; data: IFolder }
-  | { type: 'file'; data: IFile };
 import { MemoFABWithMenu } from '../components/FABWithMenu';
 import { MemoFileGridItem } from '../components/file';
 import {
@@ -47,22 +50,26 @@ import { useFileUploadWithProgress } from '../hooks/useFileUploadWithProgress';
 import { useShareItem } from '../hooks/useShareItem';
 import { useSheetManager } from '../hooks/useSheetManager';
 
+type TGridItem =
+  | { type: 'folder'; data: IFolder }
+  | { type: 'file'; data: IFile };
+
 type TNav = NativeStackNavigationProp<DataRoomStackParamList, 'DataRoomMain'>;
 
 const DataRoomScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
+  const { bottom } = useSafeAreaInsets();
   const [activeTab, setActiveTab] =
     React.useState<TDataRoomTabType>('MARKET_PRICE');
   const { data, isFetching, refetch } = useGetFoldersQuery(activeTab);
-  const folders = data?.folders ?? [];
-  const files = data?.files ?? [];
-
   //---------------------------------------
   const gridItems = React.useMemo<TGridItem[]>(() => {
+    const folders: IFolder[] = data?.folders ?? [];
+    const files: IFile[] = data?.files ?? [];
     const items: TGridItem[] = folders.map(f => ({ type: 'folder', data: f }));
     files.forEach(f => items.push({ type: 'file', data: f }));
     return items;
-  }, [folders, files]);
+  }, [data]);
 
   //---------------------------------------
   const { shareFolder } = useShareItem();
@@ -157,6 +164,18 @@ const DataRoomScreen: React.FC = () => {
   }, []);
 
   //---------------------------------------
+  const handlePressFile = React.useCallback(
+    (file: IFile) => {
+      navigation.navigate('DataRoomFileViewer', {
+        fileName: file.originalName,
+        downloadUrl: file.downloadUrl,
+        mimeType: file.mimeType,
+      });
+    },
+    [navigation],
+  );
+
+  //---------------------------------------
   const renderGridItem = React.useCallback(
     ({ item }: { item: TGridItem }) => {
       if (item.type === 'folder') {
@@ -169,10 +188,10 @@ const DataRoomScreen: React.FC = () => {
         );
       }
       return (
-        <MemoFileGridItem item={item.data} onPressMore={handlePressFileMore} />
+        <MemoFileGridItem item={item.data} onPressMore={handlePressFileMore} onPress={handlePressFile} />
       );
     },
-    [handlePressFolder, handlePressMore, handlePressFileMore],
+    [handlePressFolder, handlePressMore, handlePressFileMore, handlePressFile],
   );
 
   //---------------------------------------
@@ -246,22 +265,26 @@ const DataRoomScreen: React.FC = () => {
               tintColor={AppColors.purple}
             />
           }
-          ListEmptyComponent={
-            <MemoNoData message="데이터가 없습니다" />
-          }
+          ListEmptyComponent={<MemoNoData message="데이터가 없습니다" />}
         />
 
         {/* Upload Progress */}
         {progress && (
-          <MemoUploadProgressBar
-            progress={progress}
-            onCancel={cancelUpload}
-            containerStyle={styles.progressBar}
-          />
+          <View style={[styles.progressOverlay, { bottom: ms(32) + bottom }]}>
+            <MemoUploadProgressBar
+              progress={progress}
+              onCancel={cancelUpload}
+              containerStyle={styles.progressBar}
+            />
+          </View>
         )}
 
         {/* FAB + Menu */}
-        <MemoFABWithMenu variant="white" onUploadFile={handleUploadFile} activeTab={activeTab} />
+        <MemoFABWithMenu
+          variant="white"
+          onUploadFile={handleUploadFile}
+          activeTab={activeTab}
+        />
       </View>
 
       {/* Folder Action Sheet */}
@@ -355,6 +378,12 @@ const styles = StyleSheet.create({
   emptyList: {
     flex: 1,
   },
+  progressOverlay: {
+    position: 'absolute',
+    left: ms(16),
+    right: ms(82),
+    zIndex: 10,
+  },
   progressBar: {
     borderRadius: ms(100),
     backgroundColor: AppColors.white,
@@ -362,7 +391,6 @@ const styles = StyleSheet.create({
     borderColor: AppColors.gray20,
     paddingVertical: ms(8),
     paddingHorizontal: ms(16),
-    marginLeft: ms(16),
     ...CardShadow,
   },
 });

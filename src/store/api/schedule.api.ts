@@ -11,11 +11,35 @@ export const scheduleApi = createApi({
       ISchedule[],
       { startDate: string; endDate: string }
     >({
-      query: ({ startDate, endDate }) =>
-        `/schedules?startDate=${startDate}&endDate=${endDate}`,
-      transformResponse: (response: any) => {
-        const data = response?.data?.data ?? response?.data ?? response;
-        return Array.isArray(data) ? data : [];
+      async queryFn({ startDate, endDate }, _api, _extraOptions, baseQuery) {
+        const limit = 100;
+        let page = 1;
+        let allItems: ISchedule[] = [];
+
+        while (true) {
+          const result = await baseQuery(
+            `/schedules?startDate=${startDate}&endDate=${endDate}&page=${page}&limit=${limit}`,
+          );
+          if (result.error) return { error: result.error };
+
+          const res = result.data as any;
+          const items: ISchedule[] =
+            res?.data?.data ?? res?.data ?? res ?? [];
+          const normalizedItems = Array.isArray(items) ? items : [];
+          allItems = allItems.concat(normalizedItems);
+
+          const total: number =
+            res?.data?.meta?.total ??
+            res?.data?.total ??
+            res?.meta?.total ??
+            res?.total ??
+            normalizedItems.length;
+
+          if (allItems.length >= total || normalizedItems.length < limit) break;
+          page++;
+        }
+
+        return { data: allItems };
       },
       providesTags: ['Schedule'],
     }),

@@ -39,7 +39,7 @@ const FolderCard: React.FC<IProps> = ({
     <Pressable style={[styles.card, style]} onPress={() => onPress?.(folder)}>
       {showMore && (
         <Pressable
-          hitSlop={12}
+          hitSlop={24}
           onPress={() => onPressMore?.(folder)}
           style={styles.moreIcon}
         >

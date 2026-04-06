@@ -47,7 +47,6 @@ const MoreActions: React.FC = () => {
           onPress={() =>
             navigation.navigate('Schedule', {
               screen: 'ScheduleMain',
-              params: { filterTypes: [] },
             })
           }
         />

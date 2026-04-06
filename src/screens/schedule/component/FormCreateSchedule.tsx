@@ -1,14 +1,15 @@
 import React from 'react';
 import {
+  Keyboard,
   Platform,
   Pressable,
   StyleSheet,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 
 import { Calendar, Clock } from '@/src/constants/icons';
 import { Control, Controller } from 'react-hook-form';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ms } from 'react-native-size-matters';
 
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
@@ -37,228 +38,230 @@ const FormCreateSchedule: React.FC<IProps> = ({
   const [showTimePicker, setShowTimePicker] = React.useState(false);
 
   return (
-    <KeyboardAwareScrollView
-      style={styles.scrollView}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-      enableOnAndroid
-      extraScrollHeight={ms(20)}
-    >
-      <AppText
-        variant="heading3"
-        color={AppColors.gray100}
-        style={styles.title}
-      >
-        일정 등록
-      </AppText>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.scrollView}>
+        <AppText
+          variant="heading3"
+          color={AppColors.gray100}
+          style={styles.title}
+        >
+          일정 등록
+        </AppText>
 
-      <View style={{ padding: ms(16), gap: ms(16) }}>
-        <View>
-          <AppText variant="body7" color={AppColors.gray90}>
-            일정 종류{' '}
-            <AppText variant="body7" color={AppColors.negative}>
-              *
-            </AppText>
-          </AppText>
-
-          <MemoDropdownButton
-            label={scheduleType}
-            textVariant="body8"
-            textColor={AppColors.gray80}
-            onPress={() => setShowTypePicker(true)}
-            style={styles.selectBox}
-          />
-        </View>
-
-        {/* Date & Time */}
-        <View style={styles.dateTimeRow}>
-          <View style={styles.dateTimeField}>
+        <View style={{ padding: ms(16), gap: ms(16) }}>
+          <View>
             <AppText variant="body7" color={AppColors.gray90}>
-              날짜{' '}
+              일정 종류{' '}
               <AppText variant="body7" color={AppColors.negative}>
                 *
               </AppText>
             </AppText>
 
-            <Controller
-              control={control}
-              name="scheduleDate"
-              render={({ field: { value, onChange } }) => (
-                <>
-                  <Pressable
-                    style={styles.dateInputWrapper}
-                    onPress={() => setShowDatePicker(true)}
-                  >
-                    <View style={[styles.input, styles.dateDisplay]}>
-                      <AppText
-                        variant="body8"
-                        color={value ? AppColors.gray100 : AppColors.gray40}
-                      >
-                        {value || 'yyyy.mm.dd'}
-                      </AppText>
-                    </View>
-
-                    <Calendar
-                      size={`${ms(18)}`}
-                      color={AppColors.gray40}
-                      variant="Linear"
-                      style={styles.inputIcon}
-                    />
-                  </Pressable>
-
-                  <MemoDatePickerModal
-                    visible={showDatePicker}
-                    value={value}
-                    onConfirm={dateStr => {
-                      setShowDatePicker(false);
-                      onChange(dateStr);
-                    }}
-                    onCancel={() => setShowDatePicker(false)}
-                  />
-                </>
-              )}
+            <MemoDropdownButton
+              label={scheduleType}
+              textVariant="body8"
+              textColor={AppColors.gray80}
+              onPress={() => setShowTypePicker(true)}
+              style={styles.selectBox}
             />
           </View>
 
-          <View style={styles.dateTimeField}>
-            <AppText variant="body7" color={AppColors.gray90}>
-              시간{' '}
-              <AppText variant="body7" color={AppColors.negative}>
-                *
-              </AppText>
-            </AppText>
-
-            <Controller
-              control={control}
-              name="startTime"
-              render={({ field: { value, onChange } }) => (
-                <>
-                  <Pressable
-                    style={styles.dateInputWrapper}
-                    onPress={() => setShowTimePicker(true)}
-                  >
-                    <View style={[styles.input, styles.dateDisplay]}>
-                      <AppText
-                        variant="body8"
-                        color={value ? AppColors.gray100 : AppColors.gray40}
-                      >
-                        {value instanceof Date
-                          ? `${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`
-                          : value || '00:00'}
-                      </AppText>
-                    </View>
-
-                    <Clock
-                      size={`${ms(18)}`}
-                      color={AppColors.gray40}
-                      variant="Linear"
-                      style={styles.inputIcon}
-                    />
-                  </Pressable>
-
-                  <MemoTimePickerModal
-                    visible={showTimePicker}
-                    value={value instanceof Date ? value : undefined}
-                    onConfirm={time => {
-                      setShowTimePicker(false);
-                      onChange(time);
-                    }}
-                    onCancel={() => setShowTimePicker(false)}
-                  />
-                </>
-              )}
-            />
-          </View>
-        </View>
-
-        {/* Dynamic fields based on schedule type */}
-        {scheduleType === '일반일정' ? (
-          <View style={{ gap: ms(16) }}>
-            <RHFFormInput
-              control={control}
-              name="title"
-              label="일정명"
-              placeholder="일정명을 입력하세요"
-              required
-            />
-
-            <RHFFormInput
-              control={control}
-              name="description"
-              label="일정내용"
-              placeholder="일정 내용을 입력하세요"
-              multiline
-              required
-            />
-          </View>
-        ) : (
-          <View style={{ gap: ms(16) }}>
-            <RHFFormInput
-              control={control}
-              name="customerName"
-              label="고객명"
-              labelVariant="body6"
-              placeholder="고객명을 입력하세요"
-              required
-            />
-
-            <View>
-              <AppText variant="body6" color={AppColors.gray90}>
-                연락처{' '}
-                <AppText variant="body6" color={AppColors.negative}>
+          {/* Date & Time */}
+          <View style={styles.dateTimeRow}>
+            <View style={styles.dateTimeField}>
+              <AppText variant="body7" color={AppColors.gray90}>
+                날짜{' '}
+                <AppText variant="body7" color={AppColors.negative}>
                   *
                 </AppText>
               </AppText>
 
               <Controller
                 control={control}
-                name="customerPhone"
-                rules={{
-                  validate: (val?: string) => {
-                    if (!val) {
-                      return true;
-                    }
-                    const phone = stripDashes(val);
-                    if (!phone.startsWith('010') || phone.length < 10) {
-                      return '연락처는 010으로 시작해야 합니다.';
-                    }
-                    return true;
-                  },
-                }}
-                render={({ field: { value, onChange }, fieldState: { error } }) => (
-                  <MemoPhoneInput
-                    value={value}
-                    onChangeText={onChange}
-                    label=""
-                    required
-                    error={error?.message}
-                  />
+                name="scheduleDate"
+                render={({ field: { value, onChange } }) => (
+                  <>
+                    <Pressable
+                      style={styles.dateInputWrapper}
+                      onPress={() => setShowDatePicker(true)}
+                    >
+                      <View style={[styles.input, styles.dateDisplay]}>
+                        <AppText
+                          variant="body8"
+                          color={value ? AppColors.gray100 : AppColors.gray40}
+                        >
+                          {value || 'yyyy.mm.dd'}
+                        </AppText>
+                      </View>
+
+                      <Calendar
+                        size={`${ms(18)}`}
+                        color={AppColors.gray40}
+                        variant="Linear"
+                        style={styles.inputIcon}
+                      />
+                    </Pressable>
+
+                    <MemoDatePickerModal
+                      visible={showDatePicker}
+                      value={value}
+                      onConfirm={dateStr => {
+                        setShowDatePicker(false);
+                        onChange(dateStr);
+                      }}
+                      onCancel={() => setShowDatePicker(false)}
+                    />
+                  </>
                 )}
               />
             </View>
 
-            <RHFFormInput
-              control={control}
-              name="title"
-              label="일정명"
-              labelVariant="body6"
-              placeholder="일정명을 입력하세요"
-              required
-            />
+            <View style={styles.dateTimeField}>
+              <AppText variant="body7" color={AppColors.gray90}>
+                시간{' '}
+                <AppText variant="body7" color={AppColors.negative}>
+                  *
+                </AppText>
+              </AppText>
 
-            <RHFFormInput
-              control={control}
-              name="memo"
-              label="메모"
-              labelVariant="body6"
-              placeholder="메모를 입력하세요"
-              multiline
-              required
-            />
+              <Controller
+                control={control}
+                name="startTime"
+                render={({ field: { value, onChange } }) => (
+                  <>
+                    <Pressable
+                      style={styles.dateInputWrapper}
+                      onPress={() => setShowTimePicker(true)}
+                    >
+                      <View style={[styles.input, styles.dateDisplay]}>
+                        <AppText
+                          variant="body8"
+                          color={value ? AppColors.gray100 : AppColors.gray40}
+                        >
+                          {value instanceof Date
+                            ? `${String(value.getHours()).padStart(
+                                2,
+                                '0',
+                              )}:${String(value.getMinutes()).padStart(2, '0')}`
+                            : value || '00:00'}
+                        </AppText>
+                      </View>
+
+                      <Clock
+                        size={`${ms(18)}`}
+                        color={AppColors.gray40}
+                        variant="Linear"
+                        style={styles.inputIcon}
+                      />
+                    </Pressable>
+
+                    <MemoTimePickerModal
+                      visible={showTimePicker}
+                      value={value instanceof Date ? value : undefined}
+                      onConfirm={time => {
+                        setShowTimePicker(false);
+                        onChange(time);
+                      }}
+                      onCancel={() => setShowTimePicker(false)}
+                    />
+                  </>
+                )}
+              />
+            </View>
           </View>
-        )}
+
+          {/* Dynamic fields based on schedule type */}
+          {scheduleType === '일반일정' ? (
+            <View style={{ gap: ms(16) }}>
+              <RHFFormInput
+                control={control}
+                name="title"
+                label="일정명"
+                placeholder="일정명을 입력하세요"
+                required
+              />
+
+              <RHFFormInput
+                control={control}
+                name="description"
+                label="일정내용"
+                placeholder="일정 내용을 입력하세요"
+                multiline
+                required
+              />
+            </View>
+          ) : (
+            <View style={{ gap: ms(16) }}>
+              <RHFFormInput
+                control={control}
+                name="customerName"
+                label="고객명"
+                labelVariant="body6"
+                placeholder="고객명을 입력하세요"
+                required
+              />
+
+              <View>
+                <AppText variant="body6" color={AppColors.gray90}>
+                  연락처{' '}
+                  <AppText variant="body6" color={AppColors.negative}>
+                    *
+                  </AppText>
+                </AppText>
+
+                <Controller
+                  control={control}
+                  name="customerPhone"
+                  rules={{
+                    validate: (val?: string) => {
+                      if (!val) {
+                        return true;
+                      }
+                      const phone = stripDashes(val);
+                      if (!phone.startsWith('010') || phone.length < 10) {
+                        return '연락처는 010으로 시작해야 합니다.';
+                      }
+                      return true;
+                    },
+                  }}
+                  render={({
+                    field: { value, onChange },
+                    fieldState: { error },
+                  }) => (
+                    <MemoPhoneInput
+                      value={value}
+                      onChangeText={onChange}
+                      label=""
+                      required
+                      error={error?.message}
+                    />
+                  )}
+                />
+              </View>
+
+              <RHFFormInput
+                control={control}
+                name="title"
+                label="일정명"
+                labelVariant="body6"
+                placeholder="일정명을 입력하세요"
+                required
+              />
+
+              <RHFFormInput
+                control={control}
+                name="memo"
+                label="메모"
+                labelVariant="body6"
+                placeholder="메모를 입력하세요"
+                multiline
+                required
+              />
+            </View>
+          )}
+        </View>
       </View>
-    </KeyboardAwareScrollView>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -266,7 +269,7 @@ export const MemoFormCreateSchedule = React.memo(FormCreateSchedule);
 
 const styles = StyleSheet.create({
   scrollView: {
-    flexGrow: 0,
+    flexGrow: 1,
   },
   title: {
     textAlign: 'center',

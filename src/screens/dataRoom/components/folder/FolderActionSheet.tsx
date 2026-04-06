@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { MemoAppBottomSheet } from '@/src/component/AppBottomSheet';
 import { AppText } from '@/src/component/AppText';
 import { AppColors } from '@/src/constants/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type TFolderAction = 'share' | 'move' | 'rename' | 'info';
 
@@ -27,9 +28,11 @@ const FolderActionSheet: React.FC<IProps> = ({
   folderName,
   onAction,
 }) => {
+  const insets = useSafeAreaInsets();
+
   return (
     <MemoAppBottomSheet visible={visible} onClose={onClose} title={folderName}>
-      <View style={{ gap: 16, paddingBottom: 20, paddingTop: 16 }}>
+      <View style={{ gap: 16, paddingBottom: 20 + insets.bottom, paddingTop: 16 }}>
         {ACTIONS.map(action => (
           <Pressable
             key={action.key}

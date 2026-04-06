@@ -97,233 +97,239 @@ const CreateMeetingScheduleScreen: React.FC = () => {
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          keyboardDismissMode="on-drag"
-        >
-          {/* Date & Time */}
-          <View>
-            <AppText variant="body7" color={AppColors.gray90}>
-              날짜{' '}
-              <AppText variant="body7" color={AppColors.negative}>
-                *
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            keyboardDismissMode="on-drag"
+          >
+            {/* Date & Time */}
+            <View>
+              <AppText variant="body7" color={AppColors.gray90}>
+                날짜{' '}
+                <AppText variant="body7" color={AppColors.negative}>
+                  *
+                </AppText>
               </AppText>
-            </AppText>
 
-            <View style={styles.dateTimeRow}>
+              <View style={styles.dateTimeRow}>
+                <Controller
+                  control={control}
+                  name="scheduleDate"
+                  render={({ field: { value, onChange } }) => (
+                    <>
+                      <Pressable
+                        style={[styles.dropdownBtn, styles.dateInput]}
+                        onPress={() => setShowDatePicker(true)}
+                      >
+                        <AppText
+                          variant="body7"
+                          color={value ? AppColors.gray100 : AppColors.gray40}
+                        >
+                          {value || 'yyyy.mm.dd'}
+                        </AppText>
+                        <Calendar
+                          size={`${ms(16)}`}
+                          color={AppColors.gray60}
+                          variant="Linear"
+                        />
+                      </Pressable>
+
+                      <MemoDatePickerModal
+                        visible={showDatePicker}
+                        value={value}
+                        onConfirm={dateStr => {
+                          setShowDatePicker(false);
+                          onChange(dateStr);
+                        }}
+                        onCancel={() => setShowDatePicker(false)}
+                      />
+                    </>
+                  )}
+                />
+
+                <Controller
+                  control={control}
+                  name="startTime"
+                  render={({ field: { value, onChange } }) => (
+                    <>
+                      <Pressable
+                        style={[styles.dropdownBtn, styles.timeInput]}
+                        onPress={() => setShowTimePicker(true)}
+                      >
+                        <AppText
+                          variant="body7"
+                          color={value ? AppColors.gray100 : AppColors.gray40}
+                        >
+                          {value || '00:00'}
+                        </AppText>
+                        <Clock
+                          size={`${ms(16)}`}
+                          color={AppColors.gray60}
+                          variant="Linear"
+                        />
+                      </Pressable>
+
+                      <MemoTimePickerModal
+                        visible={showTimePicker}
+                        onConfirm={time => {
+                          setShowTimePicker(false);
+                          const hh = String(time.getHours()).padStart(2, '0');
+                          const mm = String(time.getMinutes()).padStart(2, '0');
+                          onChange(`${hh}:${mm}`);
+                        }}
+                        onCancel={() => setShowTimePicker(false)}
+                      />
+                    </>
+                  )}
+                />
+              </View>
+            </View>
+
+            {/* Address */}
+            <View>
+              <AppText variant="body7" color={AppColors.gray90}>
+                방문 장소{' '}
+                <AppText variant="body7" color={AppColors.negative}>
+                  *
+                </AppText>
+              </AppText>
+
               <Controller
                 control={control}
-                name="scheduleDate"
+                name="address"
                 render={({ field: { value, onChange } }) => (
                   <>
                     <Pressable
-                      style={[styles.dropdownBtn, styles.dateInput]}
-                      onPress={() => setShowDatePicker(true)}
+                      style={styles.dropdownBtn}
+                      onPress={() => setShowPostcode(true)}
                     >
                       <AppText
                         variant="body7"
                         color={value ? AppColors.gray100 : AppColors.gray40}
                       >
-                        {value || 'yyyy.mm.dd'}
+                        {value || '방문 장소를 입력하세요'}
                       </AppText>
-                      <Calendar
-                        size={`${ms(16)}`}
-                        color={AppColors.gray60}
-                        variant="Linear"
-                      />
                     </Pressable>
 
-                    <MemoDatePickerModal
-                      visible={showDatePicker}
-                      value={value}
-                      onConfirm={dateStr => {
-                        setShowDatePicker(false);
-                        onChange(dateStr);
-                      }}
-                      onCancel={() => setShowDatePicker(false)}
-                    />
-                  </>
-                )}
-              />
-
-              <Controller
-                control={control}
-                name="startTime"
-                render={({ field: { value, onChange } }) => (
-                  <>
-                    <Pressable
-                      style={[styles.dropdownBtn, styles.timeInput]}
-                      onPress={() => setShowTimePicker(true)}
+                    <Modal
+                      visible={showPostcode}
+                      transparent
+                      animationType="slide"
+                      onRequestClose={() => setShowPostcode(false)}
                     >
-                      <AppText
-                        variant="body7"
-                        color={value ? AppColors.gray100 : AppColors.gray40}
-                      >
-                        {value || '00:00'}
-                      </AppText>
-                      <Clock
-                        size={`${ms(16)}`}
-                        color={AppColors.gray60}
-                        variant="Linear"
-                      />
-                    </Pressable>
-
-                    <MemoTimePickerModal
-                      visible={showTimePicker}
-                      onConfirm={time => {
-                        setShowTimePicker(false);
-                        const hh = String(time.getHours()).padStart(2, '0');
-                        const mm = String(time.getMinutes()).padStart(2, '0');
-                        onChange(`${hh}:${mm}`);
-                      }}
-                      onCancel={() => setShowTimePicker(false)}
-                    />
+                      <View style={styles.postcodeContainer}>
+                        <Pressable
+                          style={styles.postcodeOverlay}
+                          onPress={() => setShowPostcode(false)}
+                        />
+                        <View style={styles.postcodeSheet}>
+                          <View style={styles.postcodeHandleBar} />
+                          <AppText
+                            variant="heading3"
+                            color={AppColors.gray100}
+                            style={styles.postcodeTitle}
+                          >
+                            주소 검색
+                          </AppText>
+                          <Postcode
+                            style={styles.postcode}
+                            jsOptions={{ animation: true }}
+                            onSelected={data => {
+                              onChange(data.address);
+                              setShowPostcode(false);
+                            }}
+                            onError={() => setShowPostcode(false)}
+                          />
+                        </View>
+                      </View>
+                    </Modal>
                   </>
                 )}
               />
             </View>
-          </View>
 
-          {/* Address */}
-          <View>
-            <AppText variant="body7" color={AppColors.gray90}>
-              방문 장소{' '}
-              <AppText variant="body7" color={AppColors.negative}>
-                *
-              </AppText>
-            </AppText>
-
-            <Controller
+            {/* Customer Name */}
+            <RHFFormInput
               control={control}
-              name="address"
-              render={({ field: { value, onChange } }) => (
-                <>
-                  <Pressable
-                    style={styles.dropdownBtn}
-                    onPress={() => setShowPostcode(true)}
-                  >
-                    <AppText
-                      variant="body7"
-                      color={value ? AppColors.gray100 : AppColors.gray40}
-                    >
-                      {value || '방문 장소를 입력하세요'}
-                    </AppText>
-                  </Pressable>
-
-                  <Modal
-                    visible={showPostcode}
-                    transparent
-                    animationType="slide"
-                    onRequestClose={() => setShowPostcode(false)}
-                  >
-                    <View style={styles.postcodeContainer}>
-                      <Pressable
-                        style={styles.postcodeOverlay}
-                        onPress={() => setShowPostcode(false)}
-                      />
-                      <View style={styles.postcodeSheet}>
-                        <View style={styles.postcodeHandleBar} />
-                        <AppText
-                          variant="heading3"
-                          color={AppColors.gray100}
-                          style={styles.postcodeTitle}
-                        >
-                          주소 검색
-                        </AppText>
-                        <Postcode
-                          style={styles.postcode}
-                          jsOptions={{ animation: true }}
-                          onSelected={data => {
-                            onChange(data.address);
-                            setShowPostcode(false);
-                          }}
-                          onError={() => setShowPostcode(false)}
-                        />
-                      </View>
-                    </View>
-                  </Modal>
-                </>
-              )}
+              name="customerName"
+              label="고객명"
+              placeholder="고객명을 입력하세요"
+              required
             />
-          </View>
 
-          {/* Customer Name */}
-          <RHFFormInput
-            control={control}
-            name="customerName"
-            label="고객명"
-            placeholder="고객명을 입력하세요"
-            required
-          />
-
-          {/* Customer Phone */}
-          <View>
-            <AppText variant="body7" color={AppColors.gray90}>
-              연락처{' '}
-              <AppText variant="body7" color={AppColors.negative}>
-                *
+            {/* Customer Phone */}
+            <View>
+              <AppText variant="body7" color={AppColors.gray90}>
+                연락처{' '}
+                <AppText variant="body7" color={AppColors.negative}>
+                  *
+                </AppText>
               </AppText>
-            </AppText>
 
-            <Controller
-              control={control}
-              name="customerPhone"
-              rules={{
-                validate: (val?: string) => {
-                  if (!val) {
+              <Controller
+                control={control}
+                name="customerPhone"
+                rules={{
+                  validate: (val?: string) => {
+                    if (!val) {
+                      return true;
+                    }
+                    const phone = stripDashes(val);
+                    if (!phone.startsWith('010') || phone.length < 10) {
+                      return '연락처는 010으로 시작해야 합니다.';
+                    }
                     return true;
-                  }
-                  const phone = stripDashes(val);
-                  if (!phone.startsWith('010') || phone.length < 10) {
-                    return '연락처는 010으로 시작해야 합니다.';
-                  }
-                  return true;
-                },
-              }}
-              render={({ field: { value, onChange }, fieldState: { error } }) => (
-                <MemoPhoneInput
-                  value={value}
-                  onChangeText={onChange}
-                  label=""
-                  required
-                  error={error?.message}
-                />
-              )}
+                  },
+                }}
+                render={({
+                  field: { value, onChange },
+                  fieldState: { error },
+                }) => (
+                  <MemoPhoneInput
+                    value={value}
+                    onChangeText={onChange}
+                    label=""
+                    required
+                    error={error?.message}
+                  />
+                )}
+              />
+            </View>
+
+            {/* Title */}
+            <RHFFormInput
+              control={control}
+              name="title"
+              label="일정명"
+              placeholder="일정명을 입력하세요"
+              required
+            />
+
+            {/* Memo */}
+            <RHFFormInput
+              control={control}
+              name="memo"
+              label="메모"
+              placeholder="메모를 입력하세요"
+              multiline
+            />
+          </ScrollView>
+
+          <View
+            style={[
+              styles.bottomContainer,
+              { paddingBottom: insets.bottom || ms(16) },
+            ]}
+          >
+            <MemoAppButton
+              label="등록"
+              onPress={handleSubmit(onSubmit)}
+              variant="primary"
+              style={styles.submitBtn}
+              disabled={isDisableButton}
             />
           </View>
-
-          {/* Title */}
-          <RHFFormInput
-            control={control}
-            name="title"
-            label="일정명"
-            placeholder="일정명을 입력하세요"
-            required
-          />
-
-          {/* Memo */}
-          <RHFFormInput
-            control={control}
-            name="memo"
-            label="메모"
-            placeholder="메모를 입력하세요"
-            multiline
-          />
-        </ScrollView>
-
-        <View
-          style={[styles.bottomContainer, { paddingBottom: insets.bottom || ms(16) }]}
-        >
-          <MemoAppButton
-            label="등록"
-            onPress={handleSubmit(onSubmit)}
-            variant="primary"
-            style={styles.submitBtn}
-            disabled={isDisableButton}
-          />
-        </View>
         </KeyboardAvoidingView>
       </MemoScreenBody>
     </AppSafeAreaView>

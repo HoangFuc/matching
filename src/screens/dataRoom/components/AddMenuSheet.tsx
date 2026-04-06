@@ -25,8 +25,6 @@ const AddMenuSheet: React.FC<IProps> = ({
 }) => {
   const { bottom } = useSafeAreaInsets();
 
-  console.log('=======visible', visible);
-
   return (
     <MemoAppBottomSheet
       visible={visible}

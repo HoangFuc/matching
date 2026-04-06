@@ -33,4 +33,14 @@ export const AppImages = {
   siren: require('@/src/assets/images/siren.png'),
   playVector: require('@/src/assets/images/playVector.png'),
   ellipse: require('@/src/assets/images/ellipse.png'),
+  // File type icons
+  filePdf:       require('@/src/assets/images/pdf.png'),
+  fileDocs:      require('@/src/assets/images/docs.png'),
+  fileXlsx:      require('@/src/assets/images/xlsx.png'),
+  filePptx:      require('@/src/assets/images/pptx.png'),
+  fileMp3:       require('@/src/assets/images/mp3.png'),
+  fileMp4:       require('@/src/assets/images/mp4.png'),
+  fileZip:       require('@/src/assets/images/zip.png'),
+  fileHwp:       require('@/src/assets/images/hwp.png'),
+  fileUndefined: require('@/src/assets/images/undefinedFile.png'),
 };

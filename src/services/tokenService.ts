@@ -81,6 +81,22 @@ const refreshAccessToken = async (): Promise<string> => {
 
 //---------------------------------------
 /**
+ * Singleton refresh promise — prevents concurrent token refreshes.
+ * Multiple callers awaiting this will all receive the same refreshed token.
+ */
+let _refreshPromise: Promise<string> | null = null;
+
+export const refreshAccessTokenOnce = (): Promise<string> => {
+  if (!_refreshPromise) {
+    _refreshPromise = refreshAccessToken().finally(() => {
+      _refreshPromise = null;
+    });
+  }
+  return _refreshPromise;
+};
+
+//---------------------------------------
+/**
  * Save tokens after login or registration.
  */
 export const saveTokens = async (

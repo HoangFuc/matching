@@ -11,6 +11,7 @@ import {
   useFocusEffect,
   type LinkingOptions,
 } from '@react-navigation/native';
+import { navigationRef } from '@/src/utils/navigationRef';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
@@ -271,7 +272,7 @@ const AppNavigator: React.FC = () => {
 
   return (
     <>
-      <NavigationContainer linking={linking}>
+      <NavigationContainer ref={navigationRef} linking={linking}>
         <RootStack.Navigator
           initialRouteName={initialRoute}
           screenOptions={{ headerShown: false }}>

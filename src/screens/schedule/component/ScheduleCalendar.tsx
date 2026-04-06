@@ -8,9 +8,9 @@ import { MemoCommonCalendar } from '@/src/component/calendar/CommonCalendar';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { AppColors } from '@/src/constants/colors';
 import { CloseCircle } from '@/src/constants/icons';
+import { useHasCompany } from '@/src/hooks/useHasCompany';
 import { TDayCell, TScheduleEvent } from '@/src/interface/schedule.interface';
 import { useGetSchedulesQuery } from '@/src/store/api/schedule.api';
-import { useHasCompany } from '@/src/hooks/useHasCompany';
 import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
 import { useAttendanceData } from '../hook/useAttendanceData';
 import { useCalendarNavigation } from '../hook/useCalendarNavigation';
@@ -60,6 +60,8 @@ const ScheduleCalendar: React.FC<IProps> = ({
     { startDate, endDate },
     { skip: !hasCompany },
   );
+
+  console.log('================sheducle', schedules);
 
   //---------------------------------------
   const allEvents = React.useMemo(

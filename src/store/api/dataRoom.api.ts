@@ -108,7 +108,7 @@ export const dataRoomApi = createApi({
     getFilesByFolder: builder.query<IFile[], string>({
       query: folderId => `/folders/${folderId}/files`,
       transformResponse: (response: any) =>
-        Array.isArray(response) ? response : response?.data ?? [],
+        Array.isArray(response) ? response : response?.data?.data ?? [],
       providesTags: (_result, _error, folderId) => [
         { type: 'Files', id: folderId },
       ],

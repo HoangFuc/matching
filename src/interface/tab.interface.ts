@@ -17,12 +17,31 @@ import type { IMeetingScheduleManagement } from './meetingScheduleManagement.int
 export type AuthStackParamList = {
   Welcome: undefined;
   Login: undefined;
-  JoinOrganization: { fromSocialLogin?: boolean; inviteCode?: string } | undefined;
-  ConfirmOrganizationInvitation: { invitation: IInvitationDetailResponse; inviteCode: string; fromSocialLogin?: boolean };
+  JoinOrganization:
+    | { fromSocialLogin?: boolean; inviteCode?: string }
+    | undefined;
+  ConfirmOrganizationInvitation: {
+    invitation: IInvitationDetailResponse;
+    inviteCode: string;
+    fromSocialLogin?: boolean;
+  };
   JoinMembership: { withSteps?: boolean; inviteCode?: string } | undefined;
   CreateAgency: { fromSocialLogin?: boolean } | undefined;
-  OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean; fromSocialLogin?: boolean } | undefined;
-  InviteMember: { company?: ICompanyResponse; departments?: Department[]; directorCount?: number; hideStepBar?: boolean } | undefined;
+  OrgChartSetup:
+    | {
+        managementType?: 'single' | 'dual';
+        hideStepBar?: boolean;
+        fromSocialLogin?: boolean;
+      }
+    | undefined;
+  InviteMember:
+    | {
+        company?: ICompanyResponse;
+        departments?: Department[];
+        directorCount?: number;
+        hideStepBar?: boolean;
+      }
+    | undefined;
 };
 
 export type RootStackParamList = {
@@ -38,8 +57,21 @@ export type RootStackParamList = {
   ScheduleCalendarView: { filterTypes?: TScheduleType[] };
   OrganizationChart: undefined;
   MyPage: undefined;
-  OrgChartSetup: { managementType?: 'single' | 'dual'; hideStepBar?: boolean; fromSocialLogin?: boolean } | undefined;
-  InviteMember: { company?: ICompanyResponse; departments?: Department[]; directorCount?: number; hideStepBar?: boolean } | undefined;
+  OrgChartSetup:
+    | {
+        managementType?: 'single' | 'dual';
+        hideStepBar?: boolean;
+        fromSocialLogin?: boolean;
+      }
+    | undefined;
+  InviteMember:
+    | {
+        company?: ICompanyResponse;
+        departments?: Department[];
+        directorCount?: number;
+        hideStepBar?: boolean;
+      }
+    | undefined;
 };
 
 export type MeetingMinutesStackParamList = {
@@ -62,7 +94,13 @@ export type HomeStackParamList = {
 };
 
 export type ScheduleStackParamList = {
-  ScheduleMain: { mode?: TScheduleMode; filterTypes?: TScheduleType[]; hideTabBar?: boolean } | undefined;
+  ScheduleMain:
+    | {
+        mode?: TScheduleMode;
+        filterTypes?: TScheduleType[];
+        hideTabBar?: boolean;
+      }
+    | undefined;
   ScheduleDetail: {
     dateKey: string;
   };
@@ -77,6 +115,11 @@ export type DataRoomStackParamList = {
     folderId: string;
     folderName: string;
     tabType: import('../screens/dataRoom/constants').TDataRoomTabType;
+  };
+  DataRoomFileViewer: {
+    fileName: string;
+    downloadUrl: string;
+    mimeType: string;
   };
 };
 

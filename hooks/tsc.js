@@ -1,5 +1,7 @@
-import * as ts from "typescript";
-import * as path from "path";
+import * as ts from 'typescript';
+import * as path from 'path';
+
+const { Buffer } = require('buffer');
 
 // Read stdin
 async function readInput() {
@@ -16,10 +18,10 @@ function runTypeCheck(configPath) {
   if (configFile.error) {
     console.error(
       ts.formatDiagnostic(configFile.error, {
-        getCanonicalFileName: (x) => x,
+        getCanonicalFileName: x => x,
         getCurrentDirectory: ts.sys.getCurrentDirectory,
         getNewLine: () => ts.sys.newLine,
-      })
+      }),
     );
     return;
   }
@@ -36,7 +38,7 @@ function runTypeCheck(configPath) {
   const parsed = ts.parseJsonConfigFileContent(
     configFile.config,
     parseConfigHost,
-    path.dirname(configPath)
+    path.dirname(configPath),
   );
 
   // Override to ensure no emit
@@ -54,14 +56,14 @@ function runTypeCheck(configPath) {
   // Format and display diagnostics
   if (allDiagnostics.length > 0) {
     const formatHost = {
-      getCanonicalFileName: (path) => path,
+      getCanonicalFileName: _path => path,
       getCurrentDirectory: ts.sys.getCurrentDirectory,
       getNewLine: () => ts.sys.newLine,
     };
 
     const formattedDiagnostics = ts.formatDiagnostics(
       allDiagnostics,
-      formatHost
+      formatHost,
     );
     return formattedDiagnostics; // Type check failed
   }
@@ -78,7 +80,7 @@ async function main() {
     process.exit(0);
   }
 
-  const typeChecks = runTypeCheck("./tsconfig.json");
+  const typeChecks = runTypeCheck('./tsconfig.json');
   if (typeChecks) {
     console.error(typeChecks);
     process.exit(2);

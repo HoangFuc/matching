@@ -1,6 +1,7 @@
 import { BlurView } from '@react-native-community/blur';
 import React from 'react';
 import {
+  Alert,
   Animated,
   Dimensions,
   KeyboardAvoidingView,
@@ -120,11 +121,19 @@ const AppBottomSheet: React.FC<IProps> = ({
               {showHandle && <View style={styles.handleBar} />}
 
               {title && (
-                <View style={styles.titleContainer}>
-                  <AppText variant="heading3" color={AppColors.gray100}>
+                <Pressable
+                  style={styles.titleContainer}
+                  onPress={() => Alert.alert('', title)}
+                >
+                  <AppText
+                    variant="heading3"
+                    color={AppColors.gray100}
+                    numberOfLines={1}
+                    ellipsizeMode="middle"
+                  >
                     {title}
                   </AppText>
-                </View>
+                </Pressable>
               )}
 
               {scrollable ? (
@@ -209,6 +218,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: ms(16),
     paddingBottom: ms(12),
+    paddingHorizontal: ms(20),
     borderBottomWidth: 1,
     borderBottomColor: AppColors.gray20,
   },

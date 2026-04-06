@@ -1,3 +1,5 @@
+const { Buffer } = require("buffer");
+
 async function main() {
   const chunks = [];
   for await (const chunk of process.stdin) {

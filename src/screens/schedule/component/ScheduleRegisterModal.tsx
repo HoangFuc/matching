@@ -1,5 +1,5 @@
 import React from 'react';
-import { Keyboard, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import dayjs from 'dayjs';
 import { useForm } from 'react-hook-form';
@@ -11,9 +11,9 @@ import { stripDashes } from '@/src/component/PhoneInput';
 import { SCHEDULE_LABEL_TO_ENUM } from '@/src/constants/schedule';
 import { useCreateScheduleMutation } from '@/src/store/api/schedule.api';
 
+import type { ISchedulePayload } from '@/src/screens/schedule/type';
 import { MemoFormCreateSchedule } from './FormCreateSchedule';
 import { MemoScheduleTypePicker, TScheduleType } from './ScheduleTypePicker';
-import type { ISchedulePayload } from '@/src/screens/schedule/type';
 
 interface IProps {
   visible: boolean;
@@ -22,22 +22,7 @@ interface IProps {
 
 const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
   const [showTypePicker, setShowTypePicker] = React.useState(false);
-  const [isKeyboardVisible, setIsKeyboardVisible] = React.useState(false);
   const [createSchedule] = useCreateScheduleMutation();
-
-  //---------------------------------------
-  React.useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () =>
-      setIsKeyboardVisible(true),
-    );
-    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
-      setIsKeyboardVisible(false),
-    );
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
 
   const { control, handleSubmit, reset, watch, setValue } =
     useForm<ISchedulePayload>({
@@ -133,24 +118,23 @@ const ScheduleRegisterModal: React.FC<IProps> = ({ visible, onClose }) => {
       <MemoBottomSheetModal
         visible={visible}
         onClose={handleClose}
-        sheetStyle={isKeyboardVisible ? undefined : styles.sheet}
+        sheetStyle={styles.sheet}
       >
         <MemoFormCreateSchedule
           control={control}
           setShowTypePicker={setShowTypePicker}
           scheduleType={scheduleType}
         />
+
         {/* Register button */}
-        {!isKeyboardVisible && (
-          <View style={styles.buttonContainer}>
-            <MemoAppButton
-              label="일정등록"
-              onPress={handleSubmit(onSubmit)}
-              style={styles.registerButton}
-              disabled={isDisableButton}
-            />
-          </View>
-        )}
+        <View style={styles.buttonContainer}>
+          <MemoAppButton
+            label="일정등록"
+            onPress={handleSubmit(onSubmit)}
+            style={styles.registerButton}
+            disabled={isDisableButton}
+          />
+        </View>
       </MemoBottomSheetModal>
 
       <MemoScheduleTypePicker

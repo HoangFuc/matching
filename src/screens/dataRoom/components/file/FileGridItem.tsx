@@ -15,11 +15,20 @@ import dayjs from 'dayjs';
 interface FileGridItemProps {
   item: IFile;
   onPressMore: (file: IFile) => void;
+  onPress?: (file: IFile) => void;
 }
 
-const FileGridItem: React.FC<FileGridItemProps> = ({ item, onPressMore }) => {
+const getFileNameParts = (name: string) => {
+  const lastDot = name.lastIndexOf('.');
+  if (lastDot === -1) return { baseName: name, ext: '' };
+  return { baseName: name.slice(0, lastDot), ext: name.slice(lastDot) };
+};
+
+const FileGridItem: React.FC<FileGridItemProps> = ({ item, onPressMore, onPress }) => {
+  const { baseName, ext } = getFileNameParts(item.originalName);
+
   return (
-    <Pressable style={styles.container}>
+    <Pressable style={styles.container} onPress={() => onPress?.(item)}>
       {/* Header: icon + name + dots */}
       <View style={styles.header}>
         <Document
@@ -29,16 +38,23 @@ const FileGridItem: React.FC<FileGridItemProps> = ({ item, onPressMore }) => {
         />
 
         <View style={styles.headerText}>
-          <AppText variant="body3" color={AppColors.gray90} numberOfLines={1}>
-            {item.originalName}
-          </AppText>
+          <View style={styles.nameRow}>
+            <AppText variant="body3" color={AppColors.gray90} numberOfLines={1} style={styles.nameBase}>
+              {baseName}
+            </AppText>
+            {ext ? (
+              <AppText variant="body3" color={AppColors.gray90}>
+                {ext}
+              </AppText>
+            ) : null}
+          </View>
 
           <AppText variant="detail" color={AppColors.gray80}>
             {dayjs(item.createdAt).format('YYYY.MM.DD')}
           </AppText>
         </View>
 
-        <Pressable hitSlop={8} onPress={() => onPressMore(item)}>
+        <Pressable hitSlop={24} onPress={() => onPressMore(item)}>
           <DotsVertical
             width={ms(16)}
             height={ms(16)}
@@ -73,6 +89,13 @@ const styles = StyleSheet.create({
   headerText: {
     flex: 1,
     gap: ms(2),
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  nameBase: {
+    flexShrink: 1,
   },
   preview: {
     height: ms(91.97),

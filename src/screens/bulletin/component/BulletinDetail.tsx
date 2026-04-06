@@ -1,8 +1,8 @@
 import React from 'react';
 import {
   ActivityIndicator,
-  Keyboard,
   Image,
+  Keyboard,
   Platform,
   Pressable,
   StyleSheet,
@@ -11,9 +11,9 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import dayjs from 'dayjs';
-import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 
 import { AppText } from '@/src/component/AppText';
@@ -25,7 +25,7 @@ import {
   useGetBulletinDetailQuery,
   useGetCommentsQuery,
 } from '@/src/store/api/bulletin.api';
-import { MemoCommentInput } from './CommentInput';
+import { ICommentInputRef, MemoCommentInput } from './CommentInput';
 import { MemoCommentItem } from './CommentItem';
 import { MemoImageCarousel } from './ImageCarousel';
 import { MemoPostStats } from './PostStats';
@@ -69,7 +69,7 @@ const BulletinDetail: React.FC = () => {
   const totalCommentCount = React.useMemo(() => {
     if (!commentsData?.data) return post?.commentCount ?? 0;
     const countReplies = (comments: typeof commentsData.data): number =>
-      comments.reduce(
+      comments?.reduce(
         (sum, c) => sum + 1 + (c.replies ? countReplies(c.replies) : 0),
         0,
       );
@@ -77,12 +77,14 @@ const BulletinDetail: React.FC = () => {
   }, [commentsData, post?.commentCount]);
 
   //---------------------------------------
+  const commentInputRef = React.useRef<ICommentInputRef>(null);
+
+  //---------------------------------------
   const [replyTo, setReplyTo] = React.useState<{
     commentId: string;
     authorName: string;
   } | null>(null);
 
-  //---------------------------------------
   //---------------------------------------
   const handleReply = React.useCallback(
     (commentId: string, authorName: string) => {
@@ -137,7 +139,10 @@ const BulletinDetail: React.FC = () => {
           {/* Post author */}
           <View style={styles.authorRow}>
             {post.author.avatarUrl ? (
-              <Image source={{ uri: post.author.avatarUrl }} style={styles.avatar} />
+              <Image
+                source={{ uri: post.author.avatarUrl }}
+                style={styles.avatar}
+              />
             ) : (
               <View style={[styles.avatar, styles.avatarPlaceholder]}>
                 <AppText variant="body6" color={AppColors.white}>
@@ -165,7 +170,6 @@ const BulletinDetail: React.FC = () => {
             {post.images && post.images.length > 0 && (
               <MemoImageCarousel images={post.images} />
             )}
-
           </View>
 
           {/* Post stats */}
@@ -176,7 +180,7 @@ const BulletinDetail: React.FC = () => {
               comments={totalCommentCount}
               isLiked={post.isLiked}
               extra={
-                <Pressable>
+                <Pressable onPress={() => commentInputRef.current?.focus()}>
                   <AppText variant="pretendard" color={AppColors.gray100}>
                     답글 남기기
                   </AppText>
@@ -201,6 +205,7 @@ const BulletinDetail: React.FC = () => {
         {/* Comment input - pinned at bottom */}
         <View style={{ paddingBottom: keyboardHeight }}>
           <MemoCommentInput
+            ref={commentInputRef}
             replyTo={replyTo}
             onCancelReply={handleCancelReply}
             onSend={handleSend}

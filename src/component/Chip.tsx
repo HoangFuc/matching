@@ -1,5 +1,11 @@
 import React from 'react';
-import { Pressable, StyleSheet, StyleProp, View, ViewStyle } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  StyleProp,
+  View,
+  ViewStyle,
+} from 'react-native';
 
 import { ms } from 'react-native-size-matters/extend';
 
@@ -37,6 +43,7 @@ const Chip: React.FC<IProps> = ({
     <Pressable
       style={[
         styles.chip,
+        // eslint-disable-next-line react-native/no-inline-styles
         {
           backgroundColor: bgColor,
           borderWidth: 1,
@@ -52,9 +59,7 @@ const Chip: React.FC<IProps> = ({
       ]}
       onPress={onPress}
     >
-      {leftIcon && (
-        <View style={leftIconStyle}>{leftIcon}</View>
-      )}
+      {leftIcon && <View style={leftIconStyle}>{leftIcon}</View>}
 
       <AppText variant={textVariant} color={textColor}>
         {label}

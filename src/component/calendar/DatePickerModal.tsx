@@ -42,16 +42,10 @@ const DatePickerModal: React.FC<IProps> = ({
   const parsed = parseValue(value);
   const now = new Date();
 
-  const [year, setYear] = React.useState(
-    parsed?.year ?? now.getFullYear(),
-  );
-  const [month, setMonth] = React.useState(
-    parsed?.month ?? now.getMonth(),
-  );
+  const [year, setYear] = React.useState(parsed?.year ?? now.getFullYear());
+  const [month, setMonth] = React.useState(parsed?.month ?? now.getMonth());
   const [selectedKey, setSelectedKey] = React.useState<string | null>(
-    parsed
-      ? toKey(parsed.year, parsed.month, parsed.date)
-      : null,
+    parsed ? toKey(parsed.year, parsed.month, parsed.date) : null,
   );
 
   //---------------------------------------
@@ -76,10 +70,7 @@ const DatePickerModal: React.FC<IProps> = ({
   }, [visible, value]);
 
   //---------------------------------------
-  const days = React.useMemo(
-    () => getCalendarDays(year, month),
-    [year, month],
-  );
+  const days = React.useMemo(() => getCalendarDays(year, month), [year, month]);
 
   const weeks = React.useMemo(() => {
     const result: TDayCell[][] = [];
@@ -167,9 +158,7 @@ const DatePickerModal: React.FC<IProps> = ({
             <View key={label} style={styles.dayOfWeekCell}>
               <AppText
                 variant="body2"
-                color={
-                  i === 0 || i === 6 ? AppColors.purple : AppColors.gray80
-                }
+                color={i === 0 || i === 6 ? AppColors.purple : AppColors.gray80}
               >
                 {label}
               </AppText>
@@ -203,7 +192,7 @@ const DatePickerModal: React.FC<IProps> = ({
                         variant={isSelected || today ? 'body6' : 'body8'}
                         color={
                           isSelected
-                            ? AppColors.purple
+                            ? AppColors.white
                             : !cell.isCurrentMonth
                             ? AppColors.gray30
                             : today
@@ -297,6 +286,7 @@ const styles = StyleSheet.create({
   },
   dayCircleSelected: {
     borderColor: AppColors.purple,
+    backgroundColor: AppColors.purple,
   },
   dayCircleToday: {
     borderColor: AppColors.purple,

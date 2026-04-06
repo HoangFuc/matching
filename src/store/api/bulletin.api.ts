@@ -1,7 +1,7 @@
+import { getCommonHeaders } from '@/src/services/apiHeaderService';
 import { API_BASE_URL } from '@env';
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { createBaseQuery } from './baseQuery';
-import { getCommonHeaders } from '@/src/services/apiHeaderService';
 
 import {
   IBulletinComment,
@@ -60,16 +60,42 @@ export const bulletinApi = createApi({
       }),
       transformResponse: (response: any): IToggleLikeResponse =>
         response?.data ?? response,
-      invalidatesTags: (_result, _error, postId) => [
-        { type: 'BulletinDetail', id: postId },
-      ],
+      async onQueryStarted(postId, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          bulletinApi.util.updateQueryData(
+            'getBulletinDetail',
+            postId,
+            draft => {
+              draft.isLiked = !draft.isLiked;
+              draft.likeCount = draft.isLiked
+                ? draft.likeCount + 1
+                : draft.likeCount - 1;
+            },
+          ),
+        );
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            bulletinApi.util.updateQueryData(
+              'getBulletinDetail',
+              postId,
+              draft => {
+                draft.isLiked = data.isLiked;
+                draft.likeCount = data.likeCount;
+              },
+            ),
+          );
+        } catch {
+          patchResult.undo();
+        }
+      },
     }),
 
     //---------------------------------------
     getComments: builder.query<IBulletinCommentListResponse, string>({
       query: postId => `/posts/${postId}/comments`,
       transformResponse: (response: any): IBulletinCommentListResponse =>
-        response,
+        response?.data ?? response,
       providesTags: (_result, _error, postId) => [
         { type: 'Comments', id: postId },
       ],
@@ -145,7 +171,7 @@ export const bulletinApi = createApi({
           }
 
           const commonHeaders = await getCommonHeaders();
-          const { 'Content-Type': _ct, ...headersWithoutCT } = commonHeaders;
+          const { ...headersWithoutCT } = commonHeaders;
           const res = await fetch(`${API_BASE_URL}/bulletins`, {
             method: 'POST',
             headers: headersWithoutCT,

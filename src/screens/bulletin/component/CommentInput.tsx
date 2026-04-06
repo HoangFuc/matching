@@ -20,9 +20,19 @@ interface IProps {
   onSend: (text: string, parentId?: string) => void;
 }
 
-const CommentInput: React.FC<IProps> = ({ replyTo, onCancelReply, onSend }) => {
+export interface ICommentInputRef {
+  focus: () => void;
+}
+
+const CommentInput = React.forwardRef<ICommentInputRef, IProps>(
+  ({ replyTo, onCancelReply, onSend }, ref) => {
   const [commentText, setCommentText] = React.useState('');
   const inputRef = React.useRef<TextInput>(null);
+
+  //---------------------------------------
+  React.useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+  }));
 
   //---------------------------------------
   React.useEffect(() => {
@@ -73,7 +83,7 @@ const CommentInput: React.FC<IProps> = ({ replyTo, onCancelReply, onSend }) => {
       </View>
     </SafeAreaView>
   );
-};
+});
 
 export const MemoCommentInput = React.memo(CommentInput);
 

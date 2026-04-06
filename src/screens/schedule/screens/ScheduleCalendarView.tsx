@@ -79,6 +79,7 @@ const ScheduleCalendarView: React.FC = () => {
         <MemoEventCardContent
           handlePressBack={handleDetailBack}
           dateKey={detailDateKey}
+          selectedFilterTypes={selectedFilterTypes}
         />
       ) : (
         <View style={styles.content}>

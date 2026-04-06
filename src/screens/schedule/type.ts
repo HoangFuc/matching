@@ -5,6 +5,7 @@ export type TScheduleMode = 'schedule' | 'attendance';
 
 //---------------------------------------
 export interface ISchedule {
+  id: string;
   companyId: string;
   createdBy: string;
   scheduleType: string;

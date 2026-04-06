@@ -17,14 +17,16 @@ import { useHasCompany } from '@/src/hooks/useHasCompany';
 import { convertSchedulesToEvents } from '@/src/utils/schedule.helper';
 import { formatDateHeader } from '@/src/utils/calendar.helper';
 import { MemoEventCard } from './EventCard';
+import { TScheduleType } from './ScheduleTypePicker';
 
 interface IProps {
   handlePressBack: () => void;
   dateKey: string;
+  selectedFilterTypes?: TScheduleType[];
 }
 
 const EventCardContent: React.FC<IProps> = props => {
-  const { handlePressBack, dateKey } = props;
+  const { handlePressBack, dateKey, selectedFilterTypes } = props;
 
   const hasCompany = useHasCompany();
 
@@ -35,8 +37,12 @@ const EventCardContent: React.FC<IProps> = props => {
   //---------------------------------------
   const events = React.useMemo(() => {
     const eventsMap = convertSchedulesToEvents(schedules);
-    return eventsMap[dateKey] || [];
-  }, [schedules, dateKey]);
+    const dayEvents = eventsMap[dateKey] || [];
+    if (!selectedFilterTypes || selectedFilterTypes.length === 0) return dayEvents;
+    return dayEvents.filter(e =>
+      selectedFilterTypes.includes(e.type as TScheduleType),
+    );
+  }, [schedules, dateKey, selectedFilterTypes]);
 
   return (
     <View style={styles.content}>

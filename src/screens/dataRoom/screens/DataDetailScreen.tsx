@@ -1,6 +1,7 @@
 import React from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -42,6 +43,7 @@ type TRoute = RouteProp<DataRoomStackParamList, 'DataRoomDetail'>;
 const DataDetailScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
   const route = useRoute<TRoute>();
+  const { bottom } = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const viewMode = useAppSelector(state => state.dataRoom.viewMode);
 
@@ -86,19 +88,31 @@ const DataDetailScreen: React.FC = () => {
   }, [dispatch]);
 
   //---------------------------------------
+  const handlePressFile = React.useCallback(
+    (file: IFile) => {
+      navigation.navigate('DataRoomFileViewer', {
+        fileName: file.originalName,
+        downloadUrl: file.downloadUrl,
+        mimeType: file.mimeType,
+      });
+    },
+    [navigation],
+  );
+
+  //---------------------------------------
   const renderListItem = React.useCallback(
     ({ item }: { item: IFile }) => (
-      <MemoFileListItem item={item} onPressMore={openActionSheet} />
+      <MemoFileListItem item={item} onPressMore={openActionSheet} onPress={handlePressFile} />
     ),
-    [openActionSheet],
+    [openActionSheet, handlePressFile],
   );
 
   //---------------------------------------
   const renderGridItem = React.useCallback(
     ({ item }: { item: IFile }) => (
-      <MemoFileGridItem item={item} onPressMore={openActionSheet} />
+      <MemoFileGridItem item={item} onPressMore={openActionSheet} onPress={handlePressFile} />
     ),
-    [openActionSheet],
+    [openActionSheet, handlePressFile],
   );
 
   //---------------------------------------
@@ -214,7 +228,7 @@ const DataDetailScreen: React.FC = () => {
 
         {/* Upload Progress Bar */}
         {progress && (
-          <View style={styles.progressOverlay}>
+          <View style={[styles.progressOverlay, { bottom: ms(32) + bottom }]}>
             <MemoUploadProgressBar
               progress={progress}
               onCancel={cancelUpload}
@@ -319,8 +333,7 @@ const styles = StyleSheet.create({
   },
   progressOverlay: {
     position: 'absolute',
-    bottom: ms(32),
-    left: 0,
+    left: ms(16),
     right: ms(82),
     zIndex: 10,
   },

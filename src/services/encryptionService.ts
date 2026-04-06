@@ -90,22 +90,57 @@ export const encryptFile = async (
   const authTag = cipher.getAuthTag();
 
   // Combine encrypted chunks
-  const encrypted = new Uint8Array(updated.length + final.length);
-  encrypted.set(new Uint8Array(updated), 0);
-  encrypted.set(new Uint8Array(final), updated.length);
+  const ciphertext = new Uint8Array(updated.length + final.length);
+  ciphertext.set(new Uint8Array(updated), 0);
+  ciphertext.set(new Uint8Array(final), updated.length);
 
-  // Write encrypted data to .enc file
+  const authTagBytes = new Uint8Array(authTag);
+
+  // Write [IV 12b][ciphertext][authTag 16b] to .enc file — self-describing format
+  const fileContent = new Uint8Array(iv.length + ciphertext.length + authTagBytes.length);
+  fileContent.set(iv, 0);
+  fileContent.set(ciphertext, iv.length);
+  fileContent.set(authTagBytes, iv.length + ciphertext.length);
+
   const encryptedFilePath = cleanPath.replace(/\.[^.]+$/, '.enc');
   await ReactNativeBlobUtil.fs.writeFile(
     encryptedFilePath,
-    uint8ArrayToBase64(encrypted),
+    uint8ArrayToBase64(fileContent),
     'base64',
   );
 
   return {
     encryptedFilePath,
     iv: base64Iv,
-    authTag: uint8ArrayToBase64(new Uint8Array(authTag)),
+    authTag: uint8ArrayToBase64(authTagBytes),
     algorithm: 'aes-256-gcm',
+  };
+};
+
+//---------------------------------------
+const IV_LENGTH = 12;
+const AUTH_TAG_LENGTH = 16;
+
+/**
+ * Parse IV and authTag from a self-describing .enc file: [IV 12b][ciphertext][authTag 16b].
+ * Returns base64-encoded iv and authTag.
+ */
+export const parseEncFileHeaders = async (
+  filePath: string,
+): Promise<{ iv: string; authTag: string }> => {
+  const cleanPath = filePath.replace('file://', '');
+  const fileBase64 = await ReactNativeBlobUtil.fs.readFile(cleanPath, 'base64');
+  const bytes = base64ToUint8Array(fileBase64);
+
+  if (bytes.length < IV_LENGTH + AUTH_TAG_LENGTH) {
+    throw new Error('Invalid .enc file: too small to contain IV and authTag');
+  }
+
+  const iv = bytes.slice(0, IV_LENGTH);
+  const authTag = bytes.slice(bytes.length - AUTH_TAG_LENGTH);
+
+  return {
+    iv: uint8ArrayToBase64(iv),
+    authTag: uint8ArrayToBase64(authTag),
   };
 };

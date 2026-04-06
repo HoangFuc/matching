@@ -5,6 +5,8 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
 import Toast from 'react-native-toast-message';
 
+import { API_BASE_URL } from '@env';
+
 import { AppText } from '@/src/component/AppText';
 import { MemoBaseCard } from '@/src/component/BaseCard';
 import { AppColors } from '@/src/constants/colors';
@@ -20,6 +22,7 @@ import { getToken } from '@/src/services/tokenService';
 interface IProps {
   filePath: string;
   fileName: string;
+  recordId?: string;
   waveformData?: number[];
   durationMs?: number;
 }
@@ -73,6 +76,7 @@ const isRemoteUrl = (path: string) => /^https?:\/\//i.test(path);
 const RecordedAudioCard: React.FC<IProps> = ({
   filePath,
   fileName,
+  recordId,
   waveformData,
   durationMs: initialDurationMs,
 }) => {
@@ -133,12 +137,13 @@ const RecordedAudioCard: React.FC<IProps> = ({
   const cachedPathRef = React.useRef<string | null>(null);
 
   //---------------------------------------
-  const resolveLocalPath = React.useCallback(async (): Promise<string> => {
-    if (!isRemoteUrl(filePath)) {
-      return filePath;
+  const resolveLocalPath = React.useCallback(async (urlOverride?: string): Promise<string> => {
+    const url = urlOverride ?? filePath;
+    if (!isRemoteUrl(url)) {
+      return url;
     }
 
-    if (cachedPathRef.current) {
+    if (!urlOverride && cachedPathRef.current) {
       const exists = await ReactNativeBlobUtil.fs.exists(cachedPathRef.current);
       if (exists) {
         return cachedPathRef.current;
@@ -148,12 +153,13 @@ const RecordedAudioCard: React.FC<IProps> = ({
 
     setIsDownloading(true);
     try {
-      const ext = fileName.split('.').pop() || 'm4a';
+      const rawExt = fileName.split('.').pop()?.toLowerCase() || 'm4a';
+      const ext = rawExt === 'enc' ? 'm4a' : rawExt;
       const cachePath = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/audio_${Date.now()}.${ext}`;
 
-      console.log('[Audio] Downloading from:', filePath);
+      console.log('[Audio] Downloading from:', url);
 
-      const isPresigned = filePath.includes('Signature=');
+      const isPresigned = url.includes('Signature=');
       const headers: Record<string, string> = {};
       if (!isPresigned) {
         const token = await getToken();
@@ -162,7 +168,7 @@ const RecordedAudioCard: React.FC<IProps> = ({
 
       const res = await ReactNativeBlobUtil.config({ path: cachePath }).fetch(
         'GET',
-        filePath,
+        url,
         headers,
       );
 
@@ -239,13 +245,15 @@ const RecordedAudioCard: React.FC<IProps> = ({
       } else if (hasEnded) {
         setHasEnded(false);
         setCurrentPositionMs(0);
-        const localPath = await resolveLocalPath();
+        const streamUrl = recordId ? `${API_BASE_URL}/meeting-logs/recordings/${recordId}/stream` : undefined;
+        const localPath = await resolveLocalPath(streamUrl);
         await startPlayback(localPath);
       } else if (hasStarted) {
         await audioPlayer.resumePlayer();
         setIsPlaying(true);
       } else {
-        const localPath = await resolveLocalPath();
+        const streamUrl = recordId ? `${API_BASE_URL}/meeting-logs/recordings/${recordId}/stream` : undefined;
+        const localPath = await resolveLocalPath(streamUrl);
         await startPlayback(localPath);
       }
     } catch (err) {
@@ -253,7 +261,7 @@ const RecordedAudioCard: React.FC<IProps> = ({
       setHasStarted(false);
       Toast.show({ type: 'error', text1: '재생에 실패했습니다' });
     }
-  }, [isPlaying, hasEnded, hasStarted, resolveLocalPath, startPlayback]);
+  }, [isPlaying, hasEnded, hasStarted, recordId, resolveLocalPath, startPlayback]);
 
   //---------------------------------------
   const handleSeekBackward = React.useCallback(async () => {

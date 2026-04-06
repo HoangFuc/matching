@@ -6,6 +6,7 @@ import type {DataRoomStackParamList} from '../interface/tab.interface';
 import {MemoDataRoomScreen} from '../screens/dataRoom/screens/DataRoomScreen';
 import {MemoDataDetailScreen} from '../screens/dataRoom/screens/DataDetailScreen';
 import {MemoSearchScreen} from '../screens/dataRoom/screens/SearchScreen';
+import {MemoDataRoomFileViewerScreen} from '../screens/dataRoom/screens/DataRoomFileViewerScreen';
 
 const Stack = createNativeStackNavigator<DataRoomStackParamList>();
 
@@ -15,6 +16,7 @@ const DataRoomStack: React.FC = () => {
       <Stack.Screen name="DataRoomMain" component={MemoDataRoomScreen} />
       <Stack.Screen name="DataRoomDetail" component={MemoDataDetailScreen} />
       <Stack.Screen name="DataRoomSearch" component={MemoSearchScreen} />
+      <Stack.Screen name="DataRoomFileViewer" component={MemoDataRoomFileViewerScreen} />
     </Stack.Navigator>
   );
 };

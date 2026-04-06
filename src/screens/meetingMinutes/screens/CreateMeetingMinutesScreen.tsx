@@ -1,7 +1,16 @@
 import React from 'react';
-import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
-import { BlurView } from '@react-native-community/blur';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
+import Postcode from '@actbase/react-daum-postcode';
 import {
   errorCodes,
   isErrorWithCode,
@@ -9,14 +18,12 @@ import {
   types,
 } from '@react-native-documents/picker';
 import { useNavigation } from '@react-navigation/native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
-import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { moderateScale as ms } from 'react-native-size-matters/extend';
-import Postcode from '@actbase/react-daum-postcode';
+
 import { MemoAppButton } from '@/src/component/AppButton';
+import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppText } from '@/src/component/AppText';
 import { MemoDropdownButton } from '@/src/component/DropdownButton';
 import { MemoPhoneInput, stripDashes } from '@/src/component/PhoneInput';
@@ -24,7 +31,6 @@ import { RHFFormInput } from '@/src/component/RHFFormInput';
 import { MemoScreenBody } from '@/src/component/ScreenBody';
 import { MemoScreenHeader } from '@/src/component/ScreenHeader';
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
-import { AudioService } from '@/src/services/audioRecorderService';
 import { AppColors } from '@/src/constants/colors';
 import { Calendar } from '@/src/constants/icons';
 import {
@@ -33,6 +39,7 @@ import {
   TUploadFile,
 } from '@/src/interface/meetingMinutes.interface';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
+import { AudioService } from '@/src/services/audioRecorderService';
 import { formatFileSize } from '@/src/utils/format';
 import { MemoFileUploadSection } from '../components/FileUploadSection';
 import { MemoMeetingTypePicker } from '../components/MeetingTypePicker';
@@ -56,13 +63,12 @@ interface IFormData {
 
 const CreateMeetingMinutesScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
-  const insets = useSafeAreaInsets();
 
   //---------------------------------------
   const { uploadMeetingLog } = useMeetingLogUploadWithProgress();
 
   //---------------------------------------
-  const { control, handleSubmit, watch } = useForm<IFormData>({
+  const { control, handleSubmit, watch, setValue } = useForm<IFormData>({
     defaultValues: {
       meetingType: '오프라인',
       date: '',
@@ -234,13 +240,15 @@ const CreateMeetingMinutesScreen: React.FC = () => {
       <MemoScreenHeader title="미팅록 작성" />
 
       <MemoScreenBody>
-        <KeyboardAwareScrollView
+        <KeyboardAvoidingView
           style={styles.flex1}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          enableOnAndroid
-          extraScrollHeight={ms(20)}
+          keyboardDismissMode="on-drag"
         >
           <View>
             <AppText variant="body7" color={AppColors.gray90}>
@@ -324,54 +332,18 @@ const CreateMeetingMinutesScreen: React.FC = () => {
             <Controller
               control={control}
               name="address"
-              render={({ field: { value, onChange } }) => (
-                <>
-                  <Pressable
-                    style={styles.dropdownBtn}
-                    onPress={() => setShowPostcode(true)}
+              render={({ field: { value } }) => (
+                <Pressable
+                  style={styles.dropdownBtn}
+                  onPress={() => setShowPostcode(true)}
+                >
+                  <AppText
+                    variant="body7"
+                    color={value ? AppColors.gray100 : AppColors.gray40}
                   >
-                    <AppText
-                      variant="body7"
-                      color={value ? AppColors.gray100 : AppColors.gray40}
-                    >
-                      {value || '방문 장소를 입력하세요'}
-                    </AppText>
-                  </Pressable>
-
-                  <Modal
-                    visible={showPostcode}
-                    transparent
-                    animationType="slide"
-                    statusBarTranslucent
-                    onRequestClose={() => setShowPostcode(false)}
-                  >
-                    <BlurView style={styles.postcodeOverlay} blurType="dark" blurAmount={8}>
-                      <Pressable
-                        style={{ flex: 1 }}
-                        onPress={() => setShowPostcode(false)}
-                      />
-                      <View style={styles.postcodeSheet}>
-                        <View style={styles.postcodeHandleBar} />
-                        <AppText
-                          variant="heading3"
-                          color={AppColors.gray100}
-                          style={styles.postcodeTitle}
-                        >
-                          주소 검색
-                        </AppText>
-                        <Postcode
-                          style={styles.postcode}
-                          jsOptions={{ animation: true }}
-                          onSelected={data => {
-                            onChange(data.address);
-                            setShowPostcode(false);
-                          }}
-                          onError={() => setShowPostcode(false)}
-                        />
-                      </View>
-                    </BlurView>
-                  </Modal>
-                </>
+                    {value || '방문 장소를 입력하세요'}
+                  </AppText>
+                </Pressable>
               )}
             />
           </View>
@@ -429,14 +401,43 @@ const CreateMeetingMinutesScreen: React.FC = () => {
               onRemoveFile={handleRemoveFile}
             />
           </View>
-        </KeyboardAwareScrollView>
+        </ScrollView>
+        </KeyboardAvoidingView>
 
-        <View
-          style={[
-            styles.bottomContainer,
-            { marginBottom: Math.max(insets.bottom, ms(10)) },
-          ]}
+        <Modal
+          visible={showPostcode}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowPostcode(false)}
         >
+          <View style={styles.postcodeContainer}>
+            <Pressable
+              style={styles.postcodeOverlay}
+              onPress={() => setShowPostcode(false)}
+            />
+            <View style={styles.postcodeSheet}>
+              <View style={styles.postcodeHandleBar} />
+              <AppText
+                variant="heading3"
+                color={AppColors.gray100}
+                style={styles.postcodeTitle}
+              >
+                주소 검색
+              </AppText>
+              <Postcode
+                style={styles.postcode}
+                jsOptions={{ animation: true }}
+                onSelected={data => {
+                  setValue('address', data.address);
+                  setShowPostcode(false);
+                }}
+                onError={() => setShowPostcode(false)}
+              />
+            </View>
+          </View>
+        </Modal>
+
+        <View style={[styles.bottomContainer, { marginBottom: ms(10) }]}>
           <MemoAppButton
             label="등록"
             onPress={handleSubmit(onSubmit)}
@@ -488,9 +489,13 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.gray10,
     marginTop: ms(4),
   },
+  postcodeContainer: {
+    flex: 1,
+    justifyContent: 'flex-end' as const,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   postcodeOverlay: {
     flex: 1,
-    justifyContent: 'flex-end',
   },
   postcodeSheet: {
     backgroundColor: AppColors.white,

@@ -1,5 +1,12 @@
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import {
@@ -8,7 +15,7 @@ import {
   pick,
   types,
 } from '@react-native-documents/picker';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
@@ -38,7 +45,6 @@ import {
 } from '@/src/interface/meetingMinutes.interface';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
 import { MemoUploadProgressBar } from '@/src/screens/dataRoom/components/UploadProgressBar';
-import { AudioService } from '@/src/services/audioRecorderService';
 import { useGetMeetingLogDetailQuery } from '@/src/store/api/meetingLog.api';
 import { useAppSelector } from '@/src/store/hooks';
 import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
@@ -117,7 +123,11 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   const { id } = route.params;
 
   //---------------------------------------
-  const { data: item, refetch } = useGetMeetingLogDetailQuery(id);
+  const {
+    data: item,
+    isLoading,
+    refetch,
+  } = useGetMeetingLogDetailQuery(id);
 
   //---------------------------------------
   const uploadProgress = useAppSelector(
@@ -129,6 +139,13 @@ const MeetingMinutesDetailScreen: React.FC = () => {
     cancelUpload,
     dismiss: dismissUpload,
   } = useMeetingLogUploadWithProgress();
+
+  //---------------------------------------
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   //---------------------------------------
   const isUploadCompleted = uploadProgress?.status === 'completed';
@@ -159,47 +176,6 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   //---------------------------------------
   const isPickingRef = React.useRef(false);
   const [uploadFiles, setUploadFiles] = React.useState<TUploadFile[]>([]);
-
-  //---------------------------------------
-  const getAudioDuration = React.useCallback(
-    async (uri: string): Promise<number> => {
-      try {
-        const durationMs = await new Promise<number>(resolve => {
-          let resolved = false;
-          const cleanup = () => {
-            if (!resolved) {
-              resolved = true;
-              AudioService.stopPlayer().catch(() => {});
-              AudioService.removePlayBackListener();
-            }
-          };
-
-          const timeout = setTimeout(() => {
-            cleanup();
-            resolve(0);
-          }, 5000);
-
-          AudioService.addPlayBackListener(e => {
-            if (e.duration > 0) {
-              clearTimeout(timeout);
-              cleanup();
-              resolve(e.duration);
-            }
-          });
-
-          AudioService.startPlayer(uri).catch(() => {
-            clearTimeout(timeout);
-            cleanup();
-            resolve(0);
-          });
-        });
-        return durationMs;
-      } catch {
-        return 0;
-      }
-    },
-    [],
-  );
 
   //---------------------------------------
   const handlePickFile = React.useCallback(async () => {
@@ -233,16 +209,6 @@ const MeetingMinutesDetailScreen: React.FC = () => {
         type: file.type ?? 'audio/m4a',
       };
 
-      // Get duration (best effort — never block upload)
-      let durationSeconds: number | undefined;
-      try {
-        const durationMs = await getAudioDuration(pickedFile.uri);
-        durationSeconds =
-          durationMs > 0 ? Math.round(durationMs / 1000) : undefined;
-      } catch (durErr) {
-        console.warn('[MeetingMinutes] getAudioDuration failed:', durErr);
-      }
-
       setUploadFiles([
         {
           id: `${Date.now()}`,
@@ -255,7 +221,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
         },
       ]);
 
-      await uploadRecordingToExisting(item.id, pickedFile, durationSeconds);
+      await uploadRecordingToExisting(item.id, pickedFile);
     } catch (err) {
       if (isErrorWithCode(err)) {
         if (err.code !== errorCodes.OPERATION_CANCELED) {
@@ -267,7 +233,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
     } finally {
       isPickingRef.current = false;
     }
-  }, [item, uploadRecordingToExisting, getAudioDuration]);
+  }, [item, uploadRecordingToExisting]);
 
   //---------------------------------------
   const handleRemoveFile = React.useCallback((fileId: string) => {
@@ -279,8 +245,14 @@ const MeetingMinutesDetailScreen: React.FC = () => {
     <AppSafeAreaView style={styles.safeArea}>
       <MemoScreenHeader title="미팅록 세부 정보" />
 
-      {item && (
-        <MemoScreenBody>
+      <MemoScreenBody>
+        {isLoading || !item ? (
+          <ActivityIndicator
+            style={styles.loader}
+            color={AppColors.purple}
+            size="large"
+          />
+        ) : (
           <ScrollView
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
@@ -324,6 +296,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
             {recordings?.map(rec => (
               <MemoRecordedAudioCard
                 key={rec.id}
+                recordId={rec.id}
                 filePath={rec.playUrl}
                 fileName={fixBrokenUtf8Encoding(rec.fileName)}
                 durationMs={
@@ -347,8 +320,8 @@ const MeetingMinutesDetailScreen: React.FC = () => {
               </View>
             )}
           </ScrollView>
-        </MemoScreenBody>
-      )}
+        )}
+      </MemoScreenBody>
     </AppSafeAreaView>
   );
 };
@@ -397,5 +370,10 @@ const styles = StyleSheet.create({
   },
   uploadSection: {
     gap: ms(8),
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

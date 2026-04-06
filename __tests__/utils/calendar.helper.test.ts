@@ -30,11 +30,8 @@ describe('getCalendarDays', () => {
 
   it('handles January (wraps year for prev month)', () => {
     const cells = getCalendarDays(2025, 0); // January 2025
-    const prevMonthCells = cells.filter(c => !c.isCurrentMonth && c.month < 0);
     // January 2025 starts on Wednesday (day 3), prev month cells should have year 2024
-    const decCells = cells.filter(
-      c => !c.isCurrentMonth && c.year === 2024,
-    );
+    const decCells = cells.filter(c => !c.isCurrentMonth && c.year === 2024);
     expect(decCells.length).toBeGreaterThanOrEqual(0);
   });
 

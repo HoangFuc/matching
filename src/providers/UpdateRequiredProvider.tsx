@@ -1,42 +1,37 @@
-import React, {createContext, useCallback, useEffect, useState} from 'react';
-import {Linking, Modal, Pressable, StyleSheet, View} from 'react-native';
-import {BlurView} from '@react-native-community/blur';
-import {ms} from 'react-native-size-matters/extend';
+import React from 'react';
+import { Linking, Modal, Pressable, StyleSheet, View } from 'react-native';
 
-import {AppText} from '@/src/component/AppText';
-import {AppColors} from '@/src/constants/colors';
-import {setGlobalShowUpdateRequired} from '@/src/utils/updateRequiredDispatcher';
+import { BlurView } from '@react-native-community/blur';
+import { ms } from 'react-native-size-matters/extend';
 
-const UpdateRequiredProvider: React.FC<{children: React.ReactNode}> = ({
+import { AppText } from '@/src/component/AppText';
+import { AppColors } from '@/src/constants/colors';
+import { setGlobalShowUpdateRequired } from '@/src/utils/updateRequiredDispatcher';
+
+const UpdateRequiredProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [visible, setVisible] = useState(false);
-  const [updateUrl, setUpdateUrl] = useState('');
+  const [visible, setVisible] = React.useState(false);
+  const [updateUrl, setUpdateUrl] = React.useState('');
 
   //---------------------------------------
 
-  const handleShow = useCallback((url: string) => {
+  const handleShow = React.useCallback((url: string) => {
     setUpdateUrl(url);
     setVisible(true);
   }, []);
 
   //---------------------------------------
 
-  useEffect(() => {
-    setGlobalShowUpdateRequired(handleShow);
-  }, [handleShow]);
-
-  //---------------------------------------
-
-  const handleReject = useCallback(() => {
+  const handleReject = React.useCallback(() => {
     setVisible(false);
   }, []);
 
   //---------------------------------------
 
-  const handleUpgrade = useCallback(() => {
+  const handleUpgrade = React.useCallback(() => {
     if (updateUrl) {
       Linking.openURL(updateUrl);
     }
@@ -44,6 +39,10 @@ const UpdateRequiredProvider: React.FC<{children: React.ReactNode}> = ({
   }, [updateUrl]);
 
   //---------------------------------------
+
+  React.useEffect(() => {
+    setGlobalShowUpdateRequired(handleShow);
+  }, [handleShow]);
 
   return (
     <>
@@ -53,21 +52,24 @@ const UpdateRequiredProvider: React.FC<{children: React.ReactNode}> = ({
         visible={visible}
         transparent
         animationType="fade"
-        onRequestClose={handleReject}>
+        onRequestClose={handleReject}
+      >
         <BlurView style={styles.blur} blurType="dark" blurAmount={8}>
           <View style={styles.overlay}>
             <View style={styles.modal}>
               <AppText
                 variant="heading3"
                 color={AppColors.gray100}
-                style={styles.title}>
+                style={styles.title}
+              >
                 앱 업데이트 필요
               </AppText>
 
               <AppText
                 variant="body7"
                 color={AppColors.gray70}
-                style={styles.message}>
+                style={styles.message}
+              >
                 새로운 버전이 출시되었습니다.{'\n'}최신 버전으로 업데이트해
                 주세요.
               </AppText>
@@ -75,7 +77,8 @@ const UpdateRequiredProvider: React.FC<{children: React.ReactNode}> = ({
               <View style={styles.buttonRow}>
                 <Pressable
                   style={[styles.button, styles.rejectButton]}
-                  onPress={handleReject}>
+                  onPress={handleReject}
+                >
                   <AppText variant="body6" color={AppColors.gray70}>
                     닫기
                   </AppText>
@@ -83,7 +86,8 @@ const UpdateRequiredProvider: React.FC<{children: React.ReactNode}> = ({
 
                 <Pressable
                   style={[styles.button, styles.upgradeButton]}
-                  onPress={handleUpgrade}>
+                  onPress={handleUpgrade}
+                >
                   <AppText variant="body6" color={AppColors.white}>
                     업데이트
                   </AppText>

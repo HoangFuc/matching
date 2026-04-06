@@ -7,10 +7,12 @@ import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { AppColors } from '@/src/constants/colors';
 import { MemoEventCardContent } from './EventCardContent';
 import { MemoScheduleHeader } from './ScheduleHeader';
+import { TScheduleType } from './ScheduleTypePicker';
 
 type ScheduleDetailParams = {
   ScheduleDetail: {
     dateKey: string;
+    filterTypes?: TScheduleType[];
   };
 };
 
@@ -21,6 +23,8 @@ const ScheduleDetail: React.FC = () => {
   const { dateKey } = route.params;
 
   //---------------------------------------
+  const filterTypes = route.params.filterTypes;
+
   const handlePressBack = React.useCallback(() => {
     navigation.goBack();
   }, [navigation]);
@@ -29,7 +33,11 @@ const ScheduleDetail: React.FC = () => {
     <AppSafeAreaView style={styles.safeArea}>
       <MemoScheduleHeader onPressFilter={() => {}} mode="detail" />
 
-      <MemoEventCardContent handlePressBack={handlePressBack} dateKey={dateKey} />
+      <MemoEventCardContent
+        handlePressBack={handlePressBack}
+        dateKey={dateKey}
+        selectedTypes={filterTypes}
+      />
     </AppSafeAreaView>
   );
 };

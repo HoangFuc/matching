@@ -39,14 +39,32 @@ export const meetingScheduleManagementApi = createApi({
         const inner = response?.data;
         return {
           data: inner?.data ?? response?.data ?? [],
-          meta: inner?.meta ??
-            response?.meta ?? {
+          meta:
+            inner?.meta ??
+            response?.meta ??
+            ({
               page: 1,
               limit: 20,
               total: 0,
               totalPages: 0,
-            },
+            } as IMeetingScheduleListResponse['meta']),
         };
+      },
+      serializeQueryArgs: ({ queryArgs: { page: _page, ...rest } }) => rest,
+
+      merge: (currentCache, newData) => {
+        if (newData.meta.page === 1) {
+          return newData;
+        }
+
+        return {
+          data: [...currentCache.data, ...newData.data],
+          meta: newData.meta,
+        };
+      },
+
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg;
       },
       providesTags: ['MeetingScheduleManagement'],
     }),

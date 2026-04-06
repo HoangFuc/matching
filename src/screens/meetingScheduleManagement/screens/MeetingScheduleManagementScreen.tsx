@@ -7,6 +7,8 @@ import {
   View,
 } from 'react-native';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { AppSafeAreaView } from '@/src/component/AppSafeAreaView';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -41,6 +43,7 @@ const LIMIT = 20;
 
 const MeetingScheduleManagementScreen: React.FC = () => {
   const navigation = useNavigation<TNav>();
+  const insets = useSafeAreaInsets();
   const [page, setPage] = React.useState(1);
   const [activeTab, setActiveTab] = React.useState<MeetingScheduleScopeEnum>(
     MeetingScheduleScopeEnum.COMPANY,
@@ -138,7 +141,7 @@ const MeetingScheduleManagementScreen: React.FC = () => {
 
   //---------------------------------------
   const keyExtractor = React.useCallback(
-    (item: IMeetingScheduleManagement) => item.id,
+    (item: IMeetingScheduleManagement) => item.id.toString(),
     [],
   );
 
@@ -203,7 +206,10 @@ const MeetingScheduleManagementScreen: React.FC = () => {
             <Pressable
               key={tab}
               style={[styles.tab, activeTab === tab && styles.tabActive]}
-              onPress={() => { setActiveTab(tab); setPage(1); }}
+              onPress={() => {
+                setActiveTab(tab);
+                setPage(1);
+              }}
             >
               <AppText
                 variant={activeTab === tab ? 'body5' : 'body7'}
@@ -241,7 +247,10 @@ const MeetingScheduleManagementScreen: React.FC = () => {
           data={meetingSchedules}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[
+            styles.list,
+            { paddingBottom: insets.bottom + ms(16) },
+          ]}
           showsVerticalScrollIndicator={false}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
@@ -249,6 +258,7 @@ const MeetingScheduleManagementScreen: React.FC = () => {
           onRefresh={handleRefresh}
           refreshing={isFetching && page === 1}
           maxToRenderPerBatch={10}
+          initialNumToRender={10}
           windowSize={5}
           removeClippedSubviews={true}
         />

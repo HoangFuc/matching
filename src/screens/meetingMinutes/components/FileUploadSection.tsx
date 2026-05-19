@@ -86,7 +86,7 @@ const FileUploadSection: React.FC<IProps> = ({
             color={AppColors.gray40}
             style={styles.formatsText}
           >
-            .m4a, .amr, .mp3, .wav, .ogg, .flac
+            .m4a, .amr, .mp3, .wav, .ogg, .flac, .enc
           </AppText>
 
           <AppText variant="detail" color={AppColors.gray40}>

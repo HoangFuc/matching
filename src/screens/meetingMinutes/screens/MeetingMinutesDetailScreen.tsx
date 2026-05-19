@@ -15,7 +15,11 @@ import {
   pick,
   types,
 } from '@react-native-documents/picker';
-import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
@@ -45,6 +49,7 @@ import {
 } from '@/src/interface/meetingMinutes.interface';
 import { MeetingMinutesStackParamList } from '@/src/interface/tab.interface';
 import { MemoUploadProgressBar } from '@/src/screens/dataRoom/components/UploadProgressBar';
+import { AudioService } from '@/src/services/audioRecorderService';
 import { useGetMeetingLogDetailQuery } from '@/src/store/api/meetingLog.api';
 import { useAppSelector } from '@/src/store/hooks';
 import { fixBrokenUtf8Encoding } from '@/src/utils/fixBrokenUtf8Encoding';
@@ -123,11 +128,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   const { id } = route.params;
 
   //---------------------------------------
-  const {
-    data: item,
-    isLoading,
-    refetch,
-  } = useGetMeetingLogDetailQuery(id);
+  const { data: item, isLoading, refetch } = useGetMeetingLogDetailQuery(id);
 
   //---------------------------------------
   const uploadProgress = useAppSelector(
@@ -178,6 +179,40 @@ const MeetingMinutesDetailScreen: React.FC = () => {
   const [uploadFiles, setUploadFiles] = React.useState<TUploadFile[]>([]);
 
   //---------------------------------------
+  const getAudioDuration = React.useCallback(
+    async (uri: string): Promise<number> => {
+      try {
+        const durationMs = await new Promise<number>(resolve => {
+          const timeout = setTimeout(() => {
+            AudioService.stopPlayer().catch(() => {});
+            AudioService.removePlayBackListener();
+            resolve(0);
+          }, 5000);
+
+          AudioService.addPlayBackListener(e => {
+            if (e.duration > 0) {
+              clearTimeout(timeout);
+              AudioService.stopPlayer().catch(() => {});
+              AudioService.removePlayBackListener();
+              resolve(e.duration);
+            }
+          });
+
+          AudioService.startPlayer(uri).catch(() => {
+            clearTimeout(timeout);
+            AudioService.removePlayBackListener();
+            resolve(0);
+          });
+        });
+        return durationMs;
+      } catch {
+        return 0;
+      }
+    },
+    [],
+  );
+
+  //---------------------------------------
   const handlePickFile = React.useCallback(async () => {
     if (isPickingRef.current || !item) return;
     isPickingRef.current = true;
@@ -189,12 +224,6 @@ const MeetingMinutesDetailScreen: React.FC = () => {
 
       const file = result[0];
       if (!file) return;
-
-      const fileName = file.name ?? '';
-      if (!fileName.toLowerCase().endsWith('.enc')) {
-        Alert.alert('', '.enc 파일만 업로드할 수 있습니다.');
-        return;
-      }
 
       const fileSizeBytes = file.size ?? 0;
       const MAX_SIZE = 100 * 1024 * 1024;
@@ -209,6 +238,15 @@ const MeetingMinutesDetailScreen: React.FC = () => {
         type: file.type ?? 'audio/m4a',
       };
 
+      let durationSeconds: number | undefined;
+      try {
+        const durationMs = await getAudioDuration(pickedFile.uri);
+        durationSeconds =
+          durationMs > 0 ? Math.round(durationMs / 1000) : undefined;
+      } catch (durErr) {
+        console.warn('[MeetingMinutesDetail] getAudioDuration failed:', durErr);
+      }
+
       setUploadFiles([
         {
           id: `${Date.now()}`,
@@ -218,10 +256,11 @@ const MeetingMinutesDetailScreen: React.FC = () => {
           status: 'done' as const,
           uri: pickedFile.uri,
           type: pickedFile.type,
+          durationSeconds,
         },
       ]);
 
-      await uploadRecordingToExisting(item.id, pickedFile);
+      await uploadRecordingToExisting(item.id, pickedFile, durationSeconds);
     } catch (err) {
       if (isErrorWithCode(err)) {
         if (err.code !== errorCodes.OPERATION_CANCELED) {
@@ -233,7 +272,7 @@ const MeetingMinutesDetailScreen: React.FC = () => {
     } finally {
       isPickingRef.current = false;
     }
-  }, [item, uploadRecordingToExisting]);
+  }, [item, uploadRecordingToExisting, getAudioDuration]);
 
   //---------------------------------------
   const handleRemoveFile = React.useCallback((fileId: string) => {

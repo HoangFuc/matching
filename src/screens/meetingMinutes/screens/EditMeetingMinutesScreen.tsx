@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Alert,
-  Modal,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 
 import { MemoDatePickerModal } from '@/src/component/calendar/DatePickerModal';
@@ -176,12 +170,6 @@ const EditMeetingMinutesScreen: React.FC = () => {
       const file = result[0];
       if (!file) return;
 
-      const fileName = file.name ?? '';
-      if (!fileName.toLowerCase().endsWith('.enc')) {
-        Alert.alert('', '.enc 파일만 업로드할 수 있습니다.');
-        return;
-      }
-
       const fileSizeBytes = file.size ?? 0;
       const MAX_SIZE = 100 * 1024 * 1024; // 100MB
       if (fileSizeBytes > MAX_SIZE) {
@@ -240,7 +228,13 @@ const EditMeetingMinutesScreen: React.FC = () => {
     } finally {
       isPickingRef.current = false;
     }
-  }, [savedUploadId, uploadFileWithUploadId, deleteRecording, item.id, getAudioDuration]);
+  }, [
+    savedUploadId,
+    uploadFileWithUploadId,
+    deleteRecording,
+    item.id,
+    getAudioDuration,
+  ]);
 
   //---------------------------------------
   const handleRemoveFile = React.useCallback(
@@ -397,7 +391,11 @@ const EditMeetingMinutesScreen: React.FC = () => {
               statusBarTranslucent
               onRequestClose={() => setShowPostcode(false)}
             >
-              <BlurView style={styles.postcodeOverlay} blurType="dark" blurAmount={8}>
+              <BlurView
+                style={styles.postcodeOverlay}
+                blurType="dark"
+                blurAmount={8}
+              >
                 <Pressable
                   style={{ flex: 1 }}
                   onPress={() => setShowPostcode(false)}

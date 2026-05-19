@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Keep terminal open on exit
-trap 'echo ""; echo "Press Enter to close..."; read' EXIT
-
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -22,25 +19,25 @@ VERSION_CODE=$(grep -o '"versionCode": *[0-9]*' "$VERSION_FILE" | grep -o '[0-9]
 
 # Auto-increment versionCode
 NEW_VERSION_CODE=$((VERSION_CODE + 1))
-sed -i '' "s/\"versionCode\": *$VERSION_CODE/\"versionCode\": $NEW_VERSION_CODE/" "$VERSION_FILE"
+sed -i "s/\"versionCode\": *$VERSION_CODE/\"versionCode\": $NEW_VERSION_CODE/" "$VERSION_FILE"
 
 echo -e "${CYAN}========================================${NC}"
-echo -e "${CYAN}       Android Development Build        ${NC}"
+echo -e "${CYAN}       Android Release Build            ${NC}"
 echo -e "${CYAN}========================================${NC}"
 echo -e "${CYAN}  Version: ${VERSION_NAME} (${NEW_VERSION_CODE})${NC}"
 echo -e "${CYAN}========================================${NC}"
 
 cd android
 
-echo -e "${YELLOW}[1/5] Cleaning old build files...${NC}"
-rm -rf app/build app/.cxx 2>/dev/null || true
+echo -e "${YELLOW}[1/3] Cleaning old build files...${NC}"
+rm -rf app/build app/.cxx .gradle
 echo -e "${GREEN}  ✔ Clean done${NC}"
 
-echo -e "${YELLOW}[2/4] Copying .env.development -> .env${NC}"
+echo -e "${YELLOW}[2/3] Copying .env.development -> .env${NC}"
 cp ../.env.development ../.env
 echo -e "${GREEN}  ✔ .env ready${NC}"
 
-echo -e "${YELLOW}[3/4] Building release APK...${NC}"
+echo -e "${YELLOW}[3/3] Building release APK...${NC}"
 ./gradlew assembleRelease
 
 if [ $? -eq 0 ]; then
@@ -50,17 +47,10 @@ if [ $? -eq 0 ]; then
   echo -e "${GREEN}========================================${NC}"
   echo -e "${CYAN}  APK: ${APK_DIR}${NC}"
 
-  # Install APK to connected device
-  APK_FILE="${APK_DIR}/app-release.apk"
-  echo ""
-  echo -e "${YELLOW}[4/4] Installing APK to device...${NC}"
-  adb install -r "$APK_FILE"
-
-  if [ $? -eq 0 ]; then
-    echo -e "${GREEN}  ✔ Install SUCCESS!${NC}"
-  else
-    echo -e "${RED}  ✘ Install FAILED! Check device connection.${NC}"
-  fi
+  # Open the output folder (convert to Windows path for explorer)
+  APK_FULL_PATH="$(cd "${APK_DIR}" 2>/dev/null && pwd)"
+  APK_WIN_PATH="$(cygpath -w "${APK_FULL_PATH}" 2>/dev/null || echo "${APK_FULL_PATH}")"
+  explorer.exe "${APK_WIN_PATH}"
 else
   echo ""
   echo -e "${RED}========================================${NC}"

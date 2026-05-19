@@ -76,14 +76,21 @@ export const useMeetingLogUploadWithProgress = () => {
           throw new Error('No uploadId returned from server');
         }
 
-        const { iv, authTag } = await parseEncFileHeaders(file.uri);
+        const isEncrypted =
+          /\.enc$/i.test(file.name) || /\.enc$/i.test(file.uri);
 
         const extraFields: Record<string, string> = {
-          encryptionIv: iv,
-          encryptionTag: authTag,
-          encryptionAlgo: 'aes-256-gcm',
-          ...(durationSeconds != null ? { duration: String(durationSeconds) } : {}),
+          ...(durationSeconds != null
+            ? { duration: String(durationSeconds) }
+            : {}),
         };
+
+        if (isEncrypted) {
+          const { iv, authTag } = await parseEncFileHeaders(file.uri);
+          extraFields.encryptionIv = iv;
+          extraFields.encryptionTag = authTag;
+          extraFields.encryptionAlgo = 'aes-256-gcm';
+        }
 
         await performUpload(uploadId, file, extraFields);
       } catch (err) {
@@ -153,7 +160,7 @@ export const useMeetingLogUploadWithProgress = () => {
           ? { duration: String(durationSeconds) }
           : undefined;
       initProgress(file.name);
-      performUpload(uploadId, file, extraFields).catch(() => { });
+      performUpload(uploadId, file, extraFields).catch(() => {});
     },
     [initProgress, performUpload],
   );
